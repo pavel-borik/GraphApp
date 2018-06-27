@@ -1,0 +1,14 @@
+.App {
+  max-width: 80%;
+  margin: auto;
+}
+
+.Buttondiv {
+  float: left;
+  margin-top: 20px;
+
+}
+
+.Graphdiv {
+  margin-top: 20px;
+}

@@ -1,0 +1,10 @@
+.left-gui-elements {
+    position: absolute;
+    float:left;
+    margin-top: 30px;
+}
+
+.graph-div {
+    position: relative;
+    margin-left: 405px;
+}
