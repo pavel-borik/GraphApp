@@ -17,7 +17,7 @@ class App extends Component {
         case 1: this.setState({ url: '/api/countries/NO/relationships' }); break;
         case 2: this.setState({ url: '/api/marketbalanceareas/EIC_10Y1001A1001A44P/relationships' }); break;
         case 3: this.setState({ url: '/api/retailers/EIC_RE01/relationships' }); break;
-        case 4: this.setState({ url: '/api/productionunits/NFI_AMA/relationships' }); break;
+        case 4: this.setState({ url: '/api/marketbalanceareas/EIC_10YFI_1________U/relationships' }); break;
       }
     });
 

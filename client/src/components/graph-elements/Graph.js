@@ -35,7 +35,7 @@ class GraphVis extends PureComponent {
     }
 
     fitToScreen = () => {
-        this.network.fit( {animation: {duration: 1000, easingFunction: 'easeOutQuart'}} );
+        this.network.fit({ animation: { duration: 1000, easingFunction: 'easeOutQuart' } });
     }
 
     clusterByColor = () => {
@@ -63,7 +63,7 @@ class GraphVis extends PureComponent {
             //this.network.clustering.updateClusteredNode(i, { label: 'Items: '+ totalMass });
         }
         const ntwrk = this.network;
-        ntwrk.on("selectNode", function (params) {
+        ntwrk.on("selectNode", (params) => {
             if (params.nodes.length == 1) {
                 if (ntwrk.isCluster(params.nodes[0]) == true) {
                     ntwrk.openCluster(params.nodes[0]);
@@ -78,15 +78,17 @@ class GraphVis extends PureComponent {
         };
         return (
             <div>
-                <div style={{position: 'relative',display: 'flex'}}>
+                <div style={{ display: 'flex' }}>
                     <CustomButton onClick={this.clusterByColor} name={'Cluster'} />
                     <CustomButton onClick={this.fitToScreen} name={'Fit graph'} />
                 </div>
-                <Graph graph={{ nodes: this.state.nodes, edges: this.state.links }}
-                    options={options}
-                    events={events}
-                    style={{ height: "800px" }}
-                    getNetwork={this.initNetworkInstance} />
+                <div style={{ position: 'absolute', width: '100%'}}>
+                    <Graph graph={{ nodes: this.state.nodes, edges: this.state.links }}
+                        options={options}
+                        events={events}
+                        style={{ height: "800px" }}
+                        getNetwork={this.initNetworkInstance} />
+                </div>
             </div>
         )
 
