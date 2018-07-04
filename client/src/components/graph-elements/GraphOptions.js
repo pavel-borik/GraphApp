@@ -2,9 +2,6 @@ export const options = {
     autoResize: true,
     height: '100%',
     width: '100%',
-    layout: {
-        hierarchical: false
-    },
     nodes: {
         borderWidth: 1,
         borderWidthSelected: 5,
@@ -33,14 +30,15 @@ export const options = {
         width: 1.5,
     },
     groups: {
-        "1": { color: { background: 'red', border: 'white', highlight: { background: '#ffbcbc', border: 'white' } } },
-        "2": { color: { background: 'green', border: 'white', highlight: { background: '#ffbcbc', border: 'white' } } },
-        "3": { color: { background: 'blue', border: 'white', highlight: { background: '#ffbcbc', border: 'white' } } },
-        "4": { color: { background: '#6b486b', border: 'white', highlight: { background: '#ffbcbc', border: 'white' } } },
-        "5": { color: { background: '#a05d56', border: 'white', highlight: { background: '#ffbcbc', border: 'white' } } },
+        "0": { color: { background: 'red', border: 'white', highlight: { background: '#ffbcbc', border: 'white' } } },
+        "1": { color: { background: 'green', border: 'white', highlight: { background: '#ffbcbc', border: 'white' } } },
+        "2": { color: { background: 'blue', border: 'white', highlight: { background: '#ffbcbc', border: 'white' } } },
+        "3": { color: { background: '#6b486b', border: 'white', highlight: { background: '#ffbcbc', border: 'white' } } },
+        "4": { color: { background: '#a05d56', border: 'white', highlight: { background: '#ffbcbc', border: 'white' } } },
     },
     layout: {
         improvedLayout: true,
+        hierarchical: false
     },
     interaction: {
         hover: true,

@@ -15,12 +15,17 @@ class GraphVis extends PureComponent {
     }
 
     componentDidMount() {
-        this.setState({ nodes: this.props.data.nodes, links: this.props.data.links }, () => this.clusterByColor());
+        this.setState({ nodes: this.props.data.nodes, links: this.props.data.links }, () => {
+            this.clusterByColor();
+            this.createLegend();
+        });
     }
 
     componentDidUpdate() {
-        this.setState({ nodes: this.props.data.nodes, links: this.props.data.links }, () => { this.clusterByColor(); });
-    }
+        this.setState({ nodes: this.props.data.nodes, links: this.props.data.links }, () => {
+            this.clusterByColor();
+            this.createLegend();
+        });    }
 
     initNetworkInstance = (networkInstance) => {
         this.network = networkInstance;
@@ -70,6 +75,10 @@ class GraphVis extends PureComponent {
                 }
             }
         });
+    }
+
+    createLegend = () => {
+        console.log(this.network);
     }
 
     render() {

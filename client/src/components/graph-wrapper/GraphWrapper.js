@@ -24,7 +24,8 @@ class GraphWrapper extends Component {
         '/api/marketbalanceareas/EIC_10YFI_1________U/relationships'
         '/api/retailers/EIC_RE01/relationships'
         */
-        fetch(this.props.url)
+       const url = 'api'+this.props.location.pathname+this.props.location.search;
+        fetch(url)
             .then((res) => {
                 if (res.ok) {
                     return res.json();
@@ -38,6 +39,7 @@ class GraphWrapper extends Component {
         this.getTimeIntervals();
     }
     componentDidUpdate(prevProps) {
+        
         if (this.props.url !== prevProps.url) {
             fetch(this.props.url)
                 .then((res) => {
@@ -60,6 +62,7 @@ class GraphWrapper extends Component {
 
     render() {
         console.log(this.state.nodedata);
+        console.log(this.props.location.pathname+this.props.location.search);
         if (Object.keys(this.state.nodedata).length === 0 && this.state.nodedata.constructor === Object) {
             var graphComponent = <CustomProgress className={"progress"} />
             var cardComponent = null;
