@@ -9,7 +9,7 @@ class GraphWrapper extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            nodedata: {},
+            graphdata: {},
             timeintervals: [],
         };
     }
@@ -33,15 +33,16 @@ class GraphWrapper extends Component {
                     throw new Error('Something went wrong');
                 }
             })
-            .then(nodedata => this.setState({ nodedata })
+            .then(graphdata => this.setState({ graphdata })
             );
 
         this.getTimeIntervals();
     }
     componentDidUpdate(prevProps) {
-        
-        if (this.props.url !== prevProps.url) {
-            fetch(this.props.url)
+        console.log('props',this.props)
+        if (this.props.location.search !== prevProps.location.search) {
+            const url = 'api'+this.props.location.pathname+this.props.location.search;
+            fetch(url)
                 .then((res) => {
                     if (res.ok) {
                         return res.json();
@@ -49,7 +50,7 @@ class GraphWrapper extends Component {
                         throw new Error('Something went wrong');
                     }
                 })
-                .then(nodedata => this.setState({ nodedata })
+                .then(graphdata => this.setState({ graphdata })
                 );
 
             this.getTimeIntervals();
@@ -57,18 +58,18 @@ class GraphWrapper extends Component {
 
     }
     getTimeIntervals() {
-        //console.log("fce", this.state.nodedata);
+        //console.log("fce", this.state.graphdata);
     }
 
     render() {
-        console.log(this.state.nodedata);
+        console.log(this.state.graphdata);
         console.log(this.props.location.pathname+this.props.location.search);
-        if (Object.keys(this.state.nodedata).length === 0 && this.state.nodedata.constructor === Object) {
+        if (Object.keys(this.state.graphdata).length === 0 && this.state.graphdata.constructor === Object) {
             var graphComponent = <CustomProgress className={"progress"} />
             var cardComponent = null;
         } else {
-            graphComponent = <Graph data={this.state.nodedata} />
-            cardComponent = <CustomCard data={this.state.nodedata.queriedentity} />
+            graphComponent = <Graph data={this.state.graphdata} />
+            cardComponent = <CustomCard data={this.state.graphdata.queriedentity} />
         }
         return (
             <div>

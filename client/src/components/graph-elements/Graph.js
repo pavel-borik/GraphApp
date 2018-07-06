@@ -16,14 +16,14 @@ class GraphVis extends PureComponent {
 
     componentDidMount() {
         this.setState({ nodes: this.props.data.nodes, links: this.props.data.links }, () => {
-            this.clusterByColor();
+            this.clusterByGroup();
             this.createLegend();
         });
     }
 
     componentDidUpdate() {
         this.setState({ nodes: this.props.data.nodes, links: this.props.data.links }, () => {
-            this.clusterByColor();
+            this.clusterByGroup(    );
             this.createLegend();
         });    }
 
@@ -43,27 +43,40 @@ class GraphVis extends PureComponent {
         this.network.fit({ animation: { duration: 1000, easingFunction: 'easeOutQuart' } });
     }
 
-    clusterByColor = () => {
-        var colors = ['green', 'blue', '#6b486b'];
-        var clusterOptionsByData;
-        for (var i = 0; i < colors.length; i++) {
-            var color = colors[i];
-            var totalMass;
+    clusterByGroup = () => {
+        const groupcount = this.props.data.config.groupcount;
+        let clusterOptionsByData;
+        let colors = ["red", "green", "blue", "#6b486b", "#a05d56"];
+        for (let i = 1; i <= groupcount; i++) {
             clusterOptionsByData = {
-                joinCondition: function (childOptions) {
-                    return childOptions.color.background == color; // the color is fully defined in the node.
+                joinCondition: (childOptions) => {
+                    return childOptions.group === i;
                 },
-                processProperties: function (clusterOptions, childNodes, childEdges) {
-                    totalMass = 0;
-                    for (var i = 0; i < childNodes.length; i++) {
-                        totalMass += childNodes[i].mass;
-                    }
-                    clusterOptions.mass = 1;
+                processProperties: (clusterOptions, childNodes, childEdges) => {
+                    clusterOptions.label = 'Node count:\n'+ '<b>'+childNodes.length+'</b>';
                     return clusterOptions;
                 },
-                clusterNodeProperties: { id: i, borderWidth: 3, shape: 'circle', color: color, label: 'color:' + color }
+                clusterNodeProperties: { 
+                    id: i,
+                    group: i, 
+                    borderWidth: 3, 
+                    shape: 'circle',
+                    labelHighlightBold: false,
+                    color: colors[i], 
+                    font: {
+                        face: 'georgia',
+                        color: "white",
+                        size: 14,
+                        align: 'center',
+                        multi: 'html',
+                        bold: {
+                            size: 18,
+                            vadjust: 2
+                        }
+                    }
+                }
             };
-            //console.log(totalMass)
+            console.log("clusteroptions", clusterOptionsByData)
             this.network.cluster(clusterOptionsByData)
             //this.network.clustering.updateClusteredNode(i, { label: 'Items: '+ totalMass });
         }
@@ -88,7 +101,7 @@ class GraphVis extends PureComponent {
         return (
             <div>
                 <div style={{ display: 'flex' }}>
-                    <CustomButton onClick={this.clusterByColor} name={'Cluster'} />
+                    <CustomButton onClick={this.clusterByGroup} name={'Cluster'} />
                     <CustomButton onClick={this.fitToScreen} name={'Fit graph'} />
                 </div>
                 <div style={{ position: 'absolute', width: '100%'}}>

@@ -5,10 +5,8 @@ export const options = {
     nodes: {
         borderWidth: 1,
         borderWidthSelected: 5,
-
         shape: 'dot',
         size: 20,
-
         shadow: {
             enabled: true,
             color: 'rgba(0,0,0,0.5)',
@@ -23,7 +21,6 @@ export const options = {
         },
         color: {
             color: '#848484',
-
             opacity: 0.3
         },
         arrowStrikethrough: false,

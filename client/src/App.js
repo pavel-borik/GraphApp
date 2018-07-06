@@ -3,7 +3,7 @@ import './App.css';
 import NavBar from './components/navbar/NavBar';
 import GraphWrapper from './components/graph-wrapper/GraphWrapper';
 import CustomButton from './components/gui-elements/CustomButton';
-import { BrowserRouter as Router, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
 
 class App extends Component {
   state = {
@@ -20,7 +20,7 @@ class App extends Component {
         case 3: this.setState({ url: '/api/retailers/EIC_RE01/relationships' }); break;
         case 4: this.setState({ url: '/api/marketbalanceareas/EIC_10YFI_1________U/relationships' }); break;
         case 4: this.setState({
-          url: '/api/getData?id=EIC_10YFI_1________U&type=mba&validityFrom=01012017&validityTo=30122017&view=ro,mga,tso'
+          url: '/api/getData?id=EIC_SC_MBA101&type=mba&validityFrom=01012017&validityTo=30122017&view=ro,mga,tso,country'
         }); break;
       }
     });
@@ -43,12 +43,13 @@ class App extends Component {
             <NavBar />
           </div>
           <div className="Buttondiv" >
-            <CustomButton onClick={this.changeUrl} name={'Change entity'} />
+            {/*<CustomButton onClick={this.changeUrl} name={'Change entity'} />*/}
+            <Link className="link" to="/getData?id=EIC_SC_MBA101&type=mba&validityFrom=01012017&validityTo=30122017&view=ro,mga,tso,country">Link 1</Link>
+            <Link className="link" to="/getData?id=EIC_SC_MBA101&type=mba&validityFrom=01012017&validityTo=30122017&view=ro,mga,tso">Link 2</Link>
           </div>
           <div className="Graphdiv">
             <Route path="/getdata" render={GraphWrapperWithProps} />
           </div>
-
         </div>
       </Router>
     );

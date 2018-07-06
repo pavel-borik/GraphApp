@@ -25,18 +25,28 @@ let viewDictionary = {
         identifier: "regulation_object",
         direction: "to",
         where: "mba",
+        timedependent:true,
       },
       "mga": {
         table: "mba_mga_rel",
         identifier: "mga",
         direction: "to",
         where: "mba",
+        timedependent:true,
       },
       "tso": {
         table: "mba",
         identifier: "tso",
         direction: "from",
         where: "internal_id",
+        timedependent:false,
+      },
+      "country": {
+        table: "mba",
+        identifier: "country",
+        direction: "from",
+        where: "internal_id",
+        timedependent:false,
       },
     }
   }
@@ -60,21 +70,38 @@ app.get('/api/getdata', (req, res) => {
   let lastIndex = queryString.trim().lastIndexOf(" ");
   queryString = queryString.substring(0, lastIndex);
 
+  let config = {
+    "groupcount": view.length 
+  };
+
   db.query(queryString, queryParams, function (err, rows, fields) {
     if (err) throw err;
+    rows.map(node => {
+      node.title = createTooltipHtml(node);
+    })
     db.query('select *, "Market balance area" as type from mba where internal_id = ?', [req.query.id], function (err2, rows2, fields2) {
       if (err2) throw err2;
       const queriedEntity = rows2[0];
       const links = computeLinks(rows, queriedEntity);
       rows.push({ "id": queriedEntity.Name, "label": queriedEntity.Name, "group": 0 })
       res.json({
-        'queriedentity': queriedEntity,
-        'nodes': rows,
-        'links': links
+        "config": config,
+        "queriedentity": queriedEntity,
+        "nodes": rows,
+        "links": links
       });
     });
   })
 });
+
+function createTooltipHtml(node) {
+   return `<h3> ${node.id} </h3>
+   <ul>
+    <li>Validity start: ${node.validity_start}</li>
+    <li>Validity end: ${node.validity_end}</li>
+   </ul>       
+   `;
+}
 
 app.get('/api/regulationobjects/:id/relationships', (req, res) => {
   db.query('select production_unit as id, production_unit as label, 2 as "group", "to" as direction, validity_start, validity_end from pu_ro_rel where regulation_object like ? union ' +

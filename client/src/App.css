@@ -4,9 +4,9 @@
 }
 
 .Buttondiv {
+  display: flex;
   float: left;
   margin-top: 20px;
-
 }
 
 .Graphdiv {
