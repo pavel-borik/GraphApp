@@ -2,6 +2,8 @@ import Graph from 'react-graph-vis';
 import React, { PureComponent } from 'react';
 import CustomButton from '../gui-elements/CustomButton'
 import { options } from './GraphOptions'
+import { legendOptions } from './GraphLegendOptions'
+
 
 class GraphVis extends PureComponent {
 
@@ -10,25 +12,56 @@ class GraphVis extends PureComponent {
         this.state = {
             nodes: [],
             links: [],
+            legend: [],
         }
         const network = null;
+        const legendNetwork = null;
+        const dataset = null;
     }
 
     componentDidMount() {
-        this.setState({ nodes: this.props.data.nodes, links: this.props.data.links }, () => {
+        this.props.data.legend.nodes.map(node => {
+            let coords = this.legendNetwork.DOMtoCanvas( {x: node.x, y: node.y});
+            node.x = coords.x;
+            node.y = coords.y;
+        })
+
+        this.setState({
+            nodes: this.props.data.graph.nodes, links: this.props.data.graph.links, legend: this.props.data.legend.nodes
+        }, () => {
             this.clusterByGroup();
-            this.createLegend();
+            //            this.createLegend();
         });
     }
 
     componentDidUpdate() {
-        this.setState({ nodes: this.props.data.nodes, links: this.props.data.links }, () => {
-            this.clusterByGroup(    );
-            this.createLegend();
-        });    }
+        this.props.data.legend.nodes.map(node => {
+            let coords = this.legendNetwork.DOMtoCanvas( {x: node.x, y: node.y});
+            node.x = coords.x;
+            node.y = coords.y;
+            console.log(node)
+        })
+
+        this.setState({
+            nodes: this.props.data.graph.nodes, links: this.props.data.graph.links, legend: this.props.data.legend.nodes
+        }, () => {
+            this.clusterByGroup();
+            //        this.createLegend();
+        });
+    }
 
     initNetworkInstance = (networkInstance) => {
         this.network = networkInstance;
+        //console.log(this.network);
+    }
+
+    initLegendNetworkInstance = (networkInstance) => {
+        this.legendNetwork = networkInstance;
+        console.log(this.legendNetwork);
+    }
+
+    initDatasetInstance = (datasetInstance) => {
+        this.dataset = datasetInstance;
         //console.log(this.network);
     }
 
@@ -37,6 +70,10 @@ class GraphVis extends PureComponent {
         var param = nodes[0];
         var selectedNode = this.state.nodes.find(node => { return node.id === param; });
         //console.log(selectedNode);
+    }
+
+    click = (event) => {
+        console.log(event);
     }
 
     fitToScreen = () => {
@@ -53,16 +90,16 @@ class GraphVis extends PureComponent {
                     return childOptions.group === i;
                 },
                 processProperties: (clusterOptions, childNodes, childEdges) => {
-                    clusterOptions.label = 'Node count:\n'+ '<b>'+childNodes.length+'</b>';
+                    clusterOptions.label = 'Node count:\n' + '<b>' + childNodes.length + '</b>';
                     return clusterOptions;
                 },
-                clusterNodeProperties: { 
+                clusterNodeProperties: {
                     id: i,
-                    group: i, 
-                    borderWidth: 3, 
+                    group: i,
+                    borderWidth: 3,
                     shape: 'circle',
                     labelHighlightBold: false,
-                    color: colors[i], 
+                    color: colors[i],
                     font: {
                         face: 'georgia',
                         color: "white",
@@ -76,7 +113,7 @@ class GraphVis extends PureComponent {
                     }
                 }
             };
-            console.log("clusteroptions", clusterOptionsByData)
+            //console.log("clusteroptions", clusterOptionsByData)
             this.network.cluster(clusterOptionsByData)
             //this.network.clustering.updateClusteredNode(i, { label: 'Items: '+ totalMass });
         }
@@ -90,27 +127,35 @@ class GraphVis extends PureComponent {
         });
     }
 
-    createLegend = () => {
-        console.log(this.network);
-    }
-
     render() {
         const events = {
             selectNode: this.selectNode,
+            click: this.click,
         };
+        console.log("legend", this.state.legend)
+        console.log("data", this.state.nodes)
         return (
             <div>
                 <div style={{ display: 'flex' }}>
                     <CustomButton onClick={this.clusterByGroup} name={'Cluster'} />
                     <CustomButton onClick={this.fitToScreen} name={'Fit graph'} />
                 </div>
-                <div style={{ position: 'absolute', width: '100%'}}>
+                <div style={{ position: 'absolute', width: '100%' }}>
+                    <Graph graph={{ nodes: this.state.legend, edges: [] }}
+                        options={legendOptions}
+                        style={{ height: "800px" }}
+                        getNetwork={this.initLegendNetworkInstance}
+                        />
+                </div>
+                <div style={{ position: 'absolute', width: '100%' }}>
                     <Graph graph={{ nodes: this.state.nodes, edges: this.state.links }}
                         options={options}
                         events={events}
                         style={{ height: "800px" }}
-                        getNetwork={this.initNetworkInstance} />
+                        getNetwork={this.initNetworkInstance}
+                        getNodes={this.initDatasetInstance} />
                 </div>
+
             </div>
         )
 

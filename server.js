@@ -56,6 +56,8 @@ app.get('/api/getdata', (req, res) => {
   const view = req.query.view.split(',')
   let queryString = '';
   let queryParams = [];
+  let nodesLegend = [];
+  nodesLegend.push({x: 30, y: 60, id: req.query.type, label: req.query.type, group: "L0", fixed: true, physics: false})
   for (let i = 0; i < view.length; i++) {
     //console.log(viewDictionary[req.query.type].rels[view[i]])
     const table = viewDictionary[req.query.type].rels[view[i]].table;
@@ -65,6 +67,7 @@ app.get('/api/getdata', (req, res) => {
     const type = req.query.type;
     queryString += `select ${identifier} as id, ${identifier} as label, ${i + 1} as "group", "${direction}" as direction, validity_start, validity_end from ${table} where ${where} like ? union `;
     queryParams.push(req.query.id);
+    nodesLegend.push({x: 30, y: 60 + 60 * (i+1), id: view[i], label: view[i], group: "L"+ (i+1), fixed: true, physics: false});
   }
 
   let lastIndex = queryString.trim().lastIndexOf(" ");
@@ -87,8 +90,13 @@ app.get('/api/getdata', (req, res) => {
       res.json({
         "config": config,
         "queriedentity": queriedEntity,
-        "nodes": rows,
-        "links": links
+        "graph": {
+          "nodes": rows,
+          "links": links
+        },
+        "legend": {
+          "nodes": nodesLegend
+        }    
       });
     });
   })
