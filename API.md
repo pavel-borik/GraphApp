@@ -35,6 +35,54 @@ API ENDPOINTS
 * **Success Response:**
 
   **Code:** 200 <br />
+
+  **Response structure:**  
+    ```javascript
+    {
+        "config": {
+            "groupcount": // required - number of groups (one group can for example be all the MBA nodes)
+        },
+        "queriedentity": {
+            "type": // required - displayed in the info card (e.g. Market Balance Area)
+            "Name": // required - displayed in the info card
+            //... other attributes...        
+        },
+        "graph": { //connectivity data for visjs
+            "nodes": [
+                {
+                    "id": //required by Visjs - must be unique
+                    "label": // displays name of the node in the graph
+                    "group": // required - dictates the settings of the group of nodes (e.g. color, highlight color)
+                    "title": // displays in a tooltip, can be html markup
+                },
+                //...other nodes to be displayed...
+            ],
+            "links": [
+                {
+                    "from": //id of a node, required by Visjs
+                    "to": //id of a node, required by Visjs
+                },
+                //...other links between nodes...
+            ]
+        },
+        "legend": {
+            "nodes": [
+                {
+                    "x":  // DOM coordinates
+                    "y":  // DOM coordinates
+                    "id": // unique id - required by Visjs
+                    "label": // node label to be displayed
+                    "group": // group id for node styling
+                    "fixed": true, //visjs settings
+                    "physics": false //visjs settings
+                },
+                //...other nodes displayed as a legend...//
+            ]
+        }
+    }
+    ```
+
+
   **Content:**  
     ```javascript
     {
@@ -57,7 +105,7 @@ API ENDPOINTS
                     "validity_end": "2017-12-31T23:00",
                     "title": "<h3> EIC_SC_RO09 </h3>\n   <ul>\n    <li>Validity start: 2017-06-30T23:00</li>\n    <li>Validity end: 2017-12-31T23:00</li>\n   </ul>       \n   "
                 },
-                ///...nodes to be displayed...
+                //...nodes to be displayed...
                 {
                     "id": "SC MBA101",
                     "label": "SC MBA101",
@@ -83,7 +131,7 @@ API ENDPOINTS
                     "fixed": true,
                     "physics": false
                 },
-                //...nodes displayed as a legend///
+                //...other nodes displayed as a legend..///
             ]
         }
     }
@@ -103,8 +151,5 @@ API ENDPOINTS
 
 * **Sample Call:**
 
-  <_Just a sample call to your endpoint in a runnable format ($.ajax call or a curl request) - this makes life easier and more predictable._> 
 
 * **Notes:**
-
-  <_This is where all uncertainties, commentary, discussion etc. can go. I recommend timestamping and identifying oneself when leaving comments here._> 

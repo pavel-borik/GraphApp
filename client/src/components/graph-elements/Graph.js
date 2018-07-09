@@ -6,13 +6,13 @@ import { legendOptions } from './GraphLegendOptions'
 
 
 class GraphVis extends PureComponent {
-
     constructor(props) {
         super(props);
         this.state = {
             nodes: [],
             links: [],
             legend: [],
+            selectedNode: {},
         }
         const network = null;
         const legendNetwork = null;
@@ -30,7 +30,6 @@ class GraphVis extends PureComponent {
             nodes: this.props.data.graph.nodes, links: this.props.data.graph.links, legend: this.props.data.legend.nodes
         }, () => {
             this.clusterByGroup();
-            //            this.createLegend();
         });
     }
 
@@ -39,13 +38,13 @@ class GraphVis extends PureComponent {
             let coords = this.legendNetwork.DOMtoCanvas( {x: node.x, y: node.y});
             node.x = coords.x;
             node.y = coords.y;
-            console.log(node)
+            //console.log(node)
         })
 
         this.setState({
             nodes: this.props.data.graph.nodes, links: this.props.data.graph.links, legend: this.props.data.legend.nodes
         }, () => {
-            this.clusterByGroup();
+            //this.clusterByGroup();
             //        this.createLegend();
         });
     }
@@ -57,7 +56,7 @@ class GraphVis extends PureComponent {
 
     initLegendNetworkInstance = (networkInstance) => {
         this.legendNetwork = networkInstance;
-        console.log(this.legendNetwork);
+        //console.log(this.legendNetwork);
     }
 
     initDatasetInstance = (datasetInstance) => {
@@ -67,13 +66,17 @@ class GraphVis extends PureComponent {
 
     selectNode = (event) => {
         const { nodes } = event;
-        var param = nodes[0];
-        var selectedNode = this.state.nodes.find(node => { return node.id === param; });
+        const param = nodes[0];
+        const selectedNode = this.state.nodes.find(node => { return node.id === param; });
+        if(selectedNode !== undefined) {
+            this.setState({selectedNodeId: selectedNode.id});
+            this.props.getSelectedNode(selectedNode);
+        }
         //console.log(selectedNode);
     }
 
     click = (event) => {
-        console.log(event);
+        //console.log(event);
     }
 
     fitToScreen = () => {
@@ -132,8 +135,8 @@ class GraphVis extends PureComponent {
             selectNode: this.selectNode,
             click: this.click,
         };
-        console.log("legend", this.state.legend)
-        console.log("data", this.state.nodes)
+        //console.log("legend", this.state.legend)
+        //console.log("data", this.state.nodes)
         return (
             <div>
                 <div style={{ display: 'flex' }}>

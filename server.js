@@ -19,6 +19,8 @@ db.connect((err) => {
 
 let viewDictionary = {
   "mba": {
+    "table": "mba",
+    "identifier": "internal_id",
     "rels": {
       "ro": {
         table: "ro_location",
@@ -49,7 +51,23 @@ let viewDictionary = {
         timedependent:false,
       },
     }
-  }
+  },
+  "ro": {
+    "table":"ro",
+    "identifier": "internal_id",
+  },
+  "mga": {
+    "table":"mga",
+    "identifier": "internal_id",
+  },
+  "tso": {
+    "table":"tso",
+    "identifier": "internal_id",
+  },
+  "country": {
+    "table":"country",
+    "identifier": "iso_code",
+  },
 }
 app.get('/api/getdata', (req, res) => {
   //console.log(req.query);
@@ -64,8 +82,8 @@ app.get('/api/getdata', (req, res) => {
     const identifier = viewDictionary[req.query.type].rels[view[i]].identifier;
     const direction = viewDictionary[req.query.type].rels[view[i]].direction;
     const where = viewDictionary[req.query.type].rels[view[i]].where;
-    const type = req.query.type;
-    queryString += `select ${identifier} as id, ${identifier} as label, ${i + 1} as "group", "${direction}" as direction, validity_start, validity_end from ${table} where ${where} like ? union `;
+    const type = view[i];
+    queryString += `select ${identifier} as id, ${identifier} as label, ${i + 1} as "group", "${direction}" as direction, "${type}" as "type", validity_start, validity_end from ${table} where ${where} like ? union `;
     queryParams.push(req.query.id);
     nodesLegend.push({x: 30, y: 60 + 60 * (i+1), id: view[i], label: view[i], group: "L"+ (i+1), fixed: true, physics: false});
   }
@@ -82,11 +100,11 @@ app.get('/api/getdata', (req, res) => {
     rows.map(node => {
       node.title = createTooltipHtml(node);
     })
-    db.query('select *, "Market balance area" as type from mba where internal_id = ?', [req.query.id], function (err2, rows2, fields2) {
+    db.query(`select *, "${req.query.type}" as "type" from ${viewDictionary[req.query.type].table} where internal_id = ?`, [req.query.id], function (err2, rows2, fields2) {
       if (err2) throw err2;
       const queriedEntity = rows2[0];
       const links = computeLinks(rows, queriedEntity);
-      rows.push({ "id": queriedEntity.Name, "label": queriedEntity.Name, "group": 0 })
+      rows.push({ "id": queriedEntity.Internal_ID, "label": queriedEntity.Name, "type": queriedEntity.type, "group": 0 })
       res.json({
         "config": config,
         "queriedentity": queriedEntity,
@@ -98,6 +116,18 @@ app.get('/api/getdata', (req, res) => {
           "nodes": nodesLegend
         }    
       });
+    });
+  })
+});
+
+app.get('/api/getdetail', (req, res) => {
+  //console.log(req.query);
+  const queriedTable = viewDictionary[req.query.type].table;
+  const identifier = viewDictionary[req.query.type].identifier;
+  db.query(`select * from ${queriedTable} where ${identifier} = ? `, req.query.id, function (err, rows, fields) {
+    if (err) throw err;
+    res.json({
+      "queriedentity": rows[0],
     });
   })
 });
@@ -159,7 +189,7 @@ app.get('/api/productionunits/:id/relationships', (req, res) => {
         if (err2) throw err2;
         const queriedEntity = rows2[0];
         const links = computeLinks(rows, queriedEntity);
-        rows.push({ "id": queriedEntity.Name, "label": queriedEntity.Name, "group": 1 })
+        rows.push({ "id": queriedEntity.internal_id, "label": queriedEntity.Name, "group": 1 })
         res.json({
           'queriedentity': queriedEntity,
           'nodes': rows,
@@ -211,9 +241,9 @@ function computeLinks(rows, queriedEntity) {
   var links = [];
   for (var i = 0; i < rows.length; i++) {
     if (rows[i].direction.localeCompare("from")) {
-      links.push({ "from": rows[i].id, "to": queriedEntity.Name })
+      links.push({ "from": rows[i].id, "to": queriedEntity.Internal_ID })
     } else if (rows[i].direction.localeCompare("to")) {
-      links.push({ "from": queriedEntity.Name, "to": rows[i].id })
+      links.push({ "from": queriedEntity.Internal_ID, "to": rows[i].id })
     }
   }
   return links;

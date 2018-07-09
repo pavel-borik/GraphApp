@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Graph from '../graph-elements/Graph';
 import CustomProgress from '../gui-elements/CustomProgress';
 import CustomSelect from '../gui-elements/CustomSelect';
-import CustomCard from '../gui-elements/CustomCard';
+import CardWrapper from '../card-wrapper/CardWrapper'
 import './GraphWrapper.css';
 
 class GraphWrapper extends Component {
@@ -11,6 +11,7 @@ class GraphWrapper extends Component {
         this.state = {
             graphdata: {},
             timeintervals: [],
+            queriedentity: {},
         };
     }
 
@@ -33,13 +34,13 @@ class GraphWrapper extends Component {
                     throw new Error('Something went wrong');
                 }
             })
-            .then(graphdata => this.setState({ graphdata })
+            .then(data => this.setState({ graphdata:data, queriedentity: data.queriedentity  })
             );
 
         this.getTimeIntervals();
     }
     componentDidUpdate(prevProps) {
-        console.log('props',this.props)
+        //console.log('props',this.props)
         if (this.props.location.search !== prevProps.location.search) {
             const url = 'api'+this.props.location.pathname+this.props.location.search;
             fetch(url)
@@ -61,15 +62,19 @@ class GraphWrapper extends Component {
         //console.log("fce", this.state.graphdata);
     }
 
+    getSelectedNode = (node) => {
+        this.setState({queriedentity: node})
+    }
+
     render() {
-        console.log(this.state.graphdata);
-        console.log(this.props.location.pathname+this.props.location.search);
+        //console.log(this.state.graphdata);
+        //console.log(this.props.location.pathname+this.props.location.search);
         if (Object.keys(this.state.graphdata).length === 0 && this.state.graphdata.constructor === Object) {
             var graphComponent = <CustomProgress className={"progress"} />
             var cardComponent = null;
         } else {
-            graphComponent = <Graph data={this.state.graphdata} />
-            cardComponent = <CustomCard data={this.state.graphdata.queriedentity} />
+            graphComponent = <Graph data={this.state.graphdata} getSelectedNode={this.getSelectedNode}/>
+            cardComponent = <CardWrapper queriedentity={this.state.queriedentity} />
         }
         return (
             <div>
