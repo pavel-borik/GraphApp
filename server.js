@@ -19,6 +19,7 @@ db.connect((err) => {
 
 let viewDictionary = {
   "mba": {
+    "name": "Market Balance Area",
     "table": "mba",
     "identifier": "internal_id",
     "rels": {
@@ -53,18 +54,22 @@ let viewDictionary = {
     }
   },
   "ro": {
+    "name": "Regulation Object",
     "table":"ro",
     "identifier": "internal_id",
   },
   "mga": {
+    "name": "Metering Grid Area",
     "table":"mga",
     "identifier": "internal_id",
   },
   "tso": {
+    "name": "Transmission System Operator",
     "table":"tso",
     "identifier": "internal_id",
   },
   "country": {
+    "name": "Country",
     "table":"country",
     "identifier": "iso_code",
   },
@@ -92,7 +97,14 @@ app.get('/api/getdata', (req, res) => {
   queryString = queryString.substring(0, lastIndex);
 
   let config = {
-    "groupcount": view.length 
+    "groupcount": view.length,
+    "legend": {
+      "nodes": nodesLegend
+    },
+    "range": {
+      "validityfrom": req.query.validityFrom,
+      "validityto": req.query.validityTo
+    }
   };
 
   db.query(queryString, queryParams, function (err, rows, fields) {
@@ -105,6 +117,7 @@ app.get('/api/getdata', (req, res) => {
       const queriedEntity = rows2[0];
       const links = computeLinks(rows, queriedEntity);
       rows.push({ "id": queriedEntity.Internal_ID, "label": queriedEntity.Name, "type": queriedEntity.type, "group": 0 })
+      queriedEntity.type = viewDictionary[queriedEntity.type].name;
       res.json({
         "config": config,
         "queriedentity": queriedEntity,
@@ -112,9 +125,6 @@ app.get('/api/getdata', (req, res) => {
           "nodes": rows,
           "links": links
         },
-        "legend": {
-          "nodes": nodesLegend
-        }    
       });
     });
   })
@@ -126,9 +136,16 @@ app.get('/api/getdetail', (req, res) => {
   const identifier = viewDictionary[req.query.type].identifier;
   db.query(`select * from ${queriedTable} where ${identifier} = ? `, req.query.id, function (err, rows, fields) {
     if (err) throw err;
-    res.json({
-      "queriedentity": rows[0],
-    });
+    if(rows.length > 0) {
+      let result = rows[0];
+      result.type = viewDictionary[ req.query.type ].name;
+    
+      res.json({
+        "queriedentity": result,
+      });
+    }
+    
+
   })
 });
 

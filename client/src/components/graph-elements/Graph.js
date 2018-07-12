@@ -20,21 +20,21 @@ class GraphVis extends PureComponent {
     }
 
     componentDidMount() {
-        this.props.data.legend.nodes.map(node => {
+        this.props.data.config.legend.nodes.map(node => {
             let coords = this.legendNetwork.DOMtoCanvas( {x: node.x, y: node.y});
             node.x = coords.x;
             node.y = coords.y;
         })
 
         this.setState({
-            nodes: this.props.data.graph.nodes, links: this.props.data.graph.links, legend: this.props.data.legend.nodes
+            nodes: this.props.data.graph.nodes, links: this.props.data.graph.links, legend: this.props.data.config.legend.nodes
         }, () => {
             this.clusterByGroup();
         });
     }
 
     componentDidUpdate() {
-        this.props.data.legend.nodes.map(node => {
+        this.props.data.config.legend.nodes.map(node => {
             let coords = this.legendNetwork.DOMtoCanvas( {x: node.x, y: node.y});
             node.x = coords.x;
             node.y = coords.y;
@@ -42,7 +42,7 @@ class GraphVis extends PureComponent {
         })
 
         this.setState({
-            nodes: this.props.data.graph.nodes, links: this.props.data.graph.links, legend: this.props.data.legend.nodes
+            nodes: this.props.data.graph.nodes, links: this.props.data.graph.links, legend: this.props.data.config.legend.nodes
         }, () => {
             //this.clusterByGroup();
             //        this.createLegend();

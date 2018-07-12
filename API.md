@@ -37,10 +37,25 @@ API ENDPOINTS
   **Code:** 200 <br />
 
   **Response structure:**  
+
     ```javascript
     {
         "config": {
             "groupcount": // required - number of groups (one group can for example be all the MBA nodes)
+            "legend": {
+                "nodes": [
+                    {
+                        "x":  // DOM coordinates
+                        "y":  // DOM coordinates
+                        "id": // unique id - required by Visjs
+                        "label": // node label to be displayed
+                        "group": // group id for node styling
+                        "fixed": true, //visjs settings
+                        "physics": false //visjs settings
+                    },
+                    //...other nodes displayed as a legend...//
+                ]
+            }
         },
         "queriedentity": {
             "type": // required - displayed in the info card (e.g. Market Balance Area)
@@ -65,29 +80,30 @@ API ENDPOINTS
                 //...other links between nodes...
             ]
         },
-        "legend": {
-            "nodes": [
-                {
-                    "x":  // DOM coordinates
-                    "y":  // DOM coordinates
-                    "id": // unique id - required by Visjs
-                    "label": // node label to be displayed
-                    "group": // group id for node styling
-                    "fixed": true, //visjs settings
-                    "physics": false //visjs settings
-                },
-                //...other nodes displayed as a legend...//
-            ]
-        }
     }
     ```
 
 
   **Content:**  
+
     ```javascript
     {
         "config": {
-            "groupcount": 4
+            "groupcount": 4,
+            "legend": {
+                "nodes": [
+                    {
+                        "x": 30,
+                        "y": 60,
+                        "id": "mba",
+                        "label": "mba",
+                        "group": "L0",
+                        "fixed": true,
+                        "physics": false
+                    },
+                    //...other nodes displayed as a legend..///
+                ]
+            }
         },
         "queriedentity": {
             "type": "Market balance area",
@@ -120,34 +136,87 @@ API ENDPOINTS
                 //...links between nodes...
             ]
         },
-        "legend": {
-            "nodes": [
-                {
-                    "x": 30,
-                    "y": 60,
-                    "id": "mba",
-                    "label": "mba",
-                    "group": "L0",
-                    "fixed": true,
-                    "physics": false
-                },
-                //...other nodes displayed as a legend..///
-            ]
-        }
     }
     ```
  
 * **Error Response:**
 
-  <_Most endpoints will have many ways they can fail. From unauthorized access, to wrongful parameters etc. All of those should be liste d here. It might seem repetitive, but it helps prevent assumptions from being made where they should be._>
 
-  * **Code:** 401 UNAUTHORIZED <br />
-    **Content:** `{ error : "Log in" }`
+  * **Code:**  <br />
+    **Content:** 
 
-  OR
 
-  * **Code:** 422 UNPROCESSABLE ENTRY <br />
-    **Content:** `{ error : "Email Invalid" }`
+* **Sample Call:**
+
+* **Notes:**
+____
+* **URL**
+
+  `/api/getDetail`
+
+* **Method:**
+
+  `GET`
+  
+*  **URL Params**
+
+* **Required:**
+ 
+   `id=[String]` - Unique identifier of the queried entity  
+   `type=[String]` - Type of the entity (e.g. MBA, MGA or TSO) - used as a table name (?)
+   
+
+*   **Optional:**
+
+*   **Request example:**
+
+    `/api/getDetail?id=EIC_SC_MBA101&type=mba`
+
+
+* **Data Params**
+
+
+* **Success Response:**
+
+  **Code:** 200 <br />
+
+  **Response structure:** 
+
+    ```javascript
+    {
+        "queriedentity": {
+            "Name": //required - displayed in the info card heading
+            "type": //required - displayed in the info card sub-heading
+            //... other attributes that should be displayed in the info card...
+            }
+    }
+    ```
+
+  **Content:**  
+
+    ```javascript
+    {
+        "queriedentity": {
+            "id": 3,
+            "Validity_Start": "2015-05-31T23:00",
+            "Validity_End": "2020-12-31T23:00",
+            "Coding_Scheme": "EIC",
+            "MGA_Type": "DISTRIBUTION",
+            "Short_name": null,
+            "Name": "SC MGA102",
+            "Code": "SC_MGA102",
+            "Internal_ID": "EIC_SC_MGA102"
+            }
+    }
+    ```
+ 
+* **Error Response:**
+
+  * **Code:**  <br />
+    **Content:** 
+
+  * **Code:**  <br />
+    **Content:** 
 
 * **Sample Call:**
 

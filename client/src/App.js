@@ -42,14 +42,16 @@ class App extends Component {
           <div>
             <NavBar />
           </div>
-          <div className="Buttondiv" >
-            {/*<CustomButton onClick={this.changeUrl} name={'Change entity'} />*/}
-            <Link className="link" to="/getData?id=EIC_SC_MBA101&type=mba&validityFrom=01012017&validityTo=30122017&view=ro,mga,tso,country">Link 1</Link>
-            <Link className="link" to="/getData?id=EIC_SC_MBA101&type=mba&validityFrom=01012017&validityTo=30122017&view=ro,mga,tso">Link 2</Link>
-          </div>
+
           <div className="Graphdiv">
             <Route path="/getdata" render={GraphWrapperWithProps} />
           </div>
+
+          {/*<div className="Buttondiv" >
+            <CustomButton onClick={this.changeUrl} name={'Change entity'} />*/}
+            {/*<Link className="link" to="/getData?id=EIC_SC_MBA101&type=mba&validityFrom=01012017&validityTo=30122017&view=ro,mga,tso,country">Link 1</Link>
+            <Link className="link" to="/getData?id=EIC_SC_MBA101&type=mba&validityFrom=01012017&validityTo=30122017&view=ro,mga,tso">Link 2</Link>
+          </div>*/}
         </div>
       </Router>
     );
