@@ -21,6 +21,7 @@ class CustomDatePicker extends React.Component {
     this.setState({
       startDate: date
     });
+    this.props.getSelectedDate(date);
   }
 
   render() {
@@ -32,6 +33,8 @@ class CustomDatePicker extends React.Component {
           minDate={this.state.minDate}
           maxDate={this.state.maxDate}
           className="form-control"
+          dateFormat="YYYY/MM/DD"
+          placeholderText="Select a date"
         />
       </div>
     )

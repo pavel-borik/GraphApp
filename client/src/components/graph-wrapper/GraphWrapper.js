@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Graph from '../graph-elements/Graph';
 import CustomProgress from '../gui-elements/CustomProgress';
-import CustomSelect from '../gui-elements/CustomSelect';
+import moment from 'moment';
 import CardWrapper from '../card-wrapper/CardWrapper'
 import './GraphWrapper.css';
 import CustomDatePicker from '../gui-elements/CustomDatePicker';
@@ -11,7 +11,7 @@ class GraphWrapper extends Component {
         super(props);
         this.state = {
             graphdata: {},
-            timeintervals: [],
+            selecteddate: moment(),
             queriedentity: {},
         };
     }
@@ -41,7 +41,6 @@ class GraphWrapper extends Component {
         this.getTimeIntervals();
     }
     componentDidUpdate(prevProps) {
-        //console.log('props',this.props)
         if (this.props.location.search !== prevProps.location.search) {
             const url = 'api' + this.props.location.pathname + this.props.location.search;
             fetch(url)
@@ -67,6 +66,10 @@ class GraphWrapper extends Component {
         this.setState({ queriedentity: node })
     }
 
+    getSelectedDate = (date) => {
+        this.setState({ selecteddate: date })
+    }
+
     render() {
 
         //const validityFrom = this.props.location.search.validityFrom.;
@@ -79,10 +82,11 @@ class GraphWrapper extends Component {
         if (Object.keys(this.state.graphdata).length === 0 && this.state.graphdata.constructor === Object) {
             graphComponent = <CustomProgress className={"progress"} />
         } else {
-            console.log(this.state.graphdata)
-            graphComponent = <Graph data={this.state.graphdata} getSelectedNode={this.getSelectedNode} />
+            graphComponent = <Graph data={this.state.graphdata} selectedDate={this.state.selecteddate} getSelectedNode={this.getSelectedNode} />
             cardComponent = <CardWrapper queriedentity={this.state.queriedentity} />
-            datePickerComponent = <CustomDatePicker validityFrom={this.state.graphdata.config.range.validityfrom} validityTo={this.state.graphdata.config.range.validityto} />
+            datePickerComponent = <CustomDatePicker getSelectedDate={this.getSelectedDate}
+                                    validityFrom={this.state.graphdata.config.range.validityfrom}
+                                    validityTo={this.state.graphdata.config.range.validityto} />
         }
         return (
             <div>

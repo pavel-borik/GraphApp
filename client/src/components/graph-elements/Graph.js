@@ -3,6 +3,7 @@ import React, { PureComponent } from 'react';
 import CustomButton from '../gui-elements/CustomButton'
 import { options } from './GraphOptions'
 import { legendOptions } from './GraphLegendOptions'
+import moment from 'moment';
 
 
 class GraphVis extends PureComponent {
@@ -21,36 +22,64 @@ class GraphVis extends PureComponent {
 
     componentDidMount() {
         this.props.data.config.legend.nodes.map(node => {
-            let coords = this.legendNetwork.DOMtoCanvas( {x: node.x, y: node.y});
+            let coords = this.legendNetwork.DOMtoCanvas({ x: node.x, y: node.y });
             node.x = coords.x;
             node.y = coords.y;
         })
 
+        const displayedNodes = this.props.data.graph.nodes.filter(node => {
+            if (node.group === 0) {
+                return true;
+            } else {
+                return this.props.selectedDate.isBetween(moment(node.validity_start), moment(node.validity_end), "day", []);
+            }
+        });
+
         this.setState({
-            nodes: this.props.data.graph.nodes, links: this.props.data.graph.links, legend: this.props.data.config.legend.nodes
+            nodes: displayedNodes, links: this.props.data.graph.links, legend: this.props.data.config.legend.nodes
         }, () => {
             this.clusterByGroup();
         });
     }
 
-    componentDidUpdate() {
+    componentDidUpdate(prevProps) {
         this.props.data.config.legend.nodes.map(node => {
-            let coords = this.legendNetwork.DOMtoCanvas( {x: node.x, y: node.y});
+            let coords = this.legendNetwork.DOMtoCanvas({ x: node.x, y: node.y });
             node.x = coords.x;
             node.y = coords.y;
             //console.log(node)
         })
 
-        this.setState({
-            nodes: this.props.data.graph.nodes, links: this.props.data.graph.links, legend: this.props.data.config.legend.nodes
-        }, () => {
-            //this.clusterByGroup();
-            //        this.createLegend();
-        });
+        if (!prevProps.selectedDate.isSame(this.props.selectedDate)) {
+            this.openAllClusters();
+            console.log("different dates")
+            const displayedNodes = this.props.data.graph.nodes.filter(node => {
+                if (node.group === 0) {
+                    return true;
+                } else {
+                    return this.props.selectedDate.isBetween(moment(node.validity_start), moment(node.validity_end), "day", []);
+                }
+            });
+
+            this.setState({
+                nodes: displayedNodes, links: this.props.data.graph.links, legend: this.props.data.config.legend.nodes
+            }, () => {
+                this.clusterByGroup();
+            });
+        }
     }
 
     initNetworkInstance = (networkInstance) => {
-        this.network = networkInstance;
+        networkInstance.on("selectNode", (params) => {
+            if (params.nodes.length === 1) {
+                if (networkInstance.isCluster(params.nodes[0]) === true) {
+                    networkInstance.openCluster(params.nodes[0]);
+                }
+            }
+        });
+
+        this.network = networkInstance;        
+
         //console.log(this.network);
     }
 
@@ -64,12 +93,20 @@ class GraphVis extends PureComponent {
         //console.log(this.network);
     }
 
+    openAllClusters = () => {
+        Object.keys(this.network.clustering.body.nodes).map( node => {
+            if (this.network.isCluster(node) === true) {
+                this.network.openCluster(node);
+            }
+        });
+    }
+
     selectNode = (event) => {
         const { nodes } = event;
         const param = nodes[0];
         const selectedNode = this.state.nodes.find(node => { return node.id === param; });
-        if(selectedNode !== undefined) {
-            this.setState({selectedNodeId: selectedNode.id});
+        if (selectedNode !== undefined) {
+            this.setState({ selectedNodeId: selectedNode.id });
             this.props.getSelectedNode(selectedNode);
         }
         //console.log(selectedNode);
@@ -120,17 +157,13 @@ class GraphVis extends PureComponent {
             this.network.cluster(clusterOptionsByData)
             //this.network.clustering.updateClusteredNode(i, { label: 'Items: '+ totalMass });
         }
-        const ntwrk = this.network;
-        ntwrk.on("selectNode", (params) => {
-            if (params.nodes.length == 1) {
-                if (ntwrk.isCluster(params.nodes[0]) == true) {
-                    ntwrk.openCluster(params.nodes[0]);
-                }
-            }
-        });
+        console.log('taht',this.network.clustering.body.nodes)
     }
 
     render() {
+        console.log('ntw',this.network);
+        console.log('datset',this.dataset);
+
         const events = {
             selectNode: this.selectNode,
             click: this.click,
@@ -148,7 +181,7 @@ class GraphVis extends PureComponent {
                         options={legendOptions}
                         style={{ height: "800px" }}
                         getNetwork={this.initLegendNetworkInstance}
-                        />
+                    />
                 </div>
                 <div style={{ position: 'absolute', width: '100%' }}>
                     <Graph graph={{ nodes: this.state.nodes, edges: this.state.links }}
