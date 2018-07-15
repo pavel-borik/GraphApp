@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Graph from '../graph-elements/Graph';
+import GraphVis from '../graph-elements/Graph';
 import CustomProgress from '../gui-elements/CustomProgress';
 import moment from 'moment';
 import CardWrapper from '../card-wrapper/CardWrapper'
@@ -10,9 +10,9 @@ class GraphWrapper extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            graphdata: {},
-            selecteddate: moment(),
-            queriedentity: {},
+            graphData: {},
+            selectedDate: {},
+            selectedNode: {},
         };
     }
 
@@ -35,10 +35,8 @@ class GraphWrapper extends Component {
                     throw new Error('Something went wrong');
                 }
             })
-            .then(data => this.setState({ graphdata: data, queriedentity: data.queriedentity })
+            .then(data => this.setState({ graphData: data, selectedDate: moment(data.config.range.validityfrom, 'DDMMYYYY'), selectedNode: data.queriedentity })
             );
-
-        this.getTimeIntervals();
     }
     componentDidUpdate(prevProps) {
         if (this.props.location.search !== prevProps.location.search) {
@@ -51,48 +49,44 @@ class GraphWrapper extends Component {
                         throw new Error('Something went wrong');
                     }
                 })
-                .then(graphdata => this.setState({ graphdata })
+                .then(graphData => this.setState({ graphData })
                 );
-
-            this.getTimeIntervals();
         }
 
     }
-    getTimeIntervals() {
-        //console.log("fce", this.state.graphdata);
-    }
 
     getSelectedNode = (node) => {
-        this.setState({ queriedentity: node })
+        this.setState({ selectedNode: node })
     }
 
     getSelectedDate = (date) => {
-        this.setState({ selecteddate: date })
+        this.setState({ selectedDate: date })
     }
 
     render() {
 
         //const validityFrom = this.props.location.search.validityFrom.;
         //const validityTo = this.props.location.search.validityTo.toString();
-        console.log(this.state.graphdata);
+        console.log('graphwrapper state',this.state);
         //console.log(this.props.location.pathname+this.props.location.search);
         let graphComponent = null;
         let cardComponent = null;
         let datePickerComponent = null;
-        if (Object.keys(this.state.graphdata).length === 0 && this.state.graphdata.constructor === Object) {
+        if (Object.keys(this.state.graphData).length === 0 && this.state.graphData.constructor === Object) {
             graphComponent = <CustomProgress className={"progress"} />
         } else {
-            graphComponent = <Graph data={this.state.graphdata} selectedDate={this.state.selecteddate} getSelectedNode={this.getSelectedNode} />
-            cardComponent = <CardWrapper queriedentity={this.state.queriedentity} />
+            graphComponent = <GraphVis data={this.state.graphData} selectedDate={this.state.selectedDate} getSelectedNode={this.getSelectedNode} />
+            cardComponent = <CardWrapper selectedNode={this.state.selectedNode} />
             datePickerComponent = <CustomDatePicker getSelectedDate={this.getSelectedDate}
-                                    validityFrom={this.state.graphdata.config.range.validityfrom}
-                                    validityTo={this.state.graphdata.config.range.validityto} />
+                                    selectedDate={this.state.selectedDate}
+                                    validityFrom={this.state.graphData.config.range.validityfrom}
+                                    validityTo={this.state.graphData.config.range.validityto} />
         }
         return (
             <div>
                 <div className="left-gui-elements">
                     <div className="datepicker-container">
-                        <span>Validity: &nbsp; </span> {datePickerComponent}
+                        {datePickerComponent}
                     </div>
                     <div className="card-container">
                         {cardComponent}
