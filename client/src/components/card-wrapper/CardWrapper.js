@@ -6,17 +6,21 @@ class CardWrapper extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            queriedentity: {},
+            selectedNode: {},
         };
     }
 
     componentDidMount() {
-        this.setState({ queriedentity: this.props.queriedentity });
+        this.setState({ selectedNode: this.props.selectedNode });
     }
 
     componentDidUpdate(prevProps) {
-        if (prevProps.queriedentity.id !== this.props.queriedentity.id) {
-            const url = 'api/getdetail?' + 'id=' + this.props.queriedentity.id + '&type=' + this.props.queriedentity.type;
+        console.log('updatecall')
+        console.log(this.props)
+        console.log('----------')
+        if (prevProps.selectedNode.id !== this.props.selectedNode.id) {
+            console.log('updating')
+            const url = 'api/getdetail?' + 'id=' + this.props.selectedNode.id + '&type=' + this.props.selectedNode.type;
             fetch(url)
                 .then((res) => {
                     if (res.ok) {
@@ -25,21 +29,21 @@ class CardWrapper extends Component {
                         throw new Error('Something went wrong');
                     }
                 })
-                .then(queriedentity => this.setState(queriedentity));
+                .then( nodeDetail => this.setState( {selectedNode: nodeDetail.queriedentity} ));
         }
     }
 
     render() {
         return (
             <div>
-                <CustomCard data={this.state.queriedentity} />
+                <CustomCard data={this.state.selectedNode} />
             </div>
         )
     }
 }
 
 CardWrapper.propTypes = {
-    queriedentity: PropTypes.object,
+    selectedNode: PropTypes.object,
 };
 
 

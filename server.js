@@ -28,49 +28,49 @@ let viewDictionary = {
         identifier: "regulation_object",
         direction: "to",
         where: "mba",
-        timedependent:true,
+        timedependent: true,
       },
       "mga": {
         table: "mba_mga_rel",
         identifier: "mga",
         direction: "to",
         where: "mba",
-        timedependent:true,
+        timedependent: true,
       },
       "tso": {
         table: "mba",
         identifier: "tso",
         direction: "from",
         where: "internal_id",
-        timedependent:false,
+        timedependent: false,
       },
       "country": {
         table: "mba",
         identifier: "country",
         direction: "from",
         where: "internal_id",
-        timedependent:false,
+        timedependent: false,
       },
     }
   },
   "ro": {
     "name": "Regulation Object",
-    "table":"ro",
+    "table": "ro",
     "identifier": "internal_id",
   },
   "mga": {
     "name": "Metering Grid Area",
-    "table":"mga",
+    "table": "mga",
     "identifier": "internal_id",
   },
   "tso": {
     "name": "Transmission System Operator",
-    "table":"tso",
+    "table": "tso",
     "identifier": "internal_id",
   },
   "country": {
     "name": "Country",
-    "table":"country",
+    "table": "country",
     "identifier": "iso_code",
   },
 }
@@ -80,7 +80,7 @@ app.get('/api/getdata', (req, res) => {
   let queryString = '';
   let queryParams = [];
   let nodesLegend = [];
-  nodesLegend.push({x: 30, y: 60, id: req.query.type, label: req.query.type, group: "L0", fixed: true, physics: false})
+  nodesLegend.push({ x: 30, y: 60, id: req.query.type, label: req.query.type, group: "L0", fixed: true, physics: false })
   for (let i = 0; i < view.length; i++) {
     //console.log(viewDictionary[req.query.type].rels[view[i]])
     const table = viewDictionary[req.query.type].rels[view[i]].table;
@@ -90,7 +90,7 @@ app.get('/api/getdata', (req, res) => {
     const type = view[i];
     queryString += `select ${identifier} as id, ${identifier} as label, ${i + 1} as "group", "${direction}" as direction, "${type}" as "type", validity_start, validity_end from ${table} where ${where} like ? union `;
     queryParams.push(req.query.id);
-    nodesLegend.push({x: 30, y: 60 + 60 * (i+1), id: view[i], label: view[i], group: "L"+ (i+1), fixed: true, physics: false});
+    nodesLegend.push({ x: 30, y: 60 + 60 * (i + 1), id: view[i], label: view[i], group: "L" + (i + 1), fixed: true, physics: false });
   }
 
   let lastIndex = queryString.trim().lastIndexOf(" ");
@@ -110,22 +110,27 @@ app.get('/api/getdata', (req, res) => {
   db.query(queryString, queryParams, function (err, rows, fields) {
     if (err) throw err;
     rows.map(node => {
-      node.title = createTooltipHtml(node);
+      node.title = createNodeTooltipHtml(node);
     })
     db.query(`select *, "${req.query.type}" as "type" from ${viewDictionary[req.query.type].table} where internal_id = ?`, [req.query.id], function (err2, rows2, fields2) {
       if (err2) throw err2;
-      const queriedEntity = rows2[0];
-      const links = computeLinks(rows, queriedEntity);
-      rows.push({ "id": queriedEntity.Internal_ID, "label": queriedEntity.Name, "type": queriedEntity.type, "group": 0 })
-      queriedEntity.type = viewDictionary[queriedEntity.type].name;
-      res.json({
-        "config": config,
-        "queriedentity": queriedEntity,
-        "graph": {
-          "nodes": rows,
-          "links": links
-        },
-      });
+      if (!rows2.length > 0) {
+        res.json({});
+      } else {
+        const queriedEntity = rows2[0];
+        const links = computeLinks(rows, queriedEntity);
+        rows.push({ "id": queriedEntity.Internal_ID, "label": queriedEntity.Name, "type": queriedEntity.type, "group": 0 })
+        queriedEntity.type = viewDictionary[queriedEntity.type].name;
+        queriedEntity.actions = createNodeActions(queriedEntity);
+        res.json({
+          "config": config,
+          "queriedentity": queriedEntity,
+          "graph": {
+            "nodes": rows,
+            "links": links
+          },
+        });
+      }
     });
   })
 });
@@ -136,26 +141,40 @@ app.get('/api/getdetail', (req, res) => {
   const identifier = viewDictionary[req.query.type].identifier;
   db.query(`select * from ${queriedTable} where ${identifier} = ? `, req.query.id, function (err, rows, fields) {
     if (err) throw err;
-    if(rows.length > 0) {
+    if (rows.length > 0) {
       let result = rows[0];
-      result.type = viewDictionary[ req.query.type ].name;
-    
+      result.type = viewDictionary[req.query.type].name;
+      result.actions = createNodeActions(result);
       res.json({
         "queriedentity": result,
       });
     }
-    
-
   })
 });
 
-function createTooltipHtml(node) {
-   return `<h3> ${node.id} </h3>
+function createNodeTooltipHtml(node) {
+  return `<h3> ${node.id} </h3>
    <ul>
     <li>Validity start: ${node.validity_start}</li>
     <li>Validity end: ${node.validity_end}</li>
    </ul>       
    `;
+}
+
+function createNodeActions(node) {
+  let actions = [
+    {
+      "type": "Edit",
+      "url": "http://localhost:3000"
+    },
+    {
+      "type": "Delete",
+      "url": "http://localhost:3000"
+    }
+  ];
+
+  return actions;
+
 }
 
 app.get('/api/regulationobjects/:id/relationships', (req, res) => {

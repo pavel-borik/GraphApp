@@ -1,19 +1,18 @@
 import Graph from 'react-graph-vis';
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import CustomButton from '../gui-elements/CustomButton'
 import { options } from './GraphOptions'
 import { legendOptions } from './GraphLegendOptions'
 import moment from 'moment';
 
 
-class GraphVis extends PureComponent {
+class GraphVis extends Component {
     constructor(props) {
         super(props);
         this.state = {
             nodes: [],
             links: [],
             legend: [],
-            selectedNode: {},
         }
         const network = null;
         const legendNetwork = null;
@@ -49,12 +48,12 @@ class GraphVis extends PureComponent {
             node.y = coords.y;
             //console.log(node)
         })
-
+        
         if (!prevProps.selectedDate.isSame(this.props.selectedDate)) {
             this.openAllClusters();
             console.log("different dates")
             const displayedNodes = this.props.data.graph.nodes.filter(node => {
-                if (node.group === 0) {
+                if (node.group === 0 || node.validity_end === "unlimited") {
                     return true;
                 } else {
                     return this.props.selectedDate.isBetween(moment(node.validity_start), moment(node.validity_end), "day", []);
@@ -106,7 +105,7 @@ class GraphVis extends PureComponent {
         const param = nodes[0];
         const selectedNode = this.state.nodes.find(node => { return node.id === param; });
         if (selectedNode !== undefined) {
-            this.setState({ selectedNodeId: selectedNode.id });
+            //this.setState({ selectedNodeId: selectedNode.id });
             this.props.getSelectedNode(selectedNode);
         }
         //console.log(selectedNode);
@@ -157,12 +156,12 @@ class GraphVis extends PureComponent {
             this.network.cluster(clusterOptionsByData)
             //this.network.clustering.updateClusteredNode(i, { label: 'Items: '+ totalMass });
         }
-        console.log('taht',this.network.clustering.body.nodes)
+        //console.log('taht',this.network.clustering.body.nodes)
     }
 
     render() {
-        console.log('ntw',this.network);
-        console.log('datset',this.dataset);
+        //console.log('ntw',this.network);
+        //console.log('datset',this.dataset);
 
         const events = {
             selectNode: this.selectNode,

@@ -1,8 +1,10 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
+import CardActions from '@material-ui/core/CardActions';
+import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 
 const styles = {
@@ -24,21 +26,26 @@ const styles = {
   },
 };
 
-class CustomCard extends Component {
-  constructor(props) {
-    super(props);    
-  }
-  
+class CustomCard extends PureComponent {
+
   render() {
     const { classes } = this.props;
     const entityData = this.props.data;
     const entityDataKeys = Object.keys(entityData);
     const entityDataValues = Object.keys(entityData).map(key => entityData[key]);
-
-    var infoElements = [];
-    for(var i = 0; i < entityDataKeys.length; i++) {
+    let infoElements = [];
+    let actionElements = [];
+    
+    for (var i = 0; i < entityDataKeys.length; i++) {
+      if(entityDataKeys[i] === "actions") {
+        entityDataValues[i].map(action => {
+          const button = <Button size="small" color="primary" href={action.url}>{action.type}</Button>
+          actionElements.push(button);
+        });
+        continue;
+      }
       if (entityDataValues[i] === null || entityDataKeys[i] === "type") continue;
-      var listItem = <li key = {i} >{entityDataKeys[i]}: {entityDataValues[i]} </li>
+      const listItem = <li key={i} >{entityDataKeys[i]}: {entityDataValues[i]} </li>
       infoElements.push(listItem);
     }
 
@@ -54,11 +61,14 @@ class CustomCard extends Component {
             </Typography>
             <Typography className={classes.pos} color="textSecondary">
               {entityData.type}
-          </Typography>
+            </Typography>
             <Typography component="p">
               {infoElements}
             </Typography>
           </CardContent>
+          <CardActions>
+            {actionElements}
+          </CardActions>
         </Card>
       </div>
     );
@@ -67,6 +77,7 @@ class CustomCard extends Component {
 
 CustomCard.propTypes = {
   classes: PropTypes.object,
+  data: PropTypes.object
 };
 
 export default withStyles(styles)(CustomCard);
