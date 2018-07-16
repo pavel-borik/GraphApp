@@ -96,14 +96,14 @@ app.get('/api/getdata', (req, res) => {
   let lastIndex = queryString.trim().lastIndexOf(" ");
   queryString = queryString.substring(0, lastIndex);
 
-  let config = {
-    "groupcount": view.length,
+  let configGraph = {
+    "group_count": view.length,
     "legend": {
       "nodes": nodesLegend
     },
     "range": {
-      "validityfrom": req.query.validityFrom,
-      "validityto": req.query.validityTo
+      "validity_from": req.query.validityFrom,
+      "validity_to": req.query.validityTo
     }
   };
 
@@ -112,19 +112,25 @@ app.get('/api/getdata', (req, res) => {
     rows.map(node => {
       node.title = createNodeTooltipHtml(node);
     })
-    db.query(`select *, "${req.query.type}" as "type" from ${viewDictionary[req.query.type].table} where internal_id = ?`, [req.query.id], function (err2, rows2, fields2) {
+    db.query(`select * from ${viewDictionary[req.query.type].table} where internal_id = ?`, [req.query.id], function (err2, rows2, fields2) {
       if (err2) throw err2;
       if (!rows2.length > 0) {
         res.json({});
       } else {
-        const queriedEntity = rows2[0];
-        const links = computeLinks(rows, queriedEntity);
-        rows.push({ "id": queriedEntity.Internal_ID, "label": queriedEntity.Name, "type": queriedEntity.type, "group": 0 })
-        queriedEntity.type = viewDictionary[queriedEntity.type].name;
-        queriedEntity.actions = createNodeActions(queriedEntity);
+        const detail = rows2[0];
+        const links = computeLinks(rows, detail);
+        rows.push({ "id": detail.Internal_ID, "label": detail.Name, "type": req.query.type, "group": 0 })
+        let config = {}
+        config.internal_id = req.query.id;
+        config.name = detail.Name;
+        config.type = viewDictionary[req.query.type].name;
+        config.actions = createNodeActions(detail);
         res.json({
-          "config": config,
-          "queriedentity": queriedEntity,
+          "config": configGraph,
+          "queried_entity": {
+            "basic_info": config,
+            "detail": detail,
+          },
           "graph": {
             "nodes": rows,
             "links": links
@@ -139,26 +145,32 @@ app.get('/api/getdetail', (req, res) => {
   //console.log(req.query);
   const queriedTable = viewDictionary[req.query.type].table;
   const identifier = viewDictionary[req.query.type].identifier;
-  db.query(`select * from ${queriedTable} where ${identifier} = ? `, req.query.id, function (err, rows, fields) {
+  db.query(`select * from ${queriedTable} where ${identifier} = ? limit 1`, req.query.id, function (err, rows, fields) {
     if (err) throw err;
     if (rows.length > 0) {
-      let result = rows[0];
-      result.type = viewDictionary[req.query.type].name;
-      result.actions = createNodeActions(result);
+      const detail = rows[0];
+      let config = {}
+      config.internal_id = req.query.id;
+      config.name = detail.Name;
+      config.type = viewDictionary[req.query.type].name;
+      config.actions = createNodeActions(detail);
       res.json({
-        "queriedentity": result,
+        "queried_entity": {
+          "basic_info": config,
+          "detail": detail,
+        },
       });
     }
   })
 });
 
 function createNodeTooltipHtml(node) {
-  return `<h3> ${node.id} </h3>
+  return (`<h3> ${node.id} </h3>
    <ul>
     <li>Validity start: ${node.validity_start}</li>
     <li>Validity end: ${node.validity_end}</li>
    </ul>       
-   `;
+   `);
 }
 
 function createNodeActions(node) {

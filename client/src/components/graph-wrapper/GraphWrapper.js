@@ -35,7 +35,7 @@ class GraphWrapper extends Component {
                     throw new Error('Something went wrong');
                 }
             })
-            .then(data => this.setState({ graphData: data, selectedDate: moment(data.config.range.validityfrom, 'DDMMYYYY'), selectedNode: data.queriedentity })
+            .then(data => this.setState({ graphData: data, selectedDate: moment(data.config.range.validity_from, 'DDMMYYYY'), selectedNode: data.queried_entity })
             );
     }
     componentDidUpdate(prevProps) {
@@ -79,8 +79,8 @@ class GraphWrapper extends Component {
             cardComponent = <CardWrapper selectedNode={this.state.selectedNode} />
             datePickerComponent = <CustomDatePicker getSelectedDate={this.getSelectedDate}
                                     selectedDate={this.state.selectedDate}
-                                    validityFrom={this.state.graphData.config.range.validityfrom}
-                                    validityTo={this.state.graphData.config.range.validityto} />
+                                    validityFrom={this.state.graphData.config.range.validity_from}
+                                    validityTo={this.state.graphData.config.range.validity_to} />
         }
         return (
             <div>

@@ -6,11 +6,12 @@ class CardWrapper extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            selectedNode: {},
+            selectedNode: this.props.selectedNode,
         };
     }
 
     componentDidMount() {
+        console.log('prp',this.props)
         this.setState({ selectedNode: this.props.selectedNode });
     }
 
@@ -29,11 +30,12 @@ class CardWrapper extends Component {
                         throw new Error('Something went wrong');
                     }
                 })
-                .then( nodeDetail => this.setState( {selectedNode: nodeDetail.queriedentity} ));
+                .then( nodeDetail => this.setState( {selectedNode: nodeDetail.queried_entity} ));
         }
     }
 
     render() {
+        console.log('sleel', this.state.selectedNode)
         return (
             <div>
                 <CustomCard data={this.state.selectedNode} />

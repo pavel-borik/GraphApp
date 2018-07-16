@@ -41,7 +41,7 @@ API ENDPOINTS
     ```javascript
     {
         "config": {
-            "groupcount": // required - number of groups (one group can for example be all the MBA nodes)
+            "group_count": // required - number of groups (one group can for example be all the MBA nodes)
             "legend": {
                 "nodes": [
                     {
@@ -57,25 +57,40 @@ API ENDPOINTS
                 ]
             }
         },
-        "queriedentity": {
-            "type": // required - displayed in the info card (e.g. Market Balance Area)
-            "Name": // required - displayed in the info card
-            //... other attributes...        
+        "queried_entity": {
+           "basic_info": { // all the basic_info attributes are REQUIRED
+                "internal_id": // globally unique id
+                "name": // name of the entity displayed in the info card header
+                "type": // name of the entity displayed in the info card header, e.g. "Market Balance Area",
+                "actions": [
+                    {
+                        "type": // Actions for entity, also the label of corresponding button (for example "Edit")
+                        "url":  // target url
+                    },
+                ]
+            },
+            "detail": {
+                //...all the attributes that should be displayed in the info card...        
+            }
         },
-        "graph": { //connectivity data for visjs
+        "graph": { // connectivity data for visjs, REQUIRED
             "nodes": [
                 {
-                    "id": //required by Visjs - must be unique
+                   "id": // required by Visjs - must be unique
                     "label": // displays name of the node in the graph
                     "group": // required - dictates the settings of the group of nodes (e.g. color, highlight color)
+                    "direction": "to",
+                    "type": "ro", // request parameter type, used to create a URL for getDetail endpoint
+                    "validity_start": // used for node filtering, YYYY-MM-DDTHH:MM format
+                    "validity_end": // used for node filtering, YYYY-MM-DDTHH:MM format
                     "title": // displays in a tooltip, can be html markup
                 },
                 //...other nodes to be displayed...
             ],
             "links": [
                 {
-                    "from": //id of a node, required by Visjs
-                    "to": //id of a node, required by Visjs
+                    "from": // id of a node, required by Visjs
+                    "to": // id of a node, required by Visjs
                 },
                 //...other links between nodes...
             ]
@@ -84,12 +99,12 @@ API ENDPOINTS
     ```
 
 
-  **Content:**  
+  **Response example:**  
 
     ```javascript
     {
         "config": {
-            "groupcount": 4,
+            "group_count": 4,
             "legend": {
                 "nodes": [
                     {
@@ -101,14 +116,38 @@ API ENDPOINTS
                         "fixed": true,
                         "physics": false
                     },
-                    //...other nodes displayed as a legend..///
+                   // ... other nodes ...
                 ]
+            },
+            "range": {
+                "validity_from": "01012017",
+                "validity_to": "30122017"
             }
         },
-        "queriedentity": {
-            "type": "Market balance area",
-            "Name": "SC MBA101",
-            //... other attributes...        
+        "queried_entity": {
+            "basic_info": {
+                "internal_id": "EIC_SC_MBA101",
+                "name": "SC MBA101",
+                "type": "Market Balance Area",
+                "actions": [
+                    {
+                        "type": "Edit",
+                        "url": "http://localhost:3000"
+                    },
+                    {
+                        "type": "Delete",
+                        "url": "http://localhost:3000"
+                    }
+                ]
+            },
+            "detail": {
+                "id": 11,
+                "Validity_Start": "2015-01-01T00:00",
+                "Validity_End": "2021-01-01T00:00",
+                "Gate_Closure_TSO-TSO_Trade_Hour": "12.00",
+                "Gate_Closure_Supportive_Power_Hour": "12.00",
+                // ... other attributes ...
+            }
         },
         "graph": {
             "nodes": [
@@ -117,25 +156,38 @@ API ENDPOINTS
                     "label": "EIC_SC_RO09",
                     "group": 1,
                     "direction": "to",
+                    "type": "ro",
                     "validity_start": "2017-06-30T23:00",
                     "validity_end": "2017-12-31T23:00",
                     "title": "<h3> EIC_SC_RO09 </h3>\n   <ul>\n    <li>Validity start: 2017-06-30T23:00</li>\n    <li>Validity end: 2017-12-31T23:00</li>\n   </ul>       \n   "
                 },
-                //...nodes to be displayed...
                 {
-                    "id": "SC MBA101",
+                    "id": "EIC_SC_RO101",
+                    "label": "EIC_SC_RO101",
+                    "group": 1,
+                    "direction": "to",
+                    "type": "ro",
+                    "validity_start": "2016-12-31T23:00",
+                    "validity_end": "2017-12-31T23:00",
+                    "title": "<h3> EIC_SC_RO101 </h3>\n   <ul>\n    <li>Validity start: 2016-12-31T23:00</li>\n    <li>Validity end: 2017-12-31T23:00</li>\n   </ul>       \n   "
+                },
+                // ... other nodes ...
+
+                { // ... queried node get a group of 0...
+                    "id": "EIC_SC_MBA101",
                     "label": "SC MBA101",
+                    "type": "mba",
                     "group": 0
                 }
             ],
             "links": [
                 {
                     "from": "EIC_SC_RO09",
-                    "to": "SC MBA101"
+                    "to": "EIC_SC_MBA101"
                 },
-                //...links between nodes...
+                // ... other links ...
             ]
-        },
+        }
     }
     ```
  
@@ -183,30 +235,56 @@ ____
   **Response structure:** 
 
     ```javascript
-    {
-        "queriedentity": {
-            "Name": //required - displayed in the info card heading
-            "type": //required - displayed in the info card sub-heading
-            //... other attributes that should be displayed in the info card...
-            }
-    }
+    "queried_entity": {
+        "basic_info": { // all the basic_info attributes are REQUIRED
+            "internal_id": // globally unique id
+            "name": // name of the entity displayed in the info card header
+            "type": // name of the entity displayed in the info card header, e.g. "Market Balance Area",
+            "actions": [
+                {
+                    "type": // Actions for entity, also the label of corresponding button (for example "Edit")
+                    "url":  // target url
+                },
+            ]
+        },
+        "detail": {
+            //...all the attributes that should be displayed in the info card...        
+        }
+    },
     ```
 
-  **Content:**  
+  **Response example:**  
 
     ```javascript
     {
-        "queriedentity": {
-            "id": 3,
-            "Validity_Start": "2015-05-31T23:00",
-            "Validity_End": "2020-12-31T23:00",
-            "Coding_Scheme": "EIC",
-            "MGA_Type": "DISTRIBUTION",
-            "Short_name": null,
-            "Name": "SC MGA102",
-            "Code": "SC_MGA102",
-            "Internal_ID": "EIC_SC_MGA102"
+        "queried_entity": {
+            "basic_info": {
+                "internal_id": "EIC_SC_MGA102",
+                "name": "SC MGA102",
+                "type": "Metering Grid Area",
+                "actions": [
+                    {
+                        "type": "Edit",
+                        "url": "http://localhost:3000"
+                    },
+                    {
+                        "type": "Delete",
+                        "url": "http://localhost:3000"
+                    }
+                ]
+            },
+            "detail": {
+                "id": 3,
+                "Validity_Start": "2015-05-31T23:00",
+                "Validity_End": "2020-12-31T23:00",
+                "Coding_Scheme": "EIC",
+                "MGA_Type": "DISTRIBUTION",
+                "Short_name": null,
+                "Name": "SC MGA102",
+                "Code": "SC_MGA102",
+                "Internal_ID": "EIC_SC_MGA102"
             }
+        }
     }
     ```
  

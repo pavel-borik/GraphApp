@@ -31,22 +31,21 @@ class CustomCard extends PureComponent {
   render() {
     const { classes } = this.props;
     const entityData = this.props.data;
-    const entityDataKeys = Object.keys(entityData);
-    const entityDataValues = Object.keys(entityData).map(key => entityData[key]);
-    let infoElements = [];
+    console.log('awfgawe', entityData)
+    const entityDetailKeys = Object.keys(entityData.detail);
+    const entityDetailValues = Object.keys(entityData.detail).map(key => entityData.detail[key]);
+    let detailElements = [];
     let actionElements = [];
-    
-    for (var i = 0; i < entityDataKeys.length; i++) {
-      if(entityDataKeys[i] === "actions") {
-        entityDataValues[i].map(action => {
-          const button = <Button size="small" color="primary" href={action.url}>{action.type}</Button>
-          actionElements.push(button);
-        });
-        continue;
-      }
-      if (entityDataValues[i] === null || entityDataKeys[i] === "type") continue;
-      const listItem = <li key={i} >{entityDataKeys[i]}: {entityDataValues[i]} </li>
-      infoElements.push(listItem);
+
+    entityData.basic_info.actions.map(action => {
+      const button = <Button size="small" color="primary" href={action.url}>{action.type}</Button>
+      actionElements.push(button);
+    });
+
+    for (var i = 0; i < entityDetailKeys.length; i++) {
+      if (entityDetailValues[i] === null) continue;
+      const listItem = <li key={i} >{entityDetailKeys[i]}: {entityDetailValues[i]} </li>
+      detailElements.push(listItem);
     }
 
     return (
@@ -57,13 +56,13 @@ class CustomCard extends PureComponent {
               Entity information:
           </Typography>
             <Typography variant="headline" component="h2">
-              {entityData.Name}
+              {entityData.basic_info.name}
             </Typography>
             <Typography className={classes.pos} color="textSecondary">
-              {entityData.type}
+              {entityData.basic_info.type}
             </Typography>
             <Typography component="p">
-              {infoElements}
+              {detailElements}
             </Typography>
           </CardContent>
           <CardActions>

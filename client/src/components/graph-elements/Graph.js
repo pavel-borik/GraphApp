@@ -120,7 +120,7 @@ class GraphVis extends Component {
     }
 
     clusterByGroup = () => {
-        const groupcount = this.props.data.config.groupcount;
+        const groupcount = this.props.data.config.group_count;
         let clusterOptionsByData;
         let colors = ["red", "green", "blue", "#6b486b", "#a05d56"];
         for (let i = 1; i <= groupcount; i++) {
