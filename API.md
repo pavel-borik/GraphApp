@@ -16,8 +16,8 @@ API ENDPOINTS
  
    `id=[String]` - Unique identifier of the queried entity  
    `type=[String]` - Type of the entity (e.g. MBA, MGA or TSO) - used as a table name (?)  
-   `validFrom=[String]` - Initial date of the queried relationships in a DDMMYYYY format  
-   `validTo=[String]` - Final date of the queried relationships in a DDMMYYYY format  
+   `validFrom=[String]` - Initial date of the queried relationships in a YYYYMMDD format  
+   `validTo=[String]` - Final date of the queried relationships in a YYYYMMDD format  
    `view=[String]` - Comma-separated list of entitity types in a relationship with the queried entity, that are supposed to be displayed in a graph  
    
 

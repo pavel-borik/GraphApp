@@ -35,7 +35,7 @@ class GraphWrapper extends Component {
                     throw new Error('Something went wrong');
                 }
             })
-            .then(data => this.setState({ graphData: data, selectedDate: moment(data.config.range.validity_from, 'DDMMYYYY'), selectedNode: data.queried_entity })
+            .then(data => this.setState({ graphData: data, selectedDate: moment(data.config.range.validity_from, 'YYYYMMDD'), selectedNode: data.queried_entity })
             );
     }
     componentDidUpdate(prevProps) {
