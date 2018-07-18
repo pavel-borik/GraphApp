@@ -24,13 +24,14 @@ class GraphVis extends Component {
             let coords = this.legendNetwork.DOMtoCanvas({ x: node.x, y: node.y });
             node.x = coords.x;
             node.y = coords.y;
+            return node;
         })
 
         const displayedNodes = this.props.data.graph.nodes.filter(node => {
             if (node.group === 0) {
                 return true;
             } else {
-                return this.props.selectedDate.isBetween(moment(node.validity_start), moment(node.validity_end), "day", []);
+                return this.props.selectedDate.isBetween(moment(node.validity_start), node.validity_end !== "unlimited" ? moment(node.validity_end) : moment(),'day', '[)');
             }
         });
 
@@ -42,29 +43,24 @@ class GraphVis extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        this.props.data.config.legend.nodes.map(node => {
-            let coords = this.legendNetwork.DOMtoCanvas({ x: node.x, y: node.y });
-            node.x = coords.x;
-            node.y = coords.y;
-            //console.log(node)
-        })
         
         if (!prevProps.selectedDate.isSame(this.props.selectedDate)) {
-            this.openAllClusters();
-            console.log("different dates")
+            
             const displayedNodes = this.props.data.graph.nodes.filter(node => {
-                if (node.group === 0 || node.validity_end === "unlimited") {
+                if (node.group === 0) {
                     return true;
                 } else {
-                    return this.props.selectedDate.isBetween(moment(node.validity_start), moment(node.validity_end), "day", []);
+                    return this.props.selectedDate.isBetween(moment(node.validity_start), node.validity_end !== "unlimited" ? moment(node.validity_end) : moment(), 'day', '[)');
                 }
             });
-
-            this.setState({
-                nodes: displayedNodes, links: this.props.data.graph.links, legend: this.props.data.config.legend.nodes
-            }, () => {
-                this.clusterByGroup();
-            });
+            console.log("displayed nodes", displayedNodes)
+            if(displayedNodes.length === this.state.nodes.length) {
+                if(JSON.stringify(displayedNodes) !== JSON.stringify(this.state.nodes)) {
+                    this.setState({nodes: displayedNodes}, () => {this.openAllClusters(); this.clusterByGroup()});
+                }
+            } else {
+                this.setState({nodes: displayedNodes}, () => {this.openAllClusters(); this.clusterByGroup()});
+            }
         }
     }
 
@@ -93,7 +89,7 @@ class GraphVis extends Component {
     }
 
     openAllClusters = () => {
-        Object.keys(this.network.clustering.body.nodes).map( node => {
+        Object.keys(this.network.clustering.body.nodes).forEach( node => {
             if (this.network.isCluster(node) === true) {
                 this.network.openCluster(node);
             }
@@ -122,11 +118,11 @@ class GraphVis extends Component {
     clusterByGroup = () => {
         const groupcount = this.props.data.config.group_count;
         let clusterOptionsByData;
-        let colors = ["red", "green", "blue", "#6b486b", "#a05d56"];
         for (let i = 1; i <= groupcount; i++) {
             clusterOptionsByData = {
-                joinCondition: (childOptions) => {
-                    return childOptions.group === i;
+                joinCondition: (nodeOptions) => {
+                    //console.log('childoptions', nodeOptions)
+                    return nodeOptions.group === i;
                 },
                 processProperties: (clusterOptions, childNodes, childEdges) => {
                     clusterOptions.label = 'Node count:\n' + '<b>' + childNodes.length + '</b>';
@@ -138,7 +134,6 @@ class GraphVis extends Component {
                     borderWidth: 3,
                     shape: 'circle',
                     labelHighlightBold: false,
-                    color: colors[i],
                     font: {
                         face: 'georgia',
                         color: "white",

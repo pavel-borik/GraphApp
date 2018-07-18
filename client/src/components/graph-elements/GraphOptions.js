@@ -47,11 +47,11 @@ export const options = {
     physics: {
         enabled: true,
         forceAtlas2Based: {
-            gravitationalConstant: -500,
-            centralGravity: 0.05,
-            springConstant: 0.01,
-            springLength: 50,
-            damping: 0.6,
+            gravitationalConstant: -200,
+            centralGravity: 0.03,
+            springConstant: 0.004,
+            springLength: 30,
+            damping: 0.9,
             avoidOverlap: 0
         },
         solver: 'forceAtlas2Based',
