@@ -10,11 +10,6 @@ class CardWrapper extends Component {
         };
     }
 
-    componentDidMount() {
-        console.log('prp',this.props)
-        this.setState({ selectedNode: this.props.selectedNode });
-    }
-
     componentDidUpdate(prevProps) {
         console.log('updatecall')
         console.log(this.props)
@@ -35,10 +30,10 @@ class CardWrapper extends Component {
     }
 
     render() {
-        console.log('sleel', this.state.selectedNode)
+        console.log('sleel', this.props.selectedNode)
         return (
             <div>
-                <CustomCard data={this.state.selectedNode} />
+                {Object.keys(this.state.selectedNode)[0] !=="error" ? <CustomCard data={this.state.selectedNode} /> : null } 
             </div>
         )
     }

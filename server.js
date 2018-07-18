@@ -88,7 +88,11 @@ app.get('/api/getdata', (req, res) => {
     const direction = viewDictionary[req.query.type].rels[view[i]].direction;
     const where = viewDictionary[req.query.type].rels[view[i]].where;
     const type = view[i];
-    queryString += `select ${identifier} as id, ${identifier} as label, ${i + 1} as "group", "${direction}" as direction, "${type}" as "type", validity_start, validity_end from ${table} where ${where} like ? union `;
+    queryString += 
+      `select ${identifier} as id, ${identifier} as label, ${i + 1} as "group",
+      "${direction}" as direction, "${type}" as "type", validity_start, validity_end
+      from ${table} where ${where} like ?
+      union `;
     queryParams.push(req.query.id);
     nodesLegend.push({ x: 30, y: 60 + 60 * (i + 1), id: view[i], label: view[i], group: "L" + (i + 1), fixed: true, physics: false });
   }
@@ -159,6 +163,12 @@ app.get('/api/getdetail', (req, res) => {
           "basic_info": config,
           "detail": detail,
         },
+      });
+    } else {
+      res.json({
+        "queried_entity": {
+          "error": "entity not found"
+        }
       });
     }
   })
