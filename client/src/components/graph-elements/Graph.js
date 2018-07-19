@@ -31,7 +31,7 @@ class GraphVis extends Component {
             if (node.group === 0) {
                 return true;
             } else {
-                return this.props.selectedDate.isBetween(moment(node.validity_start), node.validity_end !== "unlimited" ? moment(node.validity_end) : moment(),'day', '[)');
+                return this.props.selectedDate.isBetween(moment(node.validity_start), node.validity_end !== "unlimited" ? moment(node.validity_end) : moment(), 'day', '[)');
             }
         });
 
@@ -43,9 +43,34 @@ class GraphVis extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        
-        if (!prevProps.selectedDate.isSame(this.props.selectedDate)) {
-            
+        if (JSON.stringify(this.props.data.graph.nodes) === JSON.stringify(prevProps.data.graph.nodes)) {
+            if (!prevProps.selectedDate.isSame(this.props.selectedDate)) {
+                console.log("updooting")
+                const displayedNodes = this.props.data.graph.nodes.filter(node => {
+                    if (node.group === 0) {
+                        return true;
+                    } else {
+                        return this.props.selectedDate.isBetween(moment(node.validity_start), node.validity_end !== "unlimited" ? moment(node.validity_end) : moment(), 'day', '[)');
+                    }
+                });
+                console.log("displayed nodes", displayedNodes)
+                if (displayedNodes.length === this.state.nodes.length) {
+                    if (JSON.stringify(displayedNodes) !== JSON.stringify(this.state.nodes)) {
+                        this.setState({ nodes: displayedNodes }, () => { this.openAllClusters(); this.clusterByGroup() });
+                    } else { console.log("actually not updating") }
+                } else {
+                    this.setState({ nodes: displayedNodes }, () => { this.openAllClusters(); this.clusterByGroup() });
+                }
+            }
+        } else {
+            console.log("new data coming trough")
+            this.props.data.config.legend.nodes.map(node => {
+                let coords = this.legendNetwork.DOMtoCanvas({ x: node.x, y: node.y });
+                node.x = coords.x;
+                node.y = coords.y;
+                return node;
+            });
+
             const displayedNodes = this.props.data.graph.nodes.filter(node => {
                 if (node.group === 0) {
                     return true;
@@ -53,15 +78,17 @@ class GraphVis extends Component {
                     return this.props.selectedDate.isBetween(moment(node.validity_start), node.validity_end !== "unlimited" ? moment(node.validity_end) : moment(), 'day', '[)');
                 }
             });
-            console.log("displayed nodes", displayedNodes)
-            if(displayedNodes.length === this.state.nodes.length) {
-                if(JSON.stringify(displayedNodes) !== JSON.stringify(this.state.nodes)) {
-                    this.setState({nodes: displayedNodes}, () => {this.openAllClusters(); this.clusterByGroup()});
-                }
-            } else {
-                this.setState({nodes: displayedNodes}, () => {this.openAllClusters(); this.clusterByGroup()});
-            }
+
+            this.setState({
+                nodes: displayedNodes, links: this.props.data.graph.links, legend: this.props.data.config.legend.nodes
+            }, () => {
+                this.openAllClusters();
+                this.clusterByGroup();
+            });
         }
+
+
+
     }
 
     initNetworkInstance = (networkInstance) => {
@@ -73,7 +100,7 @@ class GraphVis extends Component {
             }
         });
 
-        this.network = networkInstance;        
+        this.network = networkInstance;
 
         //console.log(this.network);
     }
@@ -89,7 +116,7 @@ class GraphVis extends Component {
     }
 
     openAllClusters = () => {
-        Object.keys(this.network.clustering.body.nodes).forEach( node => {
+        Object.keys(this.network.clustering.body.nodes).forEach(node => {
             if (this.network.isCluster(node) === true) {
                 this.network.openCluster(node);
             }
@@ -166,18 +193,15 @@ class GraphVis extends Component {
         //console.log("data", this.state.nodes)
         return (
             <div>
-                <div style={{ display: 'flex' }}>
-                    <CustomButton onClick={this.clusterByGroup} name={'Cluster'} />
-                    <CustomButton onClick={this.fitToScreen} name={'Fit graph'} />
-                </div>
-                <div style={{ position: 'absolute', width: '100%' }}>
+
+                <div style={{ width: '20%', position: 'absolute' }}>
                     <Graph graph={{ nodes: this.state.legend, edges: [] }}
                         options={legendOptions}
-                        style={{ height: "800px" }}
+                        style={{ height: "800px"}}
                         getNetwork={this.initLegendNetworkInstance}
                     />
                 </div>
-                <div style={{ position: 'absolute', width: '100%' }}>
+                <div style={{ width: '73%' , position: 'absolute'}}>
                     <Graph graph={{ nodes: this.state.nodes, edges: this.state.links }}
                         options={options}
                         events={events}
@@ -185,7 +209,10 @@ class GraphVis extends Component {
                         getNetwork={this.initNetworkInstance}
                         getNodes={this.initDatasetInstance} />
                 </div>
-
+                <div style={{ display: 'flex'}}>
+                    <CustomButton onClick={this.clusterByGroup} name={'Cluster'} />
+                    <CustomButton onClick={this.fitToScreen} name={'Fit to screen'} />
+                </div>
             </div>
         )
 

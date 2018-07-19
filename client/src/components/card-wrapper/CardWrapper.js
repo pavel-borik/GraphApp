@@ -6,17 +6,15 @@ class CardWrapper extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            selectedNode: this.props.selectedNode,
+            nodeDetail: this.props.selectedNode,
         };
     }
 
     componentDidUpdate(prevProps) {
-        console.log('updatecall')
-        console.log(this.props)
-        console.log('----------')
-        if (prevProps.selectedNode.id !== this.props.selectedNode.id) {
-            console.log('updating')
-            const url = 'api/getdetail?' + 'id=' + this.props.selectedNode.id + '&type=' + this.props.selectedNode.type;
+        console.log(this.props.hasOwnProperty('basic_info'));
+        if (this.props.selectedNode.hasOwnProperty('basic_info')) {
+            if (prevProps.selectedNode.basic_info.internal_id !== this.props.selectedNode.basic_info.internal_id) {
+            const url = 'api/getdetail?' + 'id=' + this.props.selectedNode.basic_info.internal_id + '&type=' + this.props.selectedNode.basic_info.type;
             fetch(url)
                 .then((res) => {
                     if (res.ok) {
@@ -25,15 +23,30 @@ class CardWrapper extends Component {
                         throw new Error('Something went wrong');
                     }
                 })
-                .then( nodeDetail => this.setState( {selectedNode: nodeDetail.queried_entity} ));
+                .then(nodeDetailData => this.setState({ nodeDetail: nodeDetailData.queried_entity }));
+            }
+        } else {
+            if (prevProps.selectedNode.id !== this.props.selectedNode.id) {
+                console.log('prevprops', prevProps)
+                console.log('thisprops', this.props)
+                const url = 'api/getdetail?' + 'id=' + this.props.selectedNode.id + '&type=' + this.props.selectedNode.type;
+                fetch(url)
+                    .then((res) => {
+                        if (res.ok) {
+                            return res.json();
+                        } else {
+                            throw new Error('Something went wrong');
+                        }
+                    })
+                    .then(nodeDetailData => this.setState({ nodeDetail: nodeDetailData.queried_entity }));
+            }
         }
     }
 
     render() {
-        console.log('sleel', this.props.selectedNode)
         return (
             <div>
-                {Object.keys(this.state.selectedNode)[0] !=="error" ? <CustomCard data={this.state.selectedNode} /> : null } 
+                {Object.keys(this.state.nodeDetail)[0] !== "error" ? <CustomCard data={this.state.nodeDetail} /> : null}
             </div>
         )
     }
