@@ -1,7 +1,6 @@
 export const legendOptions = {
     autoResize:  true,
-    height: '100%',
-    width: '100%',
+
     nodes: {
         borderWidth: 0,
         shape: 'dot',

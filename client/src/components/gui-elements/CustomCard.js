@@ -8,15 +8,7 @@ import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 
 const styles = {
-  card: {
-    minWidth: 400,
-    maxWidth: 400
-  },
-  bullet: {
-    display: 'inline-block',
-    margin: '0 2px',
-    transform: 'scale(0.8)',
-  },
+
   title: {
     marginBottom: 16,
     fontSize: 14,
@@ -24,6 +16,11 @@ const styles = {
   pos: {
     marginBottom: 12,
   },
+  uldetail: {
+    listStyleType: 'none',
+    padding:0,
+    margin:0
+  }
 };
 
 class CustomCard extends PureComponent {
@@ -59,11 +56,11 @@ class CustomCard extends PureComponent {
               {entityData.basic_info.name}
             </Typography>
             <Typography className={classes.pos} color="textSecondary">
-              {entityData.basic_info.type}
+              {entityData.basic_info.type_full}
             </Typography>
-            <Typography component="p">
-              {detailElements}
-            </Typography>
+              <ul className={classes.uldetail}>
+                {detailElements}
+              </ul>
           </CardContent>
           <CardActions>
             {actionElements}

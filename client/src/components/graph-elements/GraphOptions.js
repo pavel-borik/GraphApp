@@ -1,7 +1,6 @@
 export const options = {
     autoResize: true,
-    height: '100%',
-    width: '100%',
+
     nodes: {
         borderWidth: 1,
         borderWidthSelected: 5,

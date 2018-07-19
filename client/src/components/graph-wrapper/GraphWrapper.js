@@ -5,6 +5,8 @@ import moment from 'moment';
 import CardWrapper from '../card-wrapper/CardWrapper'
 import './GraphWrapper.css';
 import CustomDatePicker from '../gui-elements/CustomDatePicker';
+import { Link } from 'react-router-dom';
+
 
 class GraphWrapper extends Component {
     constructor(props) {
@@ -49,7 +51,7 @@ class GraphWrapper extends Component {
                         throw new Error('Something went wrong');
                     }
                 })
-                .then(graphData => this.setState({ graphData })
+                .then(data => this.setState({ graphData: data, selectedDate: moment(data.config.range.validity_from, 'YYYYMMDD'), selectedNode: data.queried_entity })
                 );
         }
 
@@ -67,7 +69,7 @@ class GraphWrapper extends Component {
 
         //const validityFrom = this.props.location.search.validityFrom.;
         //const validityTo = this.props.location.search.validityTo.toString();
-        console.log('graphwrapper state',this.state);
+        console.log('graphwrapper state', this.state);
         //console.log(this.props.location.pathname+this.props.location.search);
         let graphComponent = null;
         let cardComponent = null;
@@ -78,21 +80,23 @@ class GraphWrapper extends Component {
             graphComponent = <GraphVis data={this.state.graphData} selectedDate={this.state.selectedDate} getSelectedNode={this.getSelectedNode} />
             cardComponent = <CardWrapper selectedNode={this.state.selectedNode} />
             datePickerComponent = <CustomDatePicker getSelectedDate={this.getSelectedDate}
-                                    selectedDate={this.state.selectedDate}
-                                    validityFrom={this.state.graphData.config.range.validity_from}
-                                    validityTo={this.state.graphData.config.range.validity_to} />
+                selectedDate={this.state.selectedDate}
+                validityFrom={this.state.graphData.config.range.validity_from}
+                validityTo={this.state.graphData.config.range.validity_to} />
         }
         return (
-            <div>
+            <div className="base-container">
                 <div className="left-gui-elements">
                     <div className="datepicker-container">
                         {datePickerComponent}
                     </div>
                     <div className="card-container">
                         {cardComponent}
+                        <Link className="link" to="/getData?id=EIC_10YFI_1________U&type=mba&validityFrom=20160101&validityTo=20180101&view=ro,mga,tso,country">Link 1</Link>
+                        <Link className="link" to="/getData?id=EIC_10YFI_1________U&type=mba&validityFrom=20160101&validityTo=20180101&view=ro,mga,tso">Link 2</Link>
                     </div>
                 </div>
-                <div className="graph-div">
+                <div className="graph-container">
                     {graphComponent}
                 </div>
             </div>

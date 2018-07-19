@@ -15,7 +15,6 @@ const styles = theme => ({
   root: {
     display: 'flex',
     justifyContent: 'center',
-    alignItems: 'flex-end',
   },
   button: {
     height: '40px',

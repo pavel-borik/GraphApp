@@ -80,23 +80,25 @@ app.get('/api/getdata', (req, res) => {
   let queryString = '';
   let queryParams = [];
   let nodesLegend = [];
-  nodesLegend.push({ x: 30, y: 60, id: req.query.type, label: req.query.type, group: "L0", fixed: true, physics: false })
+  nodesLegend.push({ x: 30, y: 80, id: req.query.type, label: req.query.type, group: "L0", fixed: true, physics: false })
   for (let i = 0; i < view.length; i++) {
     //console.log(viewDictionary[req.query.type].rels[view[i]])
     const table = viewDictionary[req.query.type].rels[view[i]].table;
+    const joinTable = viewDictionary[view[i]].table;
+    const joinIdentifier =  viewDictionary[view[i]].identifier;
     const identifier = viewDictionary[req.query.type].rels[view[i]].identifier;
     const direction = viewDictionary[req.query.type].rels[view[i]].direction;
     const where = viewDictionary[req.query.type].rels[view[i]].where;
     const type = view[i];
     queryString += 
-      `select ${identifier} as id, ${identifier} as label, ${i + 1} as "group",
-      "${direction}" as direction, "${type}" as "type", validity_start, validity_end
-      from ${table} where ${where} like ?
+      `select x.${identifier} as id, y.name as label, ${i + 1} as "group",
+      "${direction}" as direction, "${type}" as "type", x.validity_start, x.validity_end
+      from ${table} x left join ${joinTable} y on x.${identifier} = y.${joinIdentifier} where x.${where} like ?
       union `;
     queryParams.push(req.query.id);
-    nodesLegend.push({ x: 30, y: 60 + 60 * (i + 1), id: view[i], label: view[i], group: "L" + (i + 1), fixed: true, physics: false });
+    nodesLegend.push({ x: 30, y: 80 + 60 * (i + 1), id: view[i], label: view[i], group: "L" + (i + 1), fixed: true, physics: false });
   }
-
+  console.log(queryString)
   let lastIndex = queryString.trim().lastIndexOf(" ");
   queryString = queryString.substring(0, lastIndex);
 
@@ -127,7 +129,8 @@ app.get('/api/getdata', (req, res) => {
         let config = {}
         config.internal_id = req.query.id;
         config.name = detail.Name;
-        config.type = viewDictionary[req.query.type].name;
+        config.type_full = viewDictionary[req.query.type].name;
+        config.type = viewDictionary[req.query.type].table;
         config.actions = createNodeActions(detail);
         res.json({
           "config": configGraph,
@@ -156,7 +159,8 @@ app.get('/api/getdetail', (req, res) => {
       let config = {}
       config.internal_id = req.query.id;
       config.name = detail.Name;
-      config.type = viewDictionary[req.query.type].name;
+      config.type_full = viewDictionary[req.query.type].name;
+      config.type = viewDictionary[req.query.type].table;
       config.actions = createNodeActions(detail);
       res.json({
         "queried_entity": {

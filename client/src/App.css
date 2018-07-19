@@ -1,14 +1,4 @@
 .App {
-  max-width: 80%;
+  max-width: 100%;
   margin: auto;
-}
-
-.Buttondiv {
-  position: relative;
-  display: flex;
-  margin-top: 20px;
-}
-
-.Graphdiv {
-  margin-top: 0px;
 }
