@@ -26,15 +26,13 @@ const styles = {
 class CustomCard extends PureComponent {
 
   render() {
-    const { classes } = this.props;
-    const entityData = this.props.data;
-    console.log('awfgawe', entityData)
-    const entityDetailKeys = Object.keys(entityData.detail);
-    const entityDetailValues = Object.keys(entityData.detail).map(key => entityData.detail[key]);
+    const { classes, header, actions, detail } = this.props;
+    const entityDetailKeys = Object.keys(detail);
+    const entityDetailValues = Object.keys(detail).map(key => detail[key]);
     let detailElements = [];
     let actionElements = [];
 
-    entityData.basic_info.actions.map(action => {
+    actions.forEach(action => {
       const button = <Button size="small" color="primary" href={action.url}>{action.type}</Button>
       actionElements.push(button);
     });
@@ -53,10 +51,10 @@ class CustomCard extends PureComponent {
               Entity information:
           </Typography>
             <Typography variant="headline" component="h2">
-              {entityData.basic_info.name}
+              {header.name}
             </Typography>
             <Typography className={classes.pos} color="textSecondary">
-              {entityData.basic_info.type_full}
+              {header.type}
             </Typography>
               <ul className={classes.uldetail}>
                 {detailElements}

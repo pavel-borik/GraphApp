@@ -1,10 +1,10 @@
-API ENDPOINTS
-----
-  <_Additional information about your API call. Try to use verbs that match both request type (fetching vs modifying) and plurality (one vs multiple)._>
+# API ENDPOINTS
+
+## Get Data
 
 * **URL**
 
-  `/api/getData`
+  `/api/getdata`
 
 * **Method:**
 
@@ -12,25 +12,23 @@ API ENDPOINTS
   
 *  **URL Params**
 
-* **Required:**
+   **Required:**
  
    `id=[String]` - Unique identifier of the queried entity  
-   `type=[String]` - Type of the entity (e.g. MBA, MGA or TSO) - used as a table name (?)  
+   `type=[String]` - Type of the entity (e.g. MBA, MGA or TSO) - used to identify a table name (?)  
    `validFrom=[String]` - Initial date of the queried relationships in a YYYYMMDD format  
    `validTo=[String]` - Final date of the queried relationships in a YYYYMMDD format  
-   `view=[String]` - Comma-separated list of entitity types in a relationship with the queried entity, that are supposed to be displayed in a graph  
+   `view=[String]` - Comma-separated list of entitity types in a relationship with the queried entity, that are supposed to be displayed in the graph  
    
 
-*   **Optional:**
+   **Optional:**
 
 *   **Request example:**
 
-    `/api/getData?id=EIC_SC_MBA101&type=mba&validityFrom=01012017&validityTo=30122017&view=ro,mga,tso,country`
+    `/api/getdata?id=EIC_SC_MBA101&type=mba&validityFrom=01012017&validityTo=30122017&view=ro,mga,tso,country`
 
 
 * **Data Params**
-
-  <_If making a post request, what should the body payload look like? URL Params rules apply here too._>
 
 * **Success Response:**
 
@@ -50,25 +48,21 @@ API ENDPOINTS
                         "id": // unique id - required by Visjs
                         "label": // node label to be displayed
                         "group": // group id for node styling
-                        "fixed": true, //visjs settings
-                        "physics": false //visjs settings
                     },
                     //...other nodes displayed as a legend...//
                 ]
             }
         },
         "queried_entity": {
-           "basic_info": { // all the basic_info attributes are REQUIRED
-                "internal_id": // globally unique id
-                "name": // name of the entity displayed in the info card header
-                "type": // name of the entity displayed in the info card header, e.g. "Market Balance Area",
-                "actions": [
-                    {
-                        "type": // Actions for entity, also the label of corresponding button (for example "Edit")
-                        "url":  // target url
-                    },
-                ]
-            },
+            "id": // globally unique id
+            "name": // name of the entity displayed in the info card header
+            "type": // name of the entity displayed in the info card subheader, e.g. "Market Balance Area",
+            "actions": [
+                {
+                    "type": // Actions for entity, also the label of corresponding button (for example "Edit")
+                    "url":  // target url
+                },
+            ],
             "detail": {
                 //...all the attributes that should be displayed in the info card...        
             }
@@ -76,7 +70,7 @@ API ENDPOINTS
         "graph": { // connectivity data for visjs, REQUIRED
             "nodes": [
                 {
-                   "id": // required by Visjs - must be unique
+                    "id": // required by Visjs - must be unique
                     "label": // displays name of the node in the graph
                     "group": // required - dictates the settings of the group of nodes (e.g. color, highlight color)
                     "direction": "to",
@@ -113,8 +107,6 @@ API ENDPOINTS
                         "id": "mba",
                         "label": "mba",
                         "group": "L0",
-                        "fixed": true,
-                        "physics": false
                     },
                    // ... other nodes ...
                 ]
@@ -124,22 +116,20 @@ API ENDPOINTS
                 "validity_to": "30122017"
             }
         },
-        "queried_entity": {
-            "basic_info": {
-                "internal_id": "EIC_SC_MBA101",
-                "name": "SC MBA101",
-                "type": "Market Balance Area",
-                "actions": [
-                    {
-                        "type": "Edit",
-                        "url": "http://localhost:3000"
-                    },
-                    {
-                        "type": "Delete",
-                        "url": "http://localhost:3000"
-                    }
-                ]
-            },
+        "queried_entity": {            
+            "id": "EIC_SC_MBA101",
+            "name": "SC MBA101",
+            "type": "Market Balance Area",
+            "actions": [
+                {
+                    "type": "Edit",
+                    "url": "http://localhost:3000"
+                },
+                {
+                    "type": "Delete",
+                    "url": "http://localhost:3000"
+                }
+            ] 
             "detail": {
                 "id": 11,
                 "Validity_Start": "2015-01-01T00:00",
@@ -202,9 +192,12 @@ API ENDPOINTS
 
 * **Notes:**
 ____
+
+## Get Detail
+
 * **URL**
 
-  `/api/getDetail`
+  `/api/getdetail`
 
 * **Method:**
 
@@ -212,17 +205,17 @@ ____
   
 *  **URL Params**
 
-* **Required:**
+   **Required:**
  
    `id=[String]` - Unique identifier of the queried entity  
-   `type=[String]` - Type of the entity (e.g. MBA, MGA or TSO) - used as a table name (?)
+   `type=[String]` - Type of the entity (e.g. MBA, MGA or TSO) - used to identify a table name (?)
    
 
-*   **Optional:**
+   **Optional:**
 
 *   **Request example:**
 
-    `/api/getDetail?id=EIC_SC_MBA101&type=mba`
+    `/api/getdetail?id=EIC_SC_MBA101&type=mba`
 
 
 * **Data Params**
@@ -235,22 +228,23 @@ ____
   **Response structure:** 
 
     ```javascript
-    "queried_entity": {
-        "basic_info": { // all the basic_info attributes are REQUIRED
-            "internal_id": // globally unique id
+    {
+        "queried_entity": {
+            "id": // globally unique id
             "name": // name of the entity displayed in the info card header
-            "type": // name of the entity displayed in the info card header, e.g. "Market Balance Area",
+            "type": // name of the entity displayed in the info card subheader, e.g. "Market Balance Area",
             "actions": [
                 {
                     "type": // Actions for entity, also the label of corresponding button (for example "Edit")
                     "url":  // target url
                 },
-            ]
+            ],
+            "detail": {
+                //...all the attributes that should be displayed in the info card...        
+            }
         },
-        "detail": {
-            //...all the attributes that should be displayed in the info card...        
-        }
-    },
+    }
+
     ```
 
   **Response example:**  
@@ -258,21 +252,21 @@ ____
     ```javascript
     {
         "queried_entity": {
-            "basic_info": {
-                "internal_id": "EIC_SC_MGA102",
-                "name": "SC MGA102",
-                "type": "Metering Grid Area",
-                "actions": [
-                    {
-                        "type": "Edit",
-                        "url": "http://localhost:3000"
-                    },
-                    {
-                        "type": "Delete",
-                        "url": "http://localhost:3000"
-                    }
-                ]
-            },
+            
+            "id": "EIC_SC_MGA102",
+            "name": "SC MGA102",
+            "type": "Metering Grid Area",
+            "actions": [
+                {
+                    "type": "Edit",
+                    "url": "http://localhost:3000"
+                },
+                {
+                    "type": "Delete",
+                    "url": "http://localhost:3000"
+                }
+            ],
+            
             "detail": {
                 "id": 3,
                 "Validity_Start": "2015-05-31T23:00",
@@ -292,6 +286,14 @@ ____
 
   * **Code:**  <br />
     **Content:** 
+
+    ```javascript
+    {
+        "queried_entity": {
+            "error": "entity not found"
+        }
+    }
+    ```
 
   * **Code:**  <br />
     **Content:** 

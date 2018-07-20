@@ -80,7 +80,7 @@ app.get('/api/getdata', (req, res) => {
   let queryString = '';
   let queryParams = [];
   let nodesLegend = [];
-  nodesLegend.push({ x: 30, y: 80, id: req.query.type, label: req.query.type, group: "L0", fixed: true, physics: false })
+  nodesLegend.push({ x: 100, y: 80, id: req.query.type, label: viewDictionary[req.query.type].name, group: "L0" })
   for (let i = 0; i < view.length; i++) {
     //console.log(viewDictionary[req.query.type].rels[view[i]])
     const table = viewDictionary[req.query.type].rels[view[i]].table;
@@ -96,7 +96,7 @@ app.get('/api/getdata', (req, res) => {
       from ${table} x left join ${joinTable} y on x.${identifier} = y.${joinIdentifier} where x.${where} like ?
       union `;
     queryParams.push(req.query.id);
-    nodesLegend.push({ x: 30, y: 80 + 60 * (i + 1), id: view[i], label: view[i], group: "L" + (i + 1), fixed: true, physics: false });
+    nodesLegend.push({ x: 100, y: 80 + 60 * (i + 1), id: view[i], label:  viewDictionary[view[i]].name, group: "L" + (i + 1)});
   }
   console.log(queryString)
   let lastIndex = queryString.trim().lastIndexOf(" ");
@@ -127,15 +127,19 @@ app.get('/api/getdata', (req, res) => {
         const links = computeLinks(rows, detail);
         rows.push({ "id": detail.Internal_ID, "label": detail.Name, "type": req.query.type, "group": 0 })
         let config = {}
-        config.internal_id = req.query.id;
-        config.name = detail.Name;
-        config.type_full = viewDictionary[req.query.type].name;
-        config.type = viewDictionary[req.query.type].table;
-        config.actions = createNodeActions(detail);
+        const id = req.query.id;
+        const name = detail.Name;
+        const typeFull = viewDictionary[req.query.type].name;
+        const type = viewDictionary[req.query.type].table;
+        const actions = createNodeActions(detail);
         res.json({
           "config": configGraph,
           "queried_entity": {
-            "basic_info": config,
+            "id": id,
+            "name": name,
+            "type": type,
+            "type_full": typeFull,
+            "actions": actions,
             "detail": detail,
           },
           "graph": {
@@ -164,7 +168,11 @@ app.get('/api/getdetail', (req, res) => {
       config.actions = createNodeActions(detail);
       res.json({
         "queried_entity": {
-          "basic_info": config,
+          "id": req.query.id,
+          "name": detail.Name,
+          "type": viewDictionary[req.query.type].table,
+          "type_full": viewDictionary[req.query.type].name,
+          "actions": createNodeActions(detail),
           "detail": detail,
         },
       });

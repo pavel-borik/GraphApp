@@ -11,10 +11,10 @@ class CardWrapper extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        console.log(this.props.hasOwnProperty('basic_info'));
-        if (this.props.selectedNode.hasOwnProperty('basic_info')) {
-            if (prevProps.selectedNode.basic_info.internal_id !== this.props.selectedNode.basic_info.internal_id) {
-            const url = 'api/getdetail?' + 'id=' + this.props.selectedNode.basic_info.internal_id + '&type=' + this.props.selectedNode.basic_info.type;
+        if (prevProps.selectedNode.id !== this.props.selectedNode.id) {
+            console.log('prevprops', prevProps)
+            console.log('thisprops', this.props)
+            const url = 'api/getdetail?' + 'id=' + this.props.selectedNode.id + '&type=' + this.props.selectedNode.type;
             fetch(url)
                 .then((res) => {
                     if (res.ok) {
@@ -24,29 +24,21 @@ class CardWrapper extends Component {
                     }
                 })
                 .then(nodeDetailData => this.setState({ nodeDetail: nodeDetailData.queried_entity }));
-            }
-        } else {
-            if (prevProps.selectedNode.id !== this.props.selectedNode.id) {
-                console.log('prevprops', prevProps)
-                console.log('thisprops', this.props)
-                const url = 'api/getdetail?' + 'id=' + this.props.selectedNode.id + '&type=' + this.props.selectedNode.type;
-                fetch(url)
-                    .then((res) => {
-                        if (res.ok) {
-                            return res.json();
-                        } else {
-                            throw new Error('Something went wrong');
-                        }
-                    })
-                    .then(nodeDetailData => this.setState({ nodeDetail: nodeDetailData.queried_entity }));
-            }
         }
+
     }
 
     render() {
+        const header = {
+            "name": this.state.nodeDetail.name,
+            "type": this.state.nodeDetail.type_full
+        };
+        const actions = this.state.nodeDetail.actions;
+        const detail = this.state.nodeDetail.detail;
+
         return (
             <div>
-                {Object.keys(this.state.nodeDetail)[0] !== "error" ? <CustomCard data={this.state.nodeDetail} /> : null}
+                {Object.keys(this.state.nodeDetail)[0] !== "error" ? <CustomCard header={header} actions={actions} detail={detail} /> : null}
             </div>
         )
     }
