@@ -45,7 +45,6 @@ class GraphVis extends Component {
     componentDidUpdate(prevProps) {
         if (JSON.stringify(this.props.data.graph.nodes) === JSON.stringify(prevProps.data.graph.nodes)) {
             if (!prevProps.selectedDate.isSame(this.props.selectedDate)) {
-                console.log("updooting")
                 const displayedNodes = this.props.data.graph.nodes.filter(node => {
                     if (node.group === 0) {
                         return true;
@@ -56,10 +55,10 @@ class GraphVis extends Component {
                 console.log("displayed nodes", displayedNodes)
                 if (displayedNodes.length === this.state.nodes.length) {
                     if (JSON.stringify(displayedNodes) !== JSON.stringify(this.state.nodes)) {
-                        this.setState({ nodes: displayedNodes }, () => { this.openAllClusters(); this.clusterByGroup() });
+                        this.setState({ nodes: displayedNodes }, () => { this.network.unselectAll(); this.openAllClusters(); this.clusterByGroup() });
                     } else { console.log("actually not updating") }
                 } else {
-                    this.setState({ nodes: displayedNodes }, () => { this.openAllClusters(); this.clusterByGroup() });
+                    this.setState({ nodes: displayedNodes }, () => { this.network.unselectAll(); this.openAllClusters(); this.clusterByGroup() });
                 }
             }
         } else {
@@ -82,13 +81,11 @@ class GraphVis extends Component {
             this.setState({
                 nodes: displayedNodes, links: this.props.data.graph.links, legend: this.props.data.config.legend.nodes
             }, () => {
+                this.network.unselectAll();
                 this.openAllClusters();
                 this.clusterByGroup();
             });
         }
-
-
-
     }
 
     initNetworkInstance = (networkInstance) => {
@@ -197,7 +194,7 @@ class GraphVis extends Component {
                 <div style={{ width: '20%', position: 'absolute' }}>
                     <Graph graph={{ nodes: this.state.legend, edges: [] }}
                         options={legendOptions}
-                        style={{ height: "800px"}}
+                        style={{ height: "900px"}}
                         getNetwork={this.initLegendNetworkInstance}
                     />
                 </div>
@@ -205,7 +202,7 @@ class GraphVis extends Component {
                     <Graph graph={{ nodes: this.state.nodes, edges: this.state.links }}
                         options={options}
                         events={events}
-                        style={{ height: "800px" }}
+                        style={{ height: "900px" }}
                         getNetwork={this.initNetworkInstance}
                         getNodes={this.initDatasetInstance} />
                 </div>

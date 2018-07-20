@@ -19,15 +19,6 @@ class GraphWrapper extends Component {
     }
 
     componentDidMount() {
-        /*
-        '/api/regulationobjects/EIC_MR_RO204/relationships'
-        '/api/countries/NO/relationships'
-        '/api/productionunits/EIC_MR_PU201/relationships'
-        '/api/marketbalanceareas/EIC_10Y1001A1001A44P/relationships'
-        '/api/marketbalanceareas/EIC_SC_MBA101/relationships'
-        '/api/marketbalanceareas/EIC_10YFI_1________U/relationships'
-        '/api/retailers/EIC_RE01/relationships'
-        */
         const url = 'api' + this.props.location.pathname + this.props.location.search;
         fetch(url)
             .then((res) => {
@@ -92,8 +83,9 @@ class GraphWrapper extends Component {
                     </div>
                     <div className="card-container">
                         {cardComponent}
-                        <Link className="link" to="/getData?id=EIC_10YFI_1________U&type=mba&validityFrom=20160101&validityTo=20180101&view=ro,mga,tso,country">Link 1</Link>
-                        <Link className="link" to="/getData?id=EIC_10YFI_1________U&type=mba&validityFrom=20160101&validityTo=20180101&view=ro,mga,tso">Link 2</Link>
+                        <Link className="link" to="/getdata?id=EIC_10YFI_1________U&type=mba&validityFrom=20160101&validityTo=20180101&view=ro,mga,tso,country">Link 1</Link>
+                        <Link className="link" to="/getdata?id=EIC_10YFI_1________U&type=mba&validityFrom=20160101&validityTo=20180101&view=ro,mga,tso">Link 2</Link>
+                        <Link className="link" to="/getdata?id=EIC_10YNO_3________J&type=mba&validityFrom=20160101&validityTo=20180101&view=ro,mga,tso,country">Link 3</Link>
                     </div>
                 </div>
                 <div className="graph-container">

@@ -1,9 +1,9 @@
 export const legendOptions = {
-    autoResize:  true,
-
+    autoResize: true,
     nodes: {
         borderWidth: 0,
         shape: 'dot',
+        fixed:true,
         size: 10,
         shadow: {
             enabled: true,
@@ -13,7 +13,6 @@ export const legendOptions = {
             y: 2
         },
     },
-    
     groups: {
         "L0": { color: { background: 'red',  } },
         "L1": { color: { background: 'green', } },
@@ -32,9 +31,7 @@ export const legendOptions = {
         zoomView: false,
         dragView: false
     },
-
     physics: {
-        enabled: false,
-        
+        enabled: false,       
     }
 };
