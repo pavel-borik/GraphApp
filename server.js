@@ -80,7 +80,7 @@ app.get('/api/getdata', (req, res) => {
   let queryString = '';
   let queryParams = [];
   let nodesLegend = [];
-  nodesLegend.push({ x: 100, y: 80, id: req.query.type, label: viewDictionary[req.query.type].name, group: "L0" })
+  nodesLegend.push({ x: 50, y: 80, id: req.query.type, label: viewDictionary[req.query.type].name, group: "L0" })
   for (let i = 0; i < view.length; i++) {
     //console.log(viewDictionary[req.query.type].rels[view[i]])
     const table = viewDictionary[req.query.type].rels[view[i]].table;
@@ -96,7 +96,7 @@ app.get('/api/getdata', (req, res) => {
       from ${table} x left join ${joinTable} y on x.${identifier} = y.${joinIdentifier} where x.${where} like ?
       union `;
     queryParams.push(req.query.id);
-    nodesLegend.push({ x: 100, y: 80 + 60 * (i + 1), id: view[i], label:  viewDictionary[view[i]].name, group: "L" + (i + 1)});
+    nodesLegend.push({ x: 50, y: 80 + 40 * (i + 1), id: view[i], label:  viewDictionary[view[i]].name, group: "L" + (i + 1)});
   }
   console.log(queryString)
   let lastIndex = queryString.trim().lastIndexOf(" ");

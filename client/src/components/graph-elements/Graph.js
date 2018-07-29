@@ -12,7 +12,6 @@ class GraphVis extends Component {
         this.state = {
             nodes: [],
             links: [],
-            legend: [],
         }
         const network = null;
         const legendNetwork = null;
@@ -20,13 +19,6 @@ class GraphVis extends Component {
     }
 
     componentDidMount() {
-        this.props.data.config.legend.nodes.map(node => {
-            let coords = this.legendNetwork.DOMtoCanvas({ x: node.x, y: node.y });
-            node.x = coords.x;
-            node.y = coords.y;
-            return node;
-        })
-
         const displayedNodes = this.props.data.graph.nodes.filter(node => {
             if (node.group === 0) {
                 return true;
@@ -36,7 +28,7 @@ class GraphVis extends Component {
         });
 
         this.setState({
-            nodes: displayedNodes, links: this.props.data.graph.links, legend: this.props.data.config.legend.nodes
+            nodes: displayedNodes, links: this.props.data.graph.links
         }, () => {
             this.clusterByGroup();
         });
@@ -62,14 +54,6 @@ class GraphVis extends Component {
                 }
             }
         } else {
-            console.log("new data coming trough")
-            this.props.data.config.legend.nodes.map(node => {
-                let coords = this.legendNetwork.DOMtoCanvas({ x: node.x, y: node.y });
-                node.x = coords.x;
-                node.y = coords.y;
-                return node;
-            });
-
             const displayedNodes = this.props.data.graph.nodes.filter(node => {
                 if (node.group === 0) {
                     return true;
@@ -79,17 +63,19 @@ class GraphVis extends Component {
             });
 
             this.setState({
-                nodes: displayedNodes, links: this.props.data.graph.links, legend: this.props.data.config.legend.nodes
+                nodes: displayedNodes, links: this.props.data.graph.links
             }, () => {
                 this.network.unselectAll();
                 this.openAllClusters();
                 this.clusterByGroup();
+                this.legendNetwork.redraw();
             });
         }
     }
 
     initNetworkInstance = (networkInstance) => {
         networkInstance.on("selectNode", (params) => {
+            console.log("params", params);
             if (params.nodes.length === 1) {
                 if (networkInstance.isCluster(params.nodes[0]) === true) {
                     networkInstance.openCluster(params.nodes[0]);
@@ -98,13 +84,42 @@ class GraphVis extends Component {
         });
 
         this.network = networkInstance;
-
         //console.log(this.network);
     }
 
     initLegendNetworkInstance = (networkInstance) => {
+
+        networkInstance.on("beforeDrawing", (ctx) => {
+            ctx.save();
+            this.props.data.config.legend.nodes.map(node => {
+                this.drawLegend(node, ctx);
+            });
+        });
+        networkInstance.on("resize", () => {
+            networkInstance.redraw();
+        });
+
         this.legendNetwork = networkInstance;
         //console.log(this.legendNetwork);
+    }
+
+    drawLegend = (node, ctx) => {
+        const coords = this.legendNetwork.DOMtoCanvas({ x: node.x, y: node.y });
+
+        ctx.beginPath();
+        ctx.arc(coords.x, coords.y, 10, 0, 2 * Math.PI, false);
+        ctx.shadowColor = '#999';
+        ctx.shadowBlur = 5;
+        ctx.shadowOffsetX = 2;
+        ctx.shadowOffsetY = 2;
+        ctx.fillStyle = legendOptions.groups[node.group].color.background;
+        ctx.fill();
+
+        ctx.restore();
+        ctx.fillStyle = '#000000';
+        ctx.font = 'normal 10pt Calibri';
+        ctx.fillText(node.label, coords.x + 20, coords.y + 5);
+        ctx.save();
     }
 
     initDatasetInstance = (datasetInstance) => {
@@ -191,14 +206,14 @@ class GraphVis extends Component {
         return (
             <div>
 
-                <div style={{ width: '20%', position: 'absolute' }}>
-                    <Graph graph={{ nodes: this.state.legend, edges: [] }}
+                <div style={{ width: '73%', position: 'absolute' }}>
+                    <Graph graph={{ nodes: [], edges: [] }}
                         options={legendOptions}
-                        style={{ height: "900px"}}
+                        style={{ height: "900px" }}
                         getNetwork={this.initLegendNetworkInstance}
                     />
                 </div>
-                <div style={{ width: '73%' , position: 'absolute'}}>
+                <div style={{ width: '73%', position: 'absolute' }}>
                     <Graph graph={{ nodes: this.state.nodes, edges: this.state.links }}
                         options={options}
                         events={events}
@@ -206,7 +221,7 @@ class GraphVis extends Component {
                         getNetwork={this.initNetworkInstance}
                         getNodes={this.initDatasetInstance} />
                 </div>
-                <div style={{ display: 'flex'}}>
+                <div style={{ display: 'flex' }}>
                     <CustomButton onClick={this.clusterByGroup} name={'Cluster'} />
                     <CustomButton onClick={this.fitToScreen} name={'Fit to screen'} />
                 </div>
