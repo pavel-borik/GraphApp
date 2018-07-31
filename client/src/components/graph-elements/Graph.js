@@ -2,9 +2,7 @@ import Graph from 'react-graph-vis';
 import React, { Component } from 'react';
 import CustomButton from '../gui-elements/CustomButton'
 import { options } from './GraphOptions'
-import { legendOptions } from './GraphLegendOptions'
 import moment from 'moment';
-
 
 class GraphVis extends Component {
     constructor(props) {
@@ -88,11 +86,30 @@ class GraphVis extends Component {
     }
 
     initLegendNetworkInstance = (networkInstance) => {
-
         networkInstance.on("beforeDrawing", (ctx) => {
             ctx.save();
-            this.props.data.config.legend.nodes.map(node => {
-                this.drawLegend(node, ctx);
+            let baseX = 50;
+            let baseY = 80;
+
+            Object.values(this.props.data.config.groups).map(group => {
+                const coords = this.legendNetwork.DOMtoCanvas({ x: baseX, y: baseY });
+
+                ctx.beginPath();
+                ctx.arc(coords.x, coords.y, 10, 0, 2 * Math.PI, false);
+                ctx.shadowColor = '#999';
+                ctx.shadowBlur = 5;
+                ctx.shadowOffsetX = 2;
+                ctx.shadowOffsetY = 2;
+                ctx.fillStyle = group.color.background;
+                ctx.fill();
+        
+                ctx.restore();
+                ctx.fillStyle = '#000000';
+                ctx.font = 'normal 10pt Calibri';
+                ctx.fillText(group.name, coords.x + 20, coords.y + 5);
+                ctx.save();
+                
+                baseY+=40;
             });
         });
         networkInstance.on("resize", () => {
@@ -100,26 +117,6 @@ class GraphVis extends Component {
         });
 
         this.legendNetwork = networkInstance;
-        //console.log(this.legendNetwork);
-    }
-
-    drawLegend = (node, ctx) => {
-        const coords = this.legendNetwork.DOMtoCanvas({ x: node.x, y: node.y });
-
-        ctx.beginPath();
-        ctx.arc(coords.x, coords.y, 10, 0, 2 * Math.PI, false);
-        ctx.shadowColor = '#999';
-        ctx.shadowBlur = 5;
-        ctx.shadowOffsetX = 2;
-        ctx.shadowOffsetY = 2;
-        ctx.fillStyle = legendOptions.groups[node.group].color.background;
-        ctx.fill();
-
-        ctx.restore();
-        ctx.fillStyle = '#000000';
-        ctx.font = 'normal 10pt Calibri';
-        ctx.fillText(node.label, coords.x + 20, coords.y + 5);
-        ctx.save();
     }
 
     initDatasetInstance = (datasetInstance) => {
@@ -155,7 +152,7 @@ class GraphVis extends Component {
     }
 
     clusterByGroup = () => {
-        const groupcount = this.props.data.config.group_count;
+        const groupcount = Object.keys(this.props.data.config.groups).length-1;
         let clusterOptionsByData;
         for (let i = 1; i <= groupcount; i++) {
             clusterOptionsByData = {
@@ -196,19 +193,19 @@ class GraphVis extends Component {
     render() {
         //console.log('ntw',this.network);
         //console.log('datset',this.dataset);
+        Object.assign(options.groups, this.props.data.config.groups);
 
         const events = {
             selectNode: this.selectNode,
             click: this.click,
         };
-        //console.log("legend", this.state.legend)
         //console.log("data", this.state.nodes)
         return (
             <div>
 
                 <div style={{ width: '73%', position: 'absolute' }}>
                     <Graph graph={{ nodes: [], edges: [] }}
-                        options={legendOptions}
+                        options={ {autoResize: true} }
                         style={{ height: "900px" }}
                         getNetwork={this.initLegendNetworkInstance}
                     />

@@ -1,7 +1,12 @@
 export const options = {
     autoResize: true,
-
     nodes: {
+        color: {
+            border: 'white',
+            highlight: {
+                border: 'white'
+            }
+        },
         borderWidth: 1,
         borderWidthSelected: 5,
         shape: 'dot',
@@ -16,33 +21,40 @@ export const options = {
     },
     edges: {
         arrows: {
-            to: { enabled: true, scaleFactor: 0.5}
+            to: { enabled: true, scaleFactor: 0.6 },
         },
         color: {
             color: '#848484',
-            opacity: 0.3
+            opacity: 0.6,
+            highlight: '#000000'
         },
         arrowStrikethrough: false,
         width: 1.5,
     },
     groups: {
-        "0": { color: { background: 'red', border: 'white', highlight: { background: '#ffbcbc', border: 'white' } } },
-        "1": { color: { background: 'green', border: 'white', highlight: { background: '#ffbcbc', border: 'white' } } },
-        "2": { color: { background: 'blue', border: 'white', highlight: { background: '#ffbcbc', border: 'white' } } },
-        "3": { color: { background: '#6b486b', border: 'white', highlight: { background: '#ffbcbc', border: 'white' } } },
-        "4": { color: { background: '#a05d56', border: 'white', highlight: { background: '#ffbcbc', border: 'white' } } },
+        // "0": {
+        //     color: {
+        //         background: 'red',
+        //         highlight: {
+        //             background: '#ffbcbc'
+        //         }
+        //     }
+        // },
+        // "1": { color: { background: 'green', highlight: { background: '#ffbcbc' } } },
+        // "2": { color: { background: 'blue', highlight: { background: '#ffbcbc' } } },
+        // "3": { color: { background: '#6b486b', highlight: { background: '#ffbcbc' } } },
+        // "4": { color: { background: '#a05d56', highlight: { background: '#ffbcbc' } } },
     },
     layout: {
         improvedLayout: true,
         hierarchical: false
     },
     interaction: {
-        hover: true,
+        hover: false,
         dragNodes: true,
         zoomView: true,
         dragView: true
     },
-
     physics: {
         enabled: true,
         forceAtlas2Based: {
@@ -65,4 +77,4 @@ export const options = {
         timestep: 0.3,
         adaptiveTimestep: true,
     }
-};
+}

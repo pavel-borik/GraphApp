@@ -33,7 +33,7 @@ class CustomCard extends PureComponent {
     let actionElements = [];
 
     actions.forEach(action => {
-      const button = <Button size="small" color="primary" href={action.url}>{action.type}</Button>
+      const button = <Button size="small" color="primary" href={action.url}>{action.name}</Button>
       actionElements.push(button);
     });
 

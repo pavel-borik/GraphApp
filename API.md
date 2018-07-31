@@ -39,27 +39,34 @@
     ```javascript
     {
         "config": {
-            "group_count": // required - number of groups (one group can for example be all the MBA nodes)
-            "legend": {
-                "nodes": [
+            "groups": {
+                /* key, starts from 0 */:
                     {
-                        "x":  // DOM coordinates
-                        "y":  // DOM coordinates
+                        "name":  // name of the group displayed in the legend (e.g. "Market Balance Area) 
+                        "color": { // Color settings - optional
+                            "background": // Node background
+                            "highlight": { 
+                                "background": // Node background when selected
+                            }
+                        }  // DOM coordinates
                         "id": // unique id - required by Visjs
                         "label": // node label to be displayed
                         "group": // group id for node styling
                     },
-                    //...other nodes displayed as a legend...//
-                ]
+                    //... other group definitions...//
+            },
+            "range": {
+                "validityFrom": // range of queried relationships validity, YYYYMMDD format
+                "validityTo": // range of queried relationships validity, YYYYMMDD format
             }
         },
-        "queried_entity": {
+        "queriedEntity": {
             "id": // globally unique id
             "name": // name of the entity displayed in the info card header
             "type": // name of the entity displayed in the info card subheader, e.g. "Market Balance Area",
             "actions": [
                 {
-                    "type": // Actions for entity, also the label of corresponding button (for example "Edit")
+                    "name": // action for an entity, also the label of corresponding button (for example "Edit")
                     "url":  // target url
                 },
             ],
@@ -98,7 +105,6 @@
     ```javascript
     {
         "config": {
-            "group_count": 4,
             "legend": {
                 "nodes": [
                     {
@@ -112,11 +118,11 @@
                 ]
             },
             "range": {
-                "validity_from": "01012017",
-                "validity_to": "30122017"
+                "validityFrom": "01012017",
+                "validityTo": "30122017"
             }
         },
-        "queried_entity": {            
+        "queriedEntity": {            
             "id": "EIC_SC_MBA101",
             "name": "SC MBA101",
             "type": "Market Balance Area",
@@ -229,7 +235,7 @@ ____
 
     ```javascript
     {
-        "queried_entity": {
+        "queriedEntity": {
             "id": // globally unique id
             "name": // name of the entity displayed in the info card header
             "type": // name of the entity displayed in the info card subheader, e.g. "Market Balance Area",
@@ -251,7 +257,7 @@ ____
 
     ```javascript
     {
-        "queried_entity": {
+        "queriedEntity": {
             
             "id": "EIC_SC_MGA102",
             "name": "SC MGA102",
@@ -289,7 +295,7 @@ ____
 
     ```javascript
     {
-        "queried_entity": {
+        "queriedEntity": {
             "error": "entity not found"
         }
     }

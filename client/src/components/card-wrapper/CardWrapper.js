@@ -23,7 +23,7 @@ class CardWrapper extends Component {
                         throw new Error('Something went wrong');
                     }
                 })
-                .then(nodeDetailData => this.setState({ nodeDetail: nodeDetailData.queried_entity }));
+                .then(nodeDetailData => this.setState({ nodeDetail: nodeDetailData.queriedEntity }));
         }
 
     }
@@ -31,7 +31,7 @@ class CardWrapper extends Component {
     render() {
         const header = {
             "name": this.state.nodeDetail.name,
-            "type": this.state.nodeDetail.type_full
+            "type": this.state.nodeDetail.typeFull
         };
         const actions = this.state.nodeDetail.actions;
         const detail = this.state.nodeDetail.detail;

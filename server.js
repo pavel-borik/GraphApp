@@ -22,6 +22,7 @@ let viewDictionary = {
     "name": "Market Balance Area",
     "table": "mba",
     "identifier": "internal_id",
+    "color": "#e6194b",
     "rels": {
       "ro": {
         table: "ro_location",
@@ -57,59 +58,107 @@ let viewDictionary = {
     "name": "Regulation Object",
     "table": "ro",
     "identifier": "internal_id",
+    "color": "#3cb44b",
+    "rels": {
+      "prod_type": {
+        table: "ro",
+        identifier: "production_type",
+        direction: "from",
+        where: "internal_id",
+        timedependent: false,
+      },
+      "brp": {
+        table: "ro_brp_rel",
+        identifier: "Balance_Responsible_Party",
+        direction: "from",
+        where: "regulation_object",
+        timedependent: true,
+      },
+      "pu": {
+        table: "pu_ro_rel",
+        identifier: "production_unit",
+        direction: "from",
+        where: "regulation_object",
+        timedependent: true,
+      },
+      "mba": {
+        table: "ro_location",
+        identifier: "mba",
+        direction: "from",
+        where: "regulation_object",
+        timedependent: true,
+      },
+    },
   },
   "mga": {
     "name": "Metering Grid Area",
     "table": "mga",
     "identifier": "internal_id",
+    "color": "#ffe119",
   },
   "tso": {
     "name": "Transmission System Operator",
     "table": "tso",
     "identifier": "internal_id",
+    "color": "#0082c8",
   },
   "country": {
     "name": "Country",
     "table": "country",
     "identifier": "iso_code",
+    "color": "#f58231",
+
+  },
+  "prod_type": {
+    "name": "Production type",
+    "table": "prod_type",
+    "identifier": "internal_id",
+    "color": "#911eb4",
+  },
+  "brp": {
+    "name": "Balance Responsible Party",
+    "table": "brp",
+    "identifier": "internal_id",
+    "color": "#46f0f0",
+  },
+  "pu": {
+    "name": "Production Unit",
+    "table": "pu",
+    "identifier": "internal_id",
+    "color": "#f032e6",
   },
 }
+
 app.get('/api/getdata', (req, res) => {
   //console.log(req.query);
   const view = req.query.view.split(',')
   let queryString = '';
   let queryParams = [];
-  let nodesLegend = [];
-  nodesLegend.push({ x: 50, y: 80, id: req.query.type, label: viewDictionary[req.query.type].name, group: "L0" })
   for (let i = 0; i < view.length; i++) {
     //console.log(viewDictionary[req.query.type].rels[view[i]])
     const table = viewDictionary[req.query.type].rels[view[i]].table;
     const joinTable = viewDictionary[view[i]].table;
-    const joinIdentifier =  viewDictionary[view[i]].identifier;
+    const joinIdentifier = viewDictionary[view[i]].identifier;
     const identifier = viewDictionary[req.query.type].rels[view[i]].identifier;
     const direction = viewDictionary[req.query.type].rels[view[i]].direction;
     const where = viewDictionary[req.query.type].rels[view[i]].where;
     const type = view[i];
-    queryString += 
+    queryString +=
       `select x.${identifier} as id, y.name as label, ${i + 1} as "group",
       "${direction}" as direction, "${type}" as "type", x.validity_start, x.validity_end
       from ${table} x left join ${joinTable} y on x.${identifier} = y.${joinIdentifier} where x.${where} like ?
       union `;
     queryParams.push(req.query.id);
-    nodesLegend.push({ x: 50, y: 80 + 40 * (i + 1), id: view[i], label:  viewDictionary[view[i]].name, group: "L" + (i + 1)});
   }
   console.log(queryString)
   let lastIndex = queryString.trim().lastIndexOf(" ");
   queryString = queryString.substring(0, lastIndex);
-
+  const groups = createGroups(view, req.query.type);
   let configGraph = {
-    "group_count": view.length,
-    "legend": {
-      "nodes": nodesLegend
-    },
+    "groups":groups,
     "range": {
-      "validity_from": req.query.validityFrom,
-      "validity_to": req.query.validityTo
+      "validityFrom": req.query.validityFrom,
+      "validityTo": req.query.validityTo
     }
   };
 
@@ -124,9 +173,9 @@ app.get('/api/getdata', (req, res) => {
         res.json({});
       } else {
         const detail = rows2[0];
+        detail.title = createNodeTooltipHtml(detail);
         const links = computeLinks(rows, detail);
-        rows.push({ "id": detail.Internal_ID, "label": detail.Name, "type": req.query.type, "group": 0 })
-        let config = {}
+        rows.push({ "id": detail.Internal_ID, "label": detail.Name, "type": req.query.type, "group": 0, "title": detail.title })
         const id = req.query.id;
         const name = detail.Name;
         const typeFull = viewDictionary[req.query.type].name;
@@ -134,11 +183,11 @@ app.get('/api/getdata', (req, res) => {
         const actions = createNodeActions(detail);
         res.json({
           "config": configGraph,
-          "queried_entity": {
+          "queriedEntity": {
             "id": id,
             "name": name,
             "type": type,
-            "type_full": typeFull,
+            "typeFull": typeFull,
             "actions": actions,
             "detail": detail,
           },
@@ -163,22 +212,22 @@ app.get('/api/getdetail', (req, res) => {
       let config = {}
       config.internal_id = req.query.id;
       config.name = detail.Name;
-      config.type_full = viewDictionary[req.query.type].name;
+      config.typeFull = viewDictionary[req.query.type].name;
       config.type = viewDictionary[req.query.type].table;
       config.actions = createNodeActions(detail);
       res.json({
-        "queried_entity": {
+        "queriedEntity": {
           "id": req.query.id,
           "name": detail.Name,
           "type": viewDictionary[req.query.type].table,
-          "type_full": viewDictionary[req.query.type].name,
+          "typeFull": viewDictionary[req.query.type].name,
           "actions": createNodeActions(detail),
           "detail": detail,
         },
       });
     } else {
       res.json({
-        "queried_entity": {
+        "queriedEntity": {
           "error": "entity not found"
         }
       });
@@ -186,31 +235,77 @@ app.get('/api/getdetail', (req, res) => {
   })
 });
 
+function computeLinks(rows, queriedEntity) {
+  var links = [];
+  for (var i = 0; i < rows.length; i++) {
+    if (rows[i].direction.localeCompare("from")) {
+      links.push({ "from": rows[i].id, "to": queriedEntity.Internal_ID })
+    } else if (rows[i].direction.localeCompare("to")) {
+      links.push({ "from": queriedEntity.Internal_ID, "to": rows[i].id })
+    }
+  }
+  return links;
+}
+
+function createGroups(view, type) {
+  let groups = {};
+  let i = 0;
+  let group = {
+    [i]: {
+      "name": viewDictionary[type].name,
+      "color": {
+        "background": viewDictionary[type].color,
+        "highlight": {
+          "background": '#ffbcbc',
+        }
+      }
+    }
+  }
+  Object.assign(groups,group);
+  i++;
+  view.forEach(v => {
+    let group = {
+      [i]: {
+        "name": viewDictionary[v].name,
+        "color": {
+          "background": viewDictionary[v].color,
+          "highlight": {
+            "background": '#ffbcbc',
+          }
+        }
+      }
+    }
+    Object.assign(groups,group);
+    i++;
+  });
+  return groups;
+}
+
+
 function createNodeTooltipHtml(node) {
   return (`<h3> ${node.id} </h3>
-   <ul>
-    <li>Validity start: ${node.validity_start}</li>
-    <li>Validity end: ${node.validity_end}</li>
-   </ul>       
+      <ul class="tooltip-list">
+          <li>Validity start: ${node.validity_start}</li>
+          <li>Validity end: ${node.validity_end}</li>
+      </ul>      
    `);
 }
 
 function createNodeActions(node) {
   let actions = [
     {
-      "type": "Edit",
+      "name": "Edit",
       "url": "http://localhost:3000"
     },
     {
-      "type": "Delete",
+      "name": "Delete",
       "url": "http://localhost:3000"
     }
   ];
-
   return actions;
-
 }
 
+/*
 app.get('/api/regulationobjects/:id/relationships', (req, res) => {
   db.query('select production_unit as id, production_unit as label, 2 as "group", "to" as direction, validity_start, validity_end from pu_ro_rel where regulation_object like ? union ' +
     'select balance_responsible_party as id, balance_responsible_party as label, 3 as "group", "from" as direction, validity_start, validity_end from ro_brp_rel where regulation_object like ? union ' +
@@ -306,19 +401,7 @@ app.get('/api/retailers/:id/relationships', (req, res) => {
       });
     })
 });
-
-function computeLinks(rows, queriedEntity) {
-  var links = [];
-  for (var i = 0; i < rows.length; i++) {
-    if (rows[i].direction.localeCompare("from")) {
-      links.push({ "from": rows[i].id, "to": queriedEntity.Internal_ID })
-    } else if (rows[i].direction.localeCompare("to")) {
-      links.push({ "from": queriedEntity.Internal_ID, "to": rows[i].id })
-    }
-  }
-  return links;
-}
-
+*/
 const port = 5000;
 
 app.listen(port, () => `Server running on port ${port}`);
