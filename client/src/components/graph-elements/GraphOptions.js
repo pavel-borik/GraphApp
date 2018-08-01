@@ -26,25 +26,15 @@ export const options = {
         color: {
             color: '#848484',
             opacity: 0.6,
-            highlight: '#000000'
+            //highlight: '#000000'
+        },
+        font: {
+            align: 'bottom',
         },
         arrowStrikethrough: false,
         width: 1.5,
     },
-    groups: {
-        // "0": {
-        //     color: {
-        //         background: 'red',
-        //         highlight: {
-        //             background: '#ffbcbc'
-        //         }
-        //     }
-        // },
-        // "1": { color: { background: 'green', highlight: { background: '#ffbcbc' } } },
-        // "2": { color: { background: 'blue', highlight: { background: '#ffbcbc' } } },
-        // "3": { color: { background: '#6b486b', highlight: { background: '#ffbcbc' } } },
-        // "4": { color: { background: '#a05d56', highlight: { background: '#ffbcbc' } } },
-    },
+    groups: {},
     layout: {
         improvedLayout: true,
         hierarchical: false
@@ -60,8 +50,8 @@ export const options = {
         forceAtlas2Based: {
             gravitationalConstant: -200,
             centralGravity: 0.03,
-            springConstant: 0.004,
-            springLength: 30,
+            springConstant: 0.006,
+            springLength: 50,
             damping: 0.9,
             avoidOverlap: 0
         },
