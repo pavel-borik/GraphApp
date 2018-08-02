@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
-import GraphVis from '../graph-elements/Graph';
-import CustomProgress from '../gui-elements/CustomProgress';
+import GraphComponent from '../GraphComponent/GraphComponent';
+import CustomProgress from '../GuiElements/CustomProgress';
 import moment from 'moment';
-import CardWrapper from '../card-wrapper/CardWrapper'
-import './GraphWrapper.css';
-import CustomDatePicker from '../gui-elements/CustomDatePicker';
+import CardWrapper from '../CardWrapper/CardWrapper'
+import './GraphAreaWrapper.css';
+import DatePicker from '../DatePicker/DatePicker';
 import { Link } from 'react-router-dom';
 
 
-class GraphWrapper extends Component {
+class GraphAreaWrapper extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -65,18 +65,21 @@ class GraphWrapper extends Component {
         let graphComponent = null;
         let cardComponent = null;
         let datePickerComponent = null;
+        let progressComponent = null;
+
         if (Object.keys(this.state.graphData).length === 0 && this.state.graphData.constructor === Object) {
-            graphComponent = <CustomProgress className={"progress"} />
+            progressComponent = (<div className="progress-container"><CustomProgress className={"progress"}/></div>) 
         } else {
-            graphComponent = <GraphVis data={this.state.graphData} selectedDate={this.state.selectedDate} getSelectedNode={this.getSelectedNode} />
+            graphComponent = <GraphComponent data={this.state.graphData} selectedDate={this.state.selectedDate} getSelectedNode={this.getSelectedNode} />
             cardComponent = <CardWrapper selectedNode={this.state.selectedNode} />
-            datePickerComponent = <CustomDatePicker getSelectedDate={this.getSelectedDate}
+            datePickerComponent = <DatePicker getSelectedDate={this.getSelectedDate}
                 selectedDate={this.state.selectedDate}
                 validityFrom={this.state.graphData.config.range.validityFrom}
                 validityTo={this.state.graphData.config.range.validityTo} />
         }
         return (
             <div className="base-container">
+                {progressComponent}
                 <div className="left-gui-elements">
                     <div className="datepicker-container">
                         {datePickerComponent}
@@ -96,4 +99,4 @@ class GraphWrapper extends Component {
     }
 }
 
-export default GraphWrapper;
+export default GraphAreaWrapper;

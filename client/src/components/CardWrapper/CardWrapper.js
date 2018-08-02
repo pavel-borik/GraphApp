@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import CustomCard from '../gui-elements/CustomCard';
+import InfoCard from '../InfoCard/InfoCard';
 import PropTypes from 'prop-types';
 
 class CardWrapper extends Component {
@@ -12,8 +12,8 @@ class CardWrapper extends Component {
 
     componentDidUpdate(prevProps) {
         if (prevProps.selectedNode.id !== this.props.selectedNode.id) {
-            console.log('prevprops', prevProps)
-            console.log('thisprops', this.props)
+           // console.log('prevprops', prevProps)
+            //console.log('thisprops', this.props)
             const url = 'api/getdetail?' + 'id=' + this.props.selectedNode.id + '&type=' + this.props.selectedNode.type;
             fetch(url)
                 .then((res) => {
@@ -25,7 +25,6 @@ class CardWrapper extends Component {
                 })
                 .then(nodeDetailData => this.setState({ nodeDetail: nodeDetailData.queriedEntity }));
         }
-
     }
 
     render() {
@@ -38,7 +37,7 @@ class CardWrapper extends Component {
 
         return (
             <div>
-                {Object.keys(this.state.nodeDetail)[0] !== "error" ? <CustomCard header={header} actions={actions} detail={detail} /> : null}
+                {Object.keys(this.state.nodeDetail)[0] !== "error" ? <InfoCard header={header} actions={actions} detail={detail} /> : null}
             </div>
         )
     }
@@ -47,6 +46,5 @@ class CardWrapper extends Component {
 CardWrapper.propTypes = {
     selectedNode: PropTypes.object,
 };
-
 
 export default CardWrapper;
