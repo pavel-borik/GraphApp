@@ -239,9 +239,9 @@ function computeLinks(rows, queriedEntity) {
   var links = [];
   for (var i = 0; i < rows.length; i++) {
     if (rows[i].direction.localeCompare("from")) {
-      links.push({ "from": rows[i].id, "to": queriedEntity.Internal_ID,"xLabel": rows[i].validity_start + " -- " + rows[i].validity_end})
+      links.push({ "from": rows[i].id, "to": queriedEntity.Internal_ID,"hiddenLabel": rows[i].validity_start + " -- " + rows[i].validity_end})
     } else if (rows[i].direction.localeCompare("to")) {
-      links.push({ "from": queriedEntity.Internal_ID, "to": rows[i].id, "color": {"color": 'red'},"xLabel": rows[i].validity_start  + " -- " + rows[i].validity_end})
+      links.push({ "from": queriedEntity.Internal_ID, "to": rows[i].id,"hiddenLabel": rows[i].validity_start  + " -- " + rows[i].validity_end})
     }
   }
   return links;
