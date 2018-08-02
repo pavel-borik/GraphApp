@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import GraphComponent from '../GraphComponent/GraphComponent';
+import GraphComponentView1 from '../GraphComponent/GraphComponentView1';
+import GraphComponentView2 from '../GraphComponent/GraphComponentView2';
 import CustomProgress from '../GuiElements/CustomProgress';
 import moment from 'moment';
 import CardWrapper from '../CardWrapper/CardWrapper'
@@ -28,7 +29,7 @@ class GraphAreaWrapper extends Component {
                     throw new Error('Something went wrong');
                 }
             })
-            .then(data => this.setState({ graphData: data, selectedDate: moment(data.config.range.validityFrom, 'YYYYMMDD'), selectedNode: data.queriedEntity })
+            .then(data => this.setState({ graphData: data, selectedDate: moment(data.config.range.validityStart, 'YYYYMMDD'), selectedNode: data.queriedEntity })
             );
     }
     componentDidUpdate(prevProps) {
@@ -42,7 +43,7 @@ class GraphAreaWrapper extends Component {
                         throw new Error('Something went wrong');
                     }
                 })
-                .then(data => this.setState({ graphData: data, selectedDate: moment(data.config.range.validityFrom, 'YYYYMMDD'), selectedNode: data.queriedEntity })
+                .then(data => this.setState({ graphData: data, selectedDate: moment(data.config.range.validityStart, 'YYYYMMDD'), selectedNode: data.queriedEntity })
                 );
         }
 
@@ -58,8 +59,8 @@ class GraphAreaWrapper extends Component {
 
     render() {
 
-        //const validityFrom = this.props.location.search.validityFrom.;
-        //const validityTo = this.props.location.search.validityTo.toString();
+        //const validityStart = this.props.location.search.validityStart.;
+        //const validityEnd = this.props.location.search.validityEnd.toString();
         console.log('graphwrapper state', this.state);
         //console.log(this.props.location.pathname+this.props.location.search);
         let graphComponent = null;
@@ -70,12 +71,12 @@ class GraphAreaWrapper extends Component {
         if (Object.keys(this.state.graphData).length === 0 && this.state.graphData.constructor === Object) {
             progressComponent = (<div className="progress-container"><CustomProgress className={"progress"}/></div>) 
         } else {
-            graphComponent = <GraphComponent data={this.state.graphData} selectedDate={this.state.selectedDate} getSelectedNode={this.getSelectedNode} />
+            graphComponent = <GraphComponentView1 data={this.state.graphData} selectedDate={this.state.selectedDate} getSelectedNode={this.getSelectedNode} />
             cardComponent = <CardWrapper selectedNode={this.state.selectedNode} />
             datePickerComponent = <DatePicker getSelectedDate={this.getSelectedDate}
                 selectedDate={this.state.selectedDate}
-                validityFrom={this.state.graphData.config.range.validityFrom}
-                validityTo={this.state.graphData.config.range.validityTo} />
+                validityStart={this.state.graphData.config.range.validityStart}
+                validityEnd={this.state.graphData.config.range.validityEnd} />
         }
         return (
             <div className="base-container">
@@ -86,9 +87,9 @@ class GraphAreaWrapper extends Component {
                     </div>
                     <div className="card-container">
                         {cardComponent}
-                        <Link className="link" to="/getdata?id=EIC_10YFI_1________U&type=mba&validityFrom=20160101&validityTo=20180101&view=ro,mga,tso,country">Link 1</Link>
-                        <Link className="link" to="/getdata?id=EIC_10YFI_1________U&type=mba&validityFrom=20160101&validityTo=20180101&view=ro,mga,tso">Link 2</Link>
-                        <Link className="link" to="/getdata?id=EIC_10YNO_3________J&type=mba&validityFrom=20160101&validityTo=20180101&view=ro,mga,tso,country">Link 3</Link>
+                        <Link className="link" to="/getdata?id=EIC_10YFI_1________U&type=mba&validityStart=20160101&validityEnd=20180101&view=ro,mga,tso,country">Link 1</Link>
+                        <Link className="link" to="/getdata?id=EIC_10YFI_1________U&type=mba&validityStart=20160101&validityEnd=20180101&view=ro,mga,tso">Link 2</Link>
+                        <Link className="link" to="/getdata?id=EIC_10YNO_3________J&type=mba&validityStart=20160101&validityEnd=20180101&view=ro,mga,tso,country">Link 3</Link>
                     </div>
                 </div>
                 <div className="graph-container">

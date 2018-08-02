@@ -42,8 +42,8 @@ class CustomDatePicker extends React.Component {
 
   render() {
     const { classes } = this.props;
-    const minValidity = moment(this.props.validityFrom, "YYYYMMDD");
-    const maxValidity = moment(this.props.validityTo, "YYYYMMDD");
+    const minValidity = moment(this.props.validityStart, "YYYYMMDD");
+    const maxValidity = moment(this.props.validityEnd, "YYYYMMDD");
     return (
       <div className={classes.root}>
         <IconButton className={classes.button} aria-label="Decrease date" disabled={this.props.selectedDate.isSame(minValidity) ? true : false} onClick={this.decreaseDate}>

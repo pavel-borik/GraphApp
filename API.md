@@ -25,7 +25,7 @@
 
 *   **Request example:**
 
-    `/api/getdata?id=EIC_SC_MBA101&type=mba&validityFrom=01012017&validityTo=30122017&view=ro,mga,tso,country`
+    `/api/getdata?id=EIC_10YNO_3________J&type=mba&validityStart=20160101&validityEnd=20180101&view=ro,mga,tso,country`
 
 
 * **Data Params**
@@ -56,8 +56,8 @@
                     //... other group definitions...//
             },
             "range": {
-                "validityFrom": // range of queried relationships validity, YYYYMMDD format
-                "validityTo": // range of queried relationships validity, YYYYMMDD format
+                "validityStart": // range of queried relationships validity, YYYYMMDD format
+                "validityEnd": // range of queried relationships validity, YYYYMMDD format
             }
         },
         "queriedEntity": {
@@ -82,8 +82,8 @@
                     "group": // required - dictates the settings of the group of nodes (e.g. color, highlight color)
                     "direction": "to",
                     "type": "ro", // request parameter type, used to create a URL for getDetail endpoint
-                    "validity_start": // used for node filtering, YYYY-MM-DDTHH:MM format
-                    "validity_end": // used for node filtering, YYYY-MM-DDTHH:MM format
+                    "validityStart": // used for node filtering, YYYY-MM-DDTHH:MM format
+                    "validityEnd": // used for node filtering, YYYY-MM-DDTHH:MM format
                     "title": // displays in a tooltip, can be html markup
                 },
                 //...other nodes to be displayed...
@@ -118,8 +118,8 @@
                 ]
             },
             "range": {
-                "validityFrom": "01012017",
-                "validityTo": "30122017"
+                "validityStart": "01012017",
+                "validityEnd": "30122017"
             }
         },
         "queriedEntity": {            
@@ -138,8 +138,8 @@
             ] 
             "detail": {
                 "id": 11,
-                "Validity_Start": "2015-01-01T00:00",
-                "Validity_End": "2021-01-01T00:00",
+                "validityStart": "2015-01-01T00:00",
+                "validityEnd": "2021-01-01T00:00",
                 "Gate_Closure_TSO-TSO_Trade_Hour": "12.00",
                 "Gate_Closure_Supportive_Power_Hour": "12.00",
                 // ... other attributes ...
@@ -153,8 +153,8 @@
                     "group": 1,
                     "direction": "to",
                     "type": "ro",
-                    "validity_start": "2017-06-30T23:00",
-                    "validity_end": "2017-12-31T23:00",
+                    "validityStart": "2017-06-30T23:00",
+                    "validityEnd": "2017-12-31T23:00",
                     "title": "<h3> EIC_SC_RO09 </h3>\n   <ul>\n    <li>Validity start: 2017-06-30T23:00</li>\n    <li>Validity end: 2017-12-31T23:00</li>\n   </ul>       \n   "
                 },
                 {
@@ -163,8 +163,8 @@
                     "group": 1,
                     "direction": "to",
                     "type": "ro",
-                    "validity_start": "2016-12-31T23:00",
-                    "validity_end": "2017-12-31T23:00",
+                    "validityStart": "2016-12-31T23:00",
+                    "validityEnd": "2017-12-31T23:00",
                     "title": "<h3> EIC_SC_RO101 </h3>\n   <ul>\n    <li>Validity start: 2016-12-31T23:00</li>\n    <li>Validity end: 2017-12-31T23:00</li>\n   </ul>       \n   "
                 },
                 // ... other nodes ...
@@ -275,8 +275,8 @@ ____
             
             "detail": {
                 "id": 3,
-                "Validity_Start": "2015-05-31T23:00",
-                "Validity_End": "2020-12-31T23:00",
+                "validityStart": "2015-05-31T23:00",
+                "validityEnd": "2020-12-31T23:00",
                 "Coding_Scheme": "EIC",
                 "MGA_Type": "DISTRIBUTION",
                 "Short_name": null,

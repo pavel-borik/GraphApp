@@ -144,8 +144,8 @@ app.get('/api/getdata', (req, res) => {
     const where = viewDictionary[req.query.type].rels[view[i]].where;
     const type = view[i];
     queryString +=
-      `select x.${identifier} as id, y.name as label, ${i + 1} as "group",
-      "${direction}" as direction, "${type}" as "type", x.validity_start, x.validity_end
+      `select x.${identifier} as id, y.name as label, "${("g"+ (i + 1))}" as "group",
+      "${direction}" as direction, "${type}" as "type", x.validity_start as validityStart, x.validity_end as validityEnd
       from ${table} x left join ${joinTable} y on x.${identifier} = y.${joinIdentifier} where x.${where} like ?
       union `;
     queryParams.push(req.query.id);
@@ -155,10 +155,10 @@ app.get('/api/getdata', (req, res) => {
   queryString = queryString.substring(0, lastIndex);
   const groups = createGroups(view, req.query.type);
   let configGraph = {
-    "groups":groups,
+    "groups": groups,
     "range": {
-      "validityFrom": req.query.validityFrom,
-      "validityTo": req.query.validityTo
+      "validityStart": req.query.validityStart,
+      "validityEnd": req.query.validityEnd
     }
   };
 
@@ -166,7 +166,54 @@ app.get('/api/getdata', (req, res) => {
     if (err) throw err;
     rows.map(node => {
       node.title = createNodeTooltipHtml(node);
+    });
+
+    /**
+     * Calculating subclustering
+     */
+    let countPerGroup = new Map();
+    for (let i = 0; i < Object.keys(groups).length; i++) {
+      countPerGroup.set(Object.keys(groups)[i], 0);
+    }
+    rows.forEach(r => {
+      countPerGroup.set(r.group, countPerGroup.get(r.group) + 1)
     })
+
+    for (let [key, value] of countPerGroup.entries()) {
+      let clusteringDescription = [];
+      if (value > 50) {
+        const nOfSubclusters = Math.ceil(value / 50);
+        const maxPerCluster = Math.round(value / nOfSubclusters);
+
+        let count = 1;
+        let currentSubcluster = 1
+        desc = {
+          "id": currentSubcluster,
+          "name": "Subcluster " + currentSubcluster.toString(),
+        }
+        clusteringDescription.push(desc);
+        rows.forEach(r => {
+          if (r.group == key) {
+            if (count < maxPerCluster) {
+              r.subcluster = currentSubcluster;
+              count++;
+            } else if (count === maxPerCluster) {
+              r.subcluster = currentSubcluster;
+              count = 0;
+              currentSubcluster++;
+              desc = {
+                "id": currentSubcluster,
+                "name":  "Subcluster " + currentSubcluster.toString(),
+              }
+              clusteringDescription.push(desc);
+            }
+          }
+        });
+      }
+      groups[key].clustering = clusteringDescription;
+    }
+
+
     db.query(`select * from ${viewDictionary[req.query.type].table} where internal_id = ?`, [req.query.id], function (err2, rows2, fields2) {
       if (err2) throw err2;
       if (!rows2.length > 0) {
@@ -174,8 +221,10 @@ app.get('/api/getdata', (req, res) => {
       } else {
         const detail = rows2[0];
         detail.title = createNodeTooltipHtml(detail);
+        console.log(detail)
         const links = computeLinks(rows, detail);
-        rows.push({ "id": detail.Internal_ID, "label": detail.Name, "type": req.query.type, "group": 0, "title": detail.title })
+        rows.push({ "id": detail.Internal_ID, "label": detail.Name, 
+        "type": req.query.type, "group": "g0", "title": detail.title, "validityStart": detail.Validity_Start, "validityEnd": detail.Validity_End })
         const id = req.query.id;
         const name = detail.Name;
         const typeFull = viewDictionary[req.query.type].name;
@@ -239,9 +288,9 @@ function computeLinks(rows, queriedEntity) {
   var links = [];
   for (var i = 0; i < rows.length; i++) {
     if (rows[i].direction.localeCompare("from")) {
-      links.push({ "from": rows[i].id, "to": queriedEntity.Internal_ID,"hiddenLabel": rows[i].validity_start + " -- " + rows[i].validity_end})
+      links.push({ "from": rows[i].id, "to": queriedEntity.Internal_ID, "hiddenLabel": rows[i].validityStart + " -- " + rows[i].validityEnd })
     } else if (rows[i].direction.localeCompare("to")) {
-      links.push({ "from": queriedEntity.Internal_ID, "to": rows[i].id,"hiddenLabel": rows[i].validity_start  + " -- " + rows[i].validity_end})
+      links.push({ "from": queriedEntity.Internal_ID, "to": rows[i].id, "hiddenLabel": rows[i].validityStart + " -- " + rows[i].validityEnd })
     }
   }
   return links;
@@ -250,8 +299,9 @@ function computeLinks(rows, queriedEntity) {
 function createGroups(view, type) {
   let groups = {};
   let i = 0;
+  let key = "g"+i;
   let group = {
-    [i]: {
+    [key]: {
       "name": viewDictionary[type].name,
       "color": {
         "background": viewDictionary[type].color,
@@ -261,11 +311,12 @@ function createGroups(view, type) {
       }
     }
   }
-  Object.assign(groups,group);
+  Object.assign(groups, group);
   i++;
   view.forEach(v => {
+    let key = "g"+i;
     let group = {
-      [i]: {
+      [key]: {
         "name": viewDictionary[v].name,
         "color": {
           "background": viewDictionary[v].color,
@@ -275,7 +326,7 @@ function createGroups(view, type) {
         }
       }
     }
-    Object.assign(groups,group);
+    Object.assign(groups, group);
     i++;
   });
   return groups;
@@ -285,8 +336,8 @@ function createGroups(view, type) {
 function createNodeTooltipHtml(node) {
   return (`<h3> ${node.id} </h3>
       <ul class="tooltip-list">
-          <li>Validity start: ${node.validity_start}</li>
-          <li>Validity end: ${node.validity_end}</li>
+          <li>Validity start: ${node.validityStart}</li>
+          <li>Validity end: ${node.validityEnd}</li>
       </ul>      
    `);
 }
@@ -307,9 +358,9 @@ function createNodeActions(node) {
 
 /*
 app.get('/api/regulationobjects/:id/relationships', (req, res) => {
-  db.query('select production_unit as id, production_unit as label, 2 as "group", "to" as direction, validity_start, validity_end from pu_ro_rel where regulation_object like ? union ' +
-    'select balance_responsible_party as id, balance_responsible_party as label, 3 as "group", "from" as direction, validity_start, validity_end from ro_brp_rel where regulation_object like ? union ' +
-    'select mba as id, mba as label, 4 as "group", "from" as direction, validity_start, validity_end from ro_location where regulation_object like ?', [req.params.id, req.params.id, req.params.id], function (err, rows, fields) {
+  db.query('select production_unit as id, production_unit as label, 2 as "group", "to" as direction, validityStart, validityEnd from pu_ro_rel where regulation_object like ? union ' +
+    'select balance_responsible_party as id, balance_responsible_party as label, 3 as "group", "from" as direction, validityStart, validityEnd from ro_brp_rel where regulation_object like ? union ' +
+    'select mba as id, mba as label, 4 as "group", "from" as direction, validityStart, validityEnd from ro_location where regulation_object like ?', [req.params.id, req.params.id, req.params.id], function (err, rows, fields) {
       if (err) throw err;
       db.query('select * , "Regulation object" as type from ro where internal_id = ?', [req.params.id], function (err2, rows2, fields2) {
         if (err2) throw err2;
@@ -326,10 +377,10 @@ app.get('/api/regulationobjects/:id/relationships', (req, res) => {
 });
 
 app.get('/api/countries/:id/relationships', (req, res) => {
-  db.query('select Balance_Responsible_Party as id, Balance_Responsible_Party as label, 2 as "group", "to" as direction, validity_start, validity_end from country_brp_rel where country like ? ' +
-    'union select retailer as id, retailer as label, 3 as "group", "to" as direction, validity_start, validity_end from re_branch where country like ? ' +
-    'union select Name as id, Name as label, 4 as "group", "to" as direction, validity_start, validity_end from mba where country like ? ' +
-    'union select Distribution_System_Operator as id,Distribution_System_Operator as label, 5 as "group", "to" as direction, validity_start, validity_end from dso_branch where country like ?', [req.params.id, req.params.id, req.params.id, req.params.id], function (err, rows, fields) {
+  db.query('select Balance_Responsible_Party as id, Balance_Responsible_Party as label, 2 as "group", "to" as direction, validityStart, validityEnd from country_brp_rel where country like ? ' +
+    'union select retailer as id, retailer as label, 3 as "group", "to" as direction, validityStart, validityEnd from re_branch where country like ? ' +
+    'union select Name as id, Name as label, 4 as "group", "to" as direction, validityStart, validityEnd from mba where country like ? ' +
+    'union select Distribution_System_Operator as id,Distribution_System_Operator as label, 5 as "group", "to" as direction, validityStart, validityEnd from dso_branch where country like ?', [req.params.id, req.params.id, req.params.id, req.params.id], function (err, rows, fields) {
       if (err) throw err;
       db.query('select * , "Country" as type from country where ISO_CODE = ?', [req.params.id], function (err2, rows2, fields2) {
         if (err2) throw err2;
@@ -346,9 +397,9 @@ app.get('/api/countries/:id/relationships', (req, res) => {
 });
 
 app.get('/api/productionunits/:id/relationships', (req, res) => {
-  db.query('select Regulation_Object as id, Regulation_object as label, 2 as "group", "from" as direction, validity_start, validity_end from pu_ro_rel where production_unit like ? ' +
-    'union select Retailer as id, Retailer as label, 3 as "group", "from" as direction, validity_start, validity_end from pu_re_rel where production_unit like ? ' +
-    'union select mga as id, mga as label, 4 as "group", "from" as direction, validity_start, validity_end from pu_mga_rel where production_unit like ?', [req.params.id, req.params.id, req.params.id, req.params.id], function (err, rows, fields) {
+  db.query('select Regulation_Object as id, Regulation_object as label, 2 as "group", "from" as direction, validityStart, validityEnd from pu_ro_rel where production_unit like ? ' +
+    'union select Retailer as id, Retailer as label, 3 as "group", "from" as direction, validityStart, validityEnd from pu_re_rel where production_unit like ? ' +
+    'union select mga as id, mga as label, 4 as "group", "from" as direction, validityStart, validityEnd from pu_mga_rel where production_unit like ?', [req.params.id, req.params.id, req.params.id, req.params.id], function (err, rows, fields) {
       if (err) throw err;
       db.query('select * , "Production unit" as type from pu where internal_id = ?', [req.params.id], function (err2, rows2, fields2) {
         if (err2) throw err2;
@@ -365,9 +416,9 @@ app.get('/api/productionunits/:id/relationships', (req, res) => {
 });
 
 app.get('/api/marketbalanceareas/:id/relationships', (req, res) => {
-  db.query('select Regulation_Object as id, Regulation_object as label, 2 as "group", "to" as direction, validity_start, validity_end from ro_location where MBA like ? ' +
-    'union select MGA as id, MGA as label, 3 as "group", "to" as direction, validity_start, validity_end from mba_mga_rel where MBA like ? ' +
-    'union select TSO as id,TSO as label, 4 as "group", "from" as direction, validity_start, validity_end from mba where internal_id like ?', [req.params.id, req.params.id, req.params.id, req.params.id], function (err, rows, fields) {
+  db.query('select Regulation_Object as id, Regulation_object as label, 2 as "group", "to" as direction, validityStart, validityEnd from ro_location where MBA like ? ' +
+    'union select MGA as id, MGA as label, 3 as "group", "to" as direction, validityStart, validityEnd from mba_mga_rel where MBA like ? ' +
+    'union select TSO as id,TSO as label, 4 as "group", "from" as direction, validityStart, validityEnd from mba where internal_id like ?', [req.params.id, req.params.id, req.params.id, req.params.id], function (err, rows, fields) {
       if (err) throw err;
       db.query('select *, "Market balance area" as type from mba where internal_id = ?', [req.params.id], function (err2, rows2, fields2) {
         if (err2) throw err2;
@@ -384,9 +435,9 @@ app.get('/api/marketbalanceareas/:id/relationships', (req, res) => {
 });
 
 app.get('/api/retailers/:id/relationships', (req, res) => {
-  db.query('select company as id, company as label, 2 as "group", "from" as direction, validity_start, validity_end from re where internal_id like ? ' +
-    'union select MGA as id, mga as label, 3 as "group", "from" as direction, validity_start, validity_end from mga_re_rel where retailer like ? ' +
-    'union select country as id, country as label, 4 as "group", "from" as direction, validity_start, validity_end from re_branch where retailer like ?', [req.params.id, req.params.id, req.params.id, req.params.id], function (err, rows, fields) {
+  db.query('select company as id, company as label, 2 as "group", "from" as direction, validityStart, validityEnd from re where internal_id like ? ' +
+    'union select MGA as id, mga as label, 3 as "group", "from" as direction, validityStart, validityEnd from mga_re_rel where retailer like ? ' +
+    'union select country as id, country as label, 4 as "group", "from" as direction, validityStart, validityEnd from re_branch where retailer like ?', [req.params.id, req.params.id, req.params.id, req.params.id], function (err, rows, fields) {
       if (err) throw err;
       db.query('select * , "Retailer" as type from re  where internal_id = ?', [req.params.id], function (err2, rows2, fields2) {
         if (err2) throw err2;
