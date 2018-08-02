@@ -4,6 +4,8 @@ import moment from 'moment';
 import IconButton from '@material-ui/core/IconButton';
 import ArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
 import ArrowRight from '@material-ui/icons/KeyboardArrowRight';
+import ArrowUp from '@material-ui/icons/KeyboardArrowUp';
+import ArrowDown from '@material-ui/icons/KeyboardArrowDown';
 import { withStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
 
@@ -47,15 +49,25 @@ class CustomDatePicker extends React.Component {
         <IconButton className={classes.button} aria-label="Decrease date" disabled={this.props.selectedDate.isSame(minValidity) ? true : false} onClick={this.decreaseDate}>
           <ArrowLeft />
         </IconButton>
+        <IconButton className={classes.button} aria-label="Decrease date" disabled={this.props.selectedDate.isSame(minValidity) ? true : false} onClick={this.decreaseDate}>
+          <ArrowDown />
+        </IconButton>
         <DatePicker 
+          className="form-control"
           selected={this.props.selectedDate}
           onChange={this.handleChange}
           minDate={minValidity}
           maxDate={maxValidity}
-          className="form-control"
-          dateFormat="YYYY/MM/DD"
-          placeholderText="Select a date"
+          showTimeSelect
+          timeFormat="HH:mm"
+          timeIntervals={60}
+          dateFormat="YYYY-MM-DD HH:mm"
+          timeCaption="Time"
+          placeholderText="S;elect a date"
         />
+        <IconButton className={classes.button} aria-label="Increase date" disabled={this.props.selectedDate.isSame(maxValidity) ? true : false} onClick={this.increaseDate}>
+          <ArrowUp />
+        </IconButton>
         <IconButton className={classes.button} aria-label="Increase date" disabled={this.props.selectedDate.isSame(maxValidity) ? true : false} onClick={this.increaseDate}>
           <ArrowRight />
         </IconButton>

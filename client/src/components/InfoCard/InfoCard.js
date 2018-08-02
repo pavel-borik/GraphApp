@@ -23,7 +23,7 @@ const styles = {
   }
 };
 
-class CustomCard extends PureComponent {
+class InfoCard extends PureComponent {
 
   render() {
     const { classes, header, actions, detail } = this.props;
@@ -69,9 +69,9 @@ class CustomCard extends PureComponent {
   }
 }
 
-CustomCard.propTypes = {
+InfoCard.propTypes = {
   classes: PropTypes.object,
   data: PropTypes.object
 };
 
-export default withStyles(styles)(CustomCard);
+export default withStyles(styles)(InfoCard);
