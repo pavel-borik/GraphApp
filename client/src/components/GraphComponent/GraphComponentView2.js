@@ -5,7 +5,11 @@ import { options } from './GraphOptions'
 import moment from 'moment';
 import './GraphComponent.css';
 
-class GraphComponent extends Component {
+/**
+ * View 2
+ * Viewing relationships in a certain date/time moment
+ */
+class GraphComponentView2 extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -22,18 +26,18 @@ class GraphComponent extends Component {
     componentDidMount() {
         let newIntervals = new Set();
         const displayedNodes = this.props.data.graph.nodes.filter(node => {
-            if(node.validity_start !== null && node.validity_start !== "unlimited") newIntervals.add(node.validity_start);
-            if(node.validity_end !== null && node.validity_end !== "unlimited") newIntervals.add(node.validity_end);
+            if (node.validityStart !== null && node.validityStart !== "unlimited") newIntervals.add(node.validityStart);
+            if (node.validityEnd !== null && node.validityEnd !== "unlimited") newIntervals.add(node.validityEnd);
 
-                if (node.group === 0) {
+            if (node.group === 0) {
                 return true;
             } else {
-                return this.props.selectedDate.isBetween(moment(node.validity_start), node.validity_end !== "unlimited" ? moment(node.validity_end) : moment(), 'day', '[)');
+                return this.props.selectedDate.isBetween(moment(node.validityStart), node.validityEnd !== "unlimited" ? moment(node.validityEnd) : moment(), 'day', '[)');
             }
         });
 
         this.setState({
-            nodes: displayedNodes,//links: this.props.data.graph.links
+            nodes: displayedNodes,
             intervals: Array.from(newIntervals).sort()
         }, () => {
             this.clusterByGroup();
@@ -47,7 +51,7 @@ class GraphComponent extends Component {
                     if (node.group === 0) {
                         return true;
                     } else {
-                        return this.props.selectedDate.isBetween(moment(node.validity_start), node.validity_end !== "unlimited" ? moment(node.validity_end) : moment(), 'day', '[)');
+                        return this.props.selectedDate.isBetween(moment(node.validityStart), node.validityEnd !== "unlimited" ? moment(node.validityEnd) : moment(), 'day', '[)');
                     }
                 });
                 //console.log("displayed nodes", displayedNodes)
@@ -70,7 +74,7 @@ class GraphComponent extends Component {
                 if (node.group === 0) {
                     return true;
                 } else {
-                    return this.props.selectedDate.isBetween(moment(node.validity_start), node.validity_end !== "unlimited" ? moment(node.validity_end) : moment(), 'day', '[)');
+                    return this.props.selectedDate.isBetween(moment(node.validityStart), node.validityEnd !== "unlimited" ? moment(node.validityEnd) : moment(), 'day', '[)');
                 }
             });
 
@@ -144,7 +148,7 @@ class GraphComponent extends Component {
         const { edges } = event;
         if (edges.length === 1) {
             const selectedEdge = this.edgeDataset.get(edges[0]);
-            if(selectedEdge != null) {
+            if (selectedEdge != null) {
                 this.edgeDataset.update({ id: edges[0], label: selectedEdge.hiddenLabel });
             }
         }
@@ -152,17 +156,15 @@ class GraphComponent extends Component {
 
     deselectEdge = (event) => {
         const { edges } = event.previousSelection;
-        if (edges.length === 1) {      
+        if (edges.length === 1) {
             const selectedEdge = this.edgeDataset.get(edges[0]);
-            if(selectedEdge != null) {
+            if (selectedEdge != null) {
                 this.edgeDataset.update({ id: edges[0], label: "" })
             }
         }
     }
 
     selectNode = (event) => {
-        //console.log("select", event)
-        console.log("ed", this.edgeDataset)
         const { nodes } = event;
         const clickedNode = nodes[0];
         const selectedNode = this.state.nodes.find(node => { return node.id === clickedNode; });
@@ -188,10 +190,6 @@ class GraphComponent extends Component {
     }
 
     clusterByGroup = () => {
-        console.log("network", this.network)
-        console.log("ndataset", this.nodeDataset)
-        console.log("edataset", this.edgeDataset)
-
         const groupcount = Object.keys(this.props.data.config.groups).length - 1;
         let clusterOptionsByData;
         for (let i = 1; i <= groupcount; i++) {
@@ -201,7 +199,7 @@ class GraphComponent extends Component {
                     return nodeOptions.group === i;
                 },
                 processProperties: (clusterOptions, childNodes, childEdges) => {
-                    console.log("childedges", childEdges);
+                    //console.log("childedges", childEdges);
                     clusterOptions.label = 'Node count:\n' + '<b>' + childNodes.length + '</b>';
                     return clusterOptions;
                 },
@@ -224,6 +222,7 @@ class GraphComponent extends Component {
                     }
                 },
                 clusterEdgeProperties: {
+                    label: '',
                 }
             };
             //console.log("clusteroptions", clusterOptionsByData)
@@ -244,7 +243,7 @@ class GraphComponent extends Component {
             deselectEdge: this.deselectEdge,
             click: this.click,
         };
-        //console.log("data", this.state.nodes)
+        console.log("displayednodes", this.state.nodes)
         return (
             <div>
 
@@ -275,4 +274,4 @@ class GraphComponent extends Component {
     }
 }
 
-export default GraphComponent;
+export default GraphComponentView2;
