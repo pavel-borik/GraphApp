@@ -14,7 +14,7 @@ class GraphComponentView2 extends Component {
         super(props);
         this.state = {
             nodes: [],
-            links: [],
+            edges: [],
             intervals: [],
         }
         const network = null;
@@ -79,7 +79,7 @@ class GraphComponentView2 extends Component {
             });
 
             this.setState({
-                nodes: displayedNodes,// links: this.props.data.graph.links
+                nodes: displayedNodes,// edges: this.props.data.graph.edges
             }, () => {
                 Object.assign(options.groups, this.props.data.config.groups);
                 this.network.setOptions(options);
@@ -172,7 +172,7 @@ class GraphComponentView2 extends Component {
         if (this.network.isCluster(clickedNode) === true) {
             this.network.openCluster(clickedNode);
             return;
-            //networkInstance.setData({nodes: this.state.nodes, edges: this.props.data.graph.links})
+            //networkInstance.setData({nodes: this.state.nodes, edges: this.props.data.graph.edges})
         }
 
         if (selectedNode !== undefined) {
@@ -189,23 +189,71 @@ class GraphComponentView2 extends Component {
         this.network.fit({ animation: { duration: 1000, easingFunction: 'easeOutQuart' } });
     }
 
+    createSubclusters = () => {
+        const groups = Object.values(this.props.data.config.groups);
+        const groupKeys = Object.keys(this.props.data.config.groups);
+        for (let i = 0; i < groups.length; i++) {
+            const g = groups[i];
+            const groupKey = groupKeys[i];
+            if (g.hasOwnProperty("clustering")) {
+                if (g.clustering.length > 0) {
+                    g.clustering.forEach(c => {
+                        let clusterOptionsByData;
+                        clusterOptionsByData = {
+                            joinCondition: (nodeOptions) => {
+                                return nodeOptions.subcluster === c.id;
+                            },
+                            processProperties: (clusterOptions, childNodes, childEdges) => {
+                                clusterOptions.label = c.name;
+                                return clusterOptions;
+                            },
+                            clusterNodeProperties: {
+                                id: groupKey + "_" + c.id,
+                                group: groupKey,
+                                isCluster: true,
+                                borderWidth: 3,
+                                shape: 'circle',
+                                labelHighlightBold: false,
+                                font: {
+                                    face: 'georgia',
+                                    color: "black",
+                                    size: 14,
+                                    align: 'center',
+                                    multi: 'html',
+                                    bold: {
+                                        size: 18,
+                                        vadjust: 2
+                                    }
+                                }
+                            },
+                            clusterEdgeProperties: {
+                                label: ''
+                            }
+                        };
+                        this.network.cluster(clusterOptionsByData)
+                    })
+                }
+            }
+        }
+    }
+
     clusterByGroup = () => {
-        const groupcount = Object.keys(this.props.data.config.groups).length - 1;
+        this.createSubclusters();
+        const groupKeys = Object.keys(this.props.data.config.groups);
+        const groupcount = groupKeys.length;
         let clusterOptionsByData;
-        for (let i = 1; i <= groupcount; i++) {
+        for (let i = 0; i <= groupcount; i++) {
             clusterOptionsByData = {
                 joinCondition: (nodeOptions) => {
-                    //console.log('childoptions', nodeOptions)
-                    return nodeOptions.group === i;
+                    return nodeOptions.group == groupKeys[i];
                 },
                 processProperties: (clusterOptions, childNodes, childEdges) => {
-                    //console.log("childedges", childEdges);
                     clusterOptions.label = 'Node count:\n' + '<b>' + childNodes.length + '</b>';
                     return clusterOptions;
                 },
                 clusterNodeProperties: {
-                    id: i,
-                    group: i,
+                    id: groupKeys[i],
+                    group: groupKeys[i],
                     borderWidth: 3,
                     shape: 'circle',
                     labelHighlightBold: false,
@@ -222,15 +270,13 @@ class GraphComponentView2 extends Component {
                     }
                 },
                 clusterEdgeProperties: {
-                    label: '',
+                    label: ''
                 }
             };
-            //console.log("clusteroptions", clusterOptionsByData)
             this.network.cluster(clusterOptionsByData)
-            //this.network.clustering.updateClusteredNode(i, { label: 'Items: '+ totalMass });
         }
-        //console.log('taht',this.network.clustering.body.nodes)
     }
+
 
     render() {
         //console.log('ntw',this.network);
@@ -255,7 +301,7 @@ class GraphComponentView2 extends Component {
                     />
                 </div>
                 <div style={{ width: '73%', position: 'absolute' }}>
-                    <Graph graph={{ nodes: this.state.nodes, edges: this.props.data.graph.links }}
+                    <Graph graph={{ nodes: this.state.nodes, edges: this.props.data.graph.edges }}
                         options={options}
                         events={events}
                         style={{ height: "900px" }}
