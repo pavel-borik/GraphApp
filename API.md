@@ -88,12 +88,12 @@
                 },
                 //...other nodes to be displayed...
             ],
-            "links": [
+            "edges": [
                 {
                     "from": // id of a node, required by Visjs
                     "to": // id of a node, required by Visjs
                 },
-                //...other links between nodes...
+                //...other edges between nodes...
             ]
         },
     }
@@ -176,12 +176,12 @@
                     "group": 0
                 }
             ],
-            "links": [
+            "edges": [
                 {
                     "from": "EIC_SC_RO09",
                     "to": "EIC_SC_MBA101"
                 },
-                // ... other links ...
+                // ... other edges ...
             ]
         }
     }
