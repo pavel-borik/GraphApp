@@ -3,10 +3,8 @@
 }
 .left-gui-elements {
     width: 26%;
-
-}
-.datepicker-container {
     margin-top: 10px;
+    margin-left: 5px;
 }
 
 .graph-container {
@@ -16,8 +14,8 @@
 
 .card-container {
     margin-top: 10px;
-    margin-left: 5px;
 }
+
 .progress-container {
     position: absolute;
     top: 50%;

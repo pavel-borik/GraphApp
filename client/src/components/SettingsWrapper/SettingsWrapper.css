@@ -1,0 +1,10 @@
+.container {
+    display: flex;   
+    padding: 0 0 0 20px;
+    justify-content: space-between;
+}
+
+.settings {
+    padding-top: 15px;
+}
+    

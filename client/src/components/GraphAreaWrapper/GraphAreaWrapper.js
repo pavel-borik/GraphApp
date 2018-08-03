@@ -7,6 +7,8 @@ import CardWrapper from '../CardWrapper/CardWrapper'
 import './GraphAreaWrapper.css';
 import DatePicker from '../DatePicker/DatePicker';
 import { Link } from 'react-router-dom';
+import SettingsWrapper from '../SettingsWrapper/SettingsWrapper';
+
 
 
 class GraphAreaWrapper extends Component {
@@ -16,6 +18,7 @@ class GraphAreaWrapper extends Component {
             graphData: {},
             selectedDate: {},
             selectedNode: {},
+            view: "1"
         };
     }
 
@@ -57,6 +60,10 @@ class GraphAreaWrapper extends Component {
         this.setState({ selectedDate: date })
     }
 
+    getSelectedView = (event) => {
+        this.setState({ view: event.target.value });
+    }
+
     render() {
 
         //const validityStart = this.props.location.search.validityStart.;
@@ -69,19 +76,26 @@ class GraphAreaWrapper extends Component {
         let progressComponent = null;
 
         if (Object.keys(this.state.graphData).length === 0 && this.state.graphData.constructor === Object) {
-            progressComponent = (<div className="progress-container"><CustomProgress className={"progress"}/></div>) 
+            progressComponent = (<div className="progress-container"><CustomProgress className={"progress"} /></div>)
         } else {
-            graphComponent = <GraphComponentView1 data={this.state.graphData} selectedDate={this.state.selectedDate} getSelectedNode={this.getSelectedNode} />
+            if (this.state.view === "1") {
+                graphComponent = <GraphComponentView1 data={this.state.graphData} selectedDate={this.state.selectedDate} getSelectedNode={this.getSelectedNode} />
+            } else {
+                graphComponent = <GraphComponentView2 data={this.state.graphData} selectedDate={this.state.selectedDate} getSelectedNode={this.getSelectedNode} />
+
+                datePickerComponent = <DatePicker getSelectedDate={this.getSelectedDate}
+                    selectedDate={this.state.selectedDate}
+                    validityStart={this.state.graphData.config.range.validityStart}
+                    validityEnd={this.state.graphData.config.range.validityEnd} />
+            }
             cardComponent = <CardWrapper selectedNode={this.state.selectedNode} />
-            datePickerComponent = <DatePicker getSelectedDate={this.getSelectedDate}
-                selectedDate={this.state.selectedDate}
-                validityStart={this.state.graphData.config.range.validityStart}
-                validityEnd={this.state.graphData.config.range.validityEnd} />
+
         }
         return (
             <div className="base-container">
                 {progressComponent}
                 <div className="left-gui-elements">
+                    <SettingsWrapper getSelectedView={this.getSelectedView}/>
                     <div className="datepicker-container">
                         {datePickerComponent}
                     </div>
