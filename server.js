@@ -135,7 +135,6 @@ app.get('/api/getdata', (req, res) => {
   let queryString = '';
   let queryParams = [];
   for (let i = 0; i < view.length; i++) {
-    //console.log(viewDictionary[req.query.type].rels[view[i]])
     const table = viewDictionary[req.query.type].rels[view[i]].table;
     const joinTable = viewDictionary[view[i]].table;
     const joinIdentifier = viewDictionary[view[i]].identifier;
@@ -144,7 +143,7 @@ app.get('/api/getdata', (req, res) => {
     const where = viewDictionary[req.query.type].rels[view[i]].where;
     const type = view[i];
     queryString +=
-      `select x.${identifier} as id, y.name as label, "${("g"+ (i + 1))}" as "group",
+      `select UUID() as id, x.${identifier} as internalId, y.name as label, "${("g"+ (i + 1))}" as "group",
       "${direction}" as direction, "${type}" as "type", x.validity_start as validityStart, x.validity_end as validityEnd
       from ${table} x left join ${joinTable} y on x.${identifier} = y.${joinIdentifier} where x.${where} like ?
       union `;
@@ -214,16 +213,21 @@ app.get('/api/getdata', (req, res) => {
     }
 
 
-    db.query(`select * from ${viewDictionary[req.query.type].table} where internal_id = ?`, [req.query.id], function (err2, rows2, fields2) {
+    db.query(`select *, UUID() as uuid from ${viewDictionary[req.query.type].table} where internal_id = ?`, [req.query.id], function (err2, rows2, fields2) {
       if (err2) throw err2;
       if (!rows2.length > 0) {
         res.json({});
       } else {
         const detail = rows2[0];
-        detail.title = createNodeTooltipHtml(detail);
-        console.log(detail)
+        detail.title = (`<h3> ${detail.Internal_ID} </h3>
+        <ul class="tooltip-list">
+            <li>Validity start: ${detail.Validity_Start}</li>
+            <li>Validity end: ${detail.Validity_End}</li>
+        </ul>      
+        `)
+        //console.log(detail)
         const edges = computeEdges(rows, detail);
-        rows.push({ "id": detail.Internal_ID, "label": detail.Name, 
+        rows.push({ "id": detail.uuid, "internalId": detail.Internal_ID, "label": detail.Name, 
         "type": req.query.type, "group": "g0", "title": detail.title, "validityStart": detail.Validity_Start, "validityEnd": detail.Validity_End })
         const id = req.query.id;
         const name = detail.Name;
@@ -258,12 +262,6 @@ app.get('/api/getdetail', (req, res) => {
     if (err) throw err;
     if (rows.length > 0) {
       const detail = rows[0];
-      let config = {}
-      config.internal_id = req.query.id;
-      config.name = detail.Name;
-      config.typeFull = viewDictionary[req.query.type].name;
-      config.type = viewDictionary[req.query.type].table;
-      config.actions = createNodeActions(detail);
       res.json({
         "queriedEntity": {
           "id": req.query.id,
@@ -288,9 +286,9 @@ function computeEdges(rows, queriedEntity) {
   var edges = [];
   for (var i = 0; i < rows.length; i++) {
     if (rows[i].direction.localeCompare("from")) {
-      edges.push({ "from": rows[i].id, "to": queriedEntity.Internal_ID, "hiddenLabel": rows[i].validityStart + " -- " + rows[i].validityEnd })
+      edges.push({ "from": rows[i].id, "to": queriedEntity.uuid, "hiddenLabel": rows[i].validityStart + " -- " + rows[i].validityEnd })
     } else if (rows[i].direction.localeCompare("to")) {
-      edges.push({ "from": queriedEntity.Internal_ID, "to": rows[i].id, "hiddenLabel": rows[i].validityStart + " -- " + rows[i].validityEnd })
+      edges.push({ "from": queriedEntity.uuid, "to": rows[i].id, "hiddenLabel": rows[i].validityStart + " -- " + rows[i].validityEnd })
     }
   }
   return edges;

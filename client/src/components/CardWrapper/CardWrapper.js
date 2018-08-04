@@ -14,7 +14,7 @@ class CardWrapper extends Component {
         if (prevProps.selectedNode.id !== this.props.selectedNode.id) {
            // console.log('prevprops', prevProps)
             //console.log('thisprops', this.props)
-            const url = 'api/getdetail?' + 'id=' + this.props.selectedNode.id + '&type=' + this.props.selectedNode.type;
+            const url = 'api/getdetail?' + 'id=' + this.props.selectedNode.internalId + '&type=' + this.props.selectedNode.type;
             fetch(url)
                 .then((res) => {
                     if (res.ok) {
