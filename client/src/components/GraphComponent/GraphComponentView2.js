@@ -15,7 +15,6 @@ class GraphComponentView2 extends Component {
         this.state = {
             nodes: [],
             edges: [],
-            intervals: [],
         }
         const network = null;
         const legendNetwork = null;
@@ -24,21 +23,17 @@ class GraphComponentView2 extends Component {
     }
 
     componentDidMount() {
-        let newIntervals = new Set();
         const displayedNodes = this.props.data.graph.nodes.filter(node => {
-            if (node.validityStart !== null && node.validityStart !== "unlimited") newIntervals.add(node.validityStart);
-            if (node.validityEnd !== null && node.validityEnd !== "unlimited") newIntervals.add(node.validityEnd);
-
-            if (node.group === 0) {
-                return true;
-            } else {
-                return this.props.selectedDate.isBetween(moment(node.validityStart), node.validityEnd !== "unlimited" ? moment(node.validityEnd) : moment(), 'day', '[)');
-            }
+            return this.props.selectedDate.isBetween(moment(node.validityStart), node.validityEnd !== "unlimited" ? moment(node.validityEnd) : moment(), 'h', '[)');
+            // if (node.group === "g0") {
+            //     return true;
+            // } else {
+            //     return this.props.selectedDate.isBetween(moment(node.validityStart), node.validityEnd !== "unlimited" ? moment(node.validityEnd) : moment(), 'h', '[)');
+            // }
         });
 
         this.setState({
             nodes: displayedNodes,
-            intervals: Array.from(newIntervals).sort()
         }, () => {
             this.clusterByGroup();
         });
@@ -48,11 +43,13 @@ class GraphComponentView2 extends Component {
         if (JSON.stringify(this.props.data.graph.nodes) === JSON.stringify(prevProps.data.graph.nodes)) {
             if (!prevProps.selectedDate.isSame(this.props.selectedDate)) {
                 const displayedNodes = this.props.data.graph.nodes.filter(node => {
-                    if (node.group === 0) {
-                        return true;
-                    } else {
-                        return this.props.selectedDate.isBetween(moment(node.validityStart), node.validityEnd !== "unlimited" ? moment(node.validityEnd) : moment(), 'day', '[)');
-                    }
+                    return this.props.selectedDate.isBetween(moment(node.validityStart), node.validityEnd !== "unlimited" ? moment(node.validityEnd) : moment('2100-01-01'), 'h', '[)');
+
+                    // if (node.group === "g0") {
+                    //     return true;
+                    // } else {
+
+                    // }
                 });
                 //console.log("displayed nodes", displayedNodes)
                 if (displayedNodes.length === this.state.nodes.length) {
@@ -71,11 +68,13 @@ class GraphComponentView2 extends Component {
             }
         } else {
             const displayedNodes = this.props.data.graph.nodes.filter(node => {
-                if (node.group === 0) {
-                    return true;
-                } else {
-                    return this.props.selectedDate.isBetween(moment(node.validityStart), node.validityEnd !== "unlimited" ? moment(node.validityEnd) : moment(), 'day', '[)');
-                }
+                return this.props.selectedDate.isBetween(moment(node.validityStart), node.validityEnd !== "unlimited" ? moment(node.validityEnd) : moment('2100-01-01'), 'h', '[)');
+
+                // if (node.group === "g0") {
+                //     return true;
+                // } else {
+                //     return this.props.selectedDate.isBetween(moment(node.validityStart), node.validityEnd !== "unlimited" ? moment(node.validityEnd) : moment('2100-01-01'), 'h', '[)');
+                // }
             });
 
             this.setState({

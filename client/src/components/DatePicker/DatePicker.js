@@ -30,14 +30,14 @@ class CustomDatePicker extends React.Component {
     this.props.getSelectedDate(date);
   }
 
-  increaseDate = () => {
-     const newDate = this.props.selectedDate.clone().add(1, 'd');
-     this.props.getSelectedDate(newDate);
-}
-
   decreaseDate = () => {
     const newDate = this.props.selectedDate.clone().subtract(1, 'd');
     this.props.getSelectedDate(newDate);
+  }
+
+  increaseDate = () => {
+     const newDate = this.props.selectedDate.clone().add(1, 'd');
+     this.props.getSelectedDate(newDate);
   }
 
   render() {
@@ -46,7 +46,7 @@ class CustomDatePicker extends React.Component {
     const maxValidity = moment(this.props.validityEnd, "YYYYMMDD");
     return (
       <div className={classes.root}>
-        <IconButton className={classes.button} aria-label="Decrease date" disabled={this.props.selectedDate.isSame(minValidity) ? true : false} onClick={this.decreaseDate}>
+        <IconButton className={classes.button} aria-label="Decrease date" disabled={this.props.selectedDate.isSame(minValidity) ? true : false} onClick={this.props.jumpToPreviousBreak}>
           <ArrowLeft />
         </IconButton>
         <IconButton className={classes.button} aria-label="Decrease date" disabled={this.props.selectedDate.isSame(minValidity) ? true : false} onClick={this.decreaseDate}>
@@ -68,7 +68,7 @@ class CustomDatePicker extends React.Component {
         <IconButton className={classes.button} aria-label="Increase date" disabled={this.props.selectedDate.isSame(maxValidity) ? true : false} onClick={this.increaseDate}>
           <ArrowUp />
         </IconButton>
-        <IconButton className={classes.button} aria-label="Increase date" disabled={this.props.selectedDate.isSame(maxValidity) ? true : false} onClick={this.increaseDate}>
+        <IconButton className={classes.button} aria-label="Increase date" disabled={this.props.selectedDate.isSame(maxValidity) ? true : false} onClick={this.props.jumpToNextBreak}>
           <ArrowRight />
         </IconButton>
       </div>
