@@ -3,7 +3,7 @@ import GraphComponentView1 from '../GraphComponent/GraphComponentView1';
 import GraphComponentView2 from '../GraphComponent/GraphComponentView2';
 import CustomProgress from '../GuiElements/CustomProgress';
 import moment from 'moment';
-import CardWrapper from '../CardWrapper/CardWrapper'
+import InfoCard from '../InfoCard/InfoCard'
 import './GraphAreaWrapper.css';
 import DatePicker from '../DatePicker/DatePicker';
 import { Link } from 'react-router-dom';
@@ -57,15 +57,19 @@ class GraphAreaWrapper extends Component {
         let newIntervals = new Set();
         const validityRangeStart = moment(this.state.graphData.config.range.validityStart);
         const validityRangeEnd = moment(this.state.graphData.config.range.validityEnd);
-        if(validityRangeStart.isValid) newIntervals.add(this.state.graphData.config.range.validityStart)
-        
+        if (validityRangeStart.isValid) newIntervals.add(this.state.graphData.config.range.validityStart)
+
         this.state.graphData.graph.nodes.forEach(node => {
             const validityStart = moment(node.validityStart);
             const validityEnd = moment(node.validityEnd);
-            if(validityStart.isBetween(validityRangeStart, validityRangeEnd)) newIntervals.add(node.validityStart);
-            if(validityEnd.isBetween(validityRangeStart, validityRangeEnd)) newIntervals.add(node.validityEnd);
+            if (validityStart.isBetween(validityRangeStart, validityRangeEnd)) newIntervals.add(node.validityStart);
+            if (validityEnd.isBetween(validityRangeStart, validityRangeEnd)) newIntervals.add(node.validityEnd);
         });
-        this.setState({ timeBreaks: Array.from(newIntervals).sort() });
+        const intervalsAsMoments = Array.from(newIntervals).map(i => {
+            return moment(i);
+        }).sort((a, b) => b.isBefore(a));
+
+        this.setState({ timeBreaks: intervalsAsMoments });
     }
 
     getSelectedNode = (node) => {
@@ -82,31 +86,29 @@ class GraphAreaWrapper extends Component {
 
     jumpToPreviousBreak = () => {
         const len = this.state.timeBreaks.length;
-        if(len > 0) {
-            let prevDate = moment(this.state.timeBreaks[0]);
-            if(len > 1) {
-                for(let i = 1; i < len; i++) {
-                    const timeBreak = moment(this.state.timeBreaks[i]);
-                    if(timeBreak.isBefore(this.state.selectedDate) && timeBreak.isAfter(prevDate)) {
-                        prevDate = timeBreak;
-                    }
-                } 
+        if (len > 0) {
+            let prevDate = this.state.selectedDate;
+            for (let i = len - 1; i >= 0; i--) {
+                const timeBreak = this.state.timeBreaks[i];
+                if (timeBreak.isBefore(this.state.selectedDate)) {
+                    prevDate = timeBreak;
+                    break;
+                }
             }
             this.setState({ selectedDate: prevDate });
         }
     }
-  
+
     jumpToNextBreak = () => {
         const len = this.state.timeBreaks.length;
-        if(len > 0) {
-            let nextDate = moment(this.state.timeBreaks[len-1]);
-            if(len > 1) {
-                for(let i = 1; i < len; i++) {
-                    const timeBreak = moment(this.state.timeBreaks[i]);
-                    if(timeBreak.isAfter(this.state.selectedDate) && timeBreak.isBefore(nextDate)) {
-                        nextDate = timeBreak;
-                    }
-                } 
+        if (len > 0) {
+            let nextDate = this.state.selectedDate;
+            for (let i = 0; i < len; i++) {
+                const timeBreak = this.state.timeBreaks[i];
+                if (timeBreak.isAfter(this.state.selectedDate)) {
+                    nextDate = timeBreak;
+                    break;
+                }
             }
             this.setState({ selectedDate: nextDate });
         }
@@ -138,7 +140,7 @@ class GraphAreaWrapper extends Component {
                     validityStart={this.state.graphData.config.range.validityStart}
                     validityEnd={this.state.graphData.config.range.validityEnd} />
             }
-            cardComponent = <CardWrapper selectedNode={this.state.selectedNode} />
+            cardComponent = <InfoCard selectedNode={this.state.selectedNode} />
 
         }
         return (

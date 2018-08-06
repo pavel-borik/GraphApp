@@ -4,11 +4,11 @@ import { withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import CardActions from '@material-ui/core/CardActions';
-import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
+import './InfoCard.css'
+import InfoCardDetail from './InfoCardDetail';
 
 const styles = {
-
   title: {
     marginBottom: 16,
     fontSize: 14,
@@ -18,50 +18,32 @@ const styles = {
   },
   uldetail: {
     listStyleType: 'none',
-    padding:0,
-    margin:0
+    padding: 0,
+    margin: 0
   }
 };
 
 class InfoCard extends PureComponent {
 
   render() {
-    const { classes, header, actions, detail } = this.props;
-    const entityDetailKeys = Object.keys(detail);
-    const entityDetailValues = Object.keys(detail).map(key => detail[key]);
-    let detailElements = [];
-    let actionElements = [];
-
-    actions.forEach(action => {
-      const button = <Button size="small" color="primary" href={action.url}>{action.name}</Button>
-      actionElements.push(button);
-    });
-
-    for (var i = 0; i < entityDetailKeys.length; i++) {
-      if (entityDetailValues[i] === null) continue;
-      const listItem = <li key={i} >{entityDetailKeys[i]}: {entityDetailValues[i]} </li>
-      detailElements.push(listItem);
-    }
-
+    const { classes } = this.props;
     return (
       <div>
         <Card className={classes.card}>
           <CardContent>
             <Typography className={classes.title} color="textSecondary">
               Entity information:
-          </Typography>
+            </Typography>
             <Typography variant="headline" component="h2">
-              {header.name}
+              {this.props.selectedNode.label ? this.props.selectedNode.label : this.props.selectedNode.name}
             </Typography>
             <Typography className={classes.pos} color="textSecondary">
-              {header.type}
+              {this.props.selectedNode.type}
             </Typography>
-              <ul className={classes.uldetail}>
-                {detailElements}
-              </ul>
+              {this.props.selectedNode.detail ? <div className="detail" dangerouslySetInnerHTML={{ __html: this.props.selectedNode.detail }}></div> : <InfoCardDetail internalId={this.props.selectedNode.internalId} type={this.props.selectedNode.type} />}
           </CardContent>
           <CardActions>
-            {actionElements}
+            {/* {actionElements} */}
           </CardActions>
         </Card>
       </div>
