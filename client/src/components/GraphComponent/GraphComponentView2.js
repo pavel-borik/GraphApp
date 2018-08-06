@@ -35,7 +35,9 @@ class GraphComponentView2 extends Component {
         this.setState({
             nodes: displayedNodes,
         }, () => {
+            console.log("gc")
             this.clusterByGroup();
+            console.log("gc")
         });
     }
 
@@ -278,8 +280,6 @@ class GraphComponentView2 extends Component {
 
 
     render() {
-        //console.log('ntw',this.network);
-        //console.log('datset',this.dataset);
         Object.assign(options.groups, this.props.data.config.groups);
 
         const events = {
@@ -288,10 +288,8 @@ class GraphComponentView2 extends Component {
             deselectEdge: this.deselectEdge,
             click: this.click,
         };
-        console.log("displayednodes", this.state.nodes)
         return (
             <div>
-
                 <div style={{ width: '73%', position: 'absolute' }}>
                     <Graph graph={{ nodes: [], edges: [] }}
                         options={{ autoResize: true }}
