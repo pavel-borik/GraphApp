@@ -26,7 +26,7 @@ export const options = {
         color: {
             color: '#848484',
             opacity: 0.6,
-            //highlight: '#000000'
+            highlight: '#000000'
         },
         font: {
             align: 'bottom',

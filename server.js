@@ -1,6 +1,6 @@
 const express = require('express');
 const mysql = require('mysql');
-
+const moment = require('moment');
 const app = express();
 
 const db = mysql.createConnection({
@@ -134,6 +134,9 @@ app.get('/api/getdata', (req, res) => {
   const view = req.query.view.split(',')
   let queryString = '';
   let queryParams = [];
+  const validityStart = req.query.validityStart;
+  const validityEnd = req.query.validityEnd;
+
   for (let i = 0; i < view.length; i++) {
     const table = viewDictionary[req.query.type].rels[view[i]].table;
     const joinTable = viewDictionary[view[i]].table;
@@ -143,7 +146,7 @@ app.get('/api/getdata', (req, res) => {
     const where = viewDictionary[req.query.type].rels[view[i]].where;
     const type = view[i];
     queryString +=
-      `select UUID() as id, x.${identifier} as internalId, y.name as label, "${("g"+ (i + 1))}" as "group",
+      `select UUID() as id, x.${identifier} as internalId, y.name as label, "${("g" + (i + 1))}" as "group",
       "${direction}" as direction, "${type}" as "type", x.validity_start as validityStart, x.validity_end as validityEnd
       from ${table} x left join ${joinTable} y on x.${identifier} = y.${joinIdentifier} where x.${where} like ?
       union `;
@@ -156,8 +159,8 @@ app.get('/api/getdata', (req, res) => {
   let configGraph = {
     "groups": groups,
     "range": {
-      "validityStart": req.query.validityStart,
-      "validityEnd": req.query.validityEnd
+      "validityStart": validityStart,
+      "validityEnd": validityEnd
     }
   };
 
@@ -202,7 +205,7 @@ app.get('/api/getdata', (req, res) => {
               currentSubcluster++;
               desc = {
                 "id": currentSubcluster,
-                "name":  "Subcluster " + currentSubcluster.toString(),
+                "name": "Subcluster " + currentSubcluster.toString(),
               }
               clusteringDescription.push(desc);
             }
@@ -218,22 +221,34 @@ app.get('/api/getdata', (req, res) => {
       if (!rows2.length > 0) {
         res.json({});
       } else {
-        const detail = rows2[0];
-        detail.title = (`<h3> ${detail.Internal_ID} </h3>
+        const queriedEntity = rows2[0];
+
+        const keys = Object.keys(rows2[0]);
+        const values = Object.values(rows2[0]);
+        let detail = "<ul>";
+        for (let i = 0; i < keys.length; i++) {
+          detail += `<li> ${keys[i]}: ${values[i]} </li>`
+        }
+        detail += "</ul>"
+
+        queriedEntity.title = (`<h3> ${queriedEntity.Internal_ID} </h3>
         <ul class="tooltip-list">
-            <li>Validity start: ${detail.Validity_Start}</li>
-            <li>Validity end: ${detail.Validity_End}</li>
+            <li>Validity start: ${queriedEntity.Validity_Start}</li>
+            <li>Validity end: ${queriedEntity.Validity_End}</li>
         </ul>      
         `)
         //console.log(detail)
-        const edges = computeEdges(rows, detail);
-        rows.push({ "id": detail.uuid, "internalId": detail.Internal_ID, "label": detail.Name, 
-        "type": req.query.type, "group": "g0", "title": detail.title, "validityStart": detail.Validity_Start, "validityEnd": detail.Validity_End })
+        const edges = computeEdges(rows, queriedEntity, validityStart, validityEnd);
+        rows.push({
+          "id": queriedEntity.uuid, "internalId": queriedEntity.Internal_ID, "label": queriedEntity.Name,
+          "type": req.query.type, "group": "g0", "title": queriedEntity.title, "validityStart": queriedEntity.Validity_Start, "validityEnd": queriedEntity.Validity_End
+        })
         const id = req.query.id;
-        const name = detail.Name;
+        const name = queriedEntity.Name;
         const typeFull = viewDictionary[req.query.type].name;
         const type = viewDictionary[req.query.type].table;
-        const actions = createNodeActions(detail);
+        const actions = createNodeActions(queriedEntity);
+
         res.json({
           "config": configGraph,
           "queriedEntity": {
@@ -261,14 +276,20 @@ app.get('/api/getdetail', (req, res) => {
   db.query(`select * from ${queriedTable} where ${identifier} = ? limit 1`, req.query.id, function (err, rows, fields) {
     if (err) throw err;
     if (rows.length > 0) {
-      const detail = rows[0];
+      const keys = Object.keys(rows[0]);
+      const values = Object.values(rows[0]);
+      let detail = "<ul>";
+      for (let i = 0; i < keys.length; i++) {
+        detail += `<li> ${keys[i]}: ${values[i]} </li>`
+      }
+      detail += "</ul>"
       res.json({
         "queriedEntity": {
           "id": req.query.id,
-          "name": detail.Name,
+          "name": rows[0].Name,
           "type": viewDictionary[req.query.type].table,
           "typeFull": viewDictionary[req.query.type].name,
-          "actions": createNodeActions(detail),
+          "actions": createNodeActions(rows[0]),
           "detail": detail,
         },
       });
@@ -282,13 +303,20 @@ app.get('/api/getdetail', (req, res) => {
   })
 });
 
-function computeEdges(rows, queriedEntity) {
+function computeEdges(rows, queriedEntity, validityStart, validityEnd) {
   var edges = [];
+  validityStartMoment = moment(validityStart);
+  validityEndMoment = moment(validityEnd);
   for (var i = 0; i < rows.length; i++) {
     if (rows[i].direction.localeCompare("from")) {
-      edges.push({ "from": rows[i].id, "to": queriedEntity.uuid, "hiddenLabel": rows[i].validityStart + " -- " + rows[i].validityEnd })
+      const resultEdge = { "from": rows[i].id, "to": queriedEntity.uuid, "hiddenLabel": rows[i].validityStart + " -- " + rows[i].validityEnd, "validityChanges": false }
+      if (moment(rows[i].validityStart).isAfter(validityStart) || moment(rows[i].validityEnd).isBefore(validityEnd)) resultEdge.validityChanges = true;
+      edges.push(resultEdge);
     } else if (rows[i].direction.localeCompare("to")) {
-      edges.push({ "from": queriedEntity.uuid, "to": rows[i].id, "hiddenLabel": rows[i].validityStart + " -- " + rows[i].validityEnd })
+      const resultEdge = { "from": queriedEntity.uuid, "to": rows[i].id, "hiddenLabel": rows[i].validityStart + " -- " + rows[i].validityEnd, "validityChanges": false }
+      if (moment(rows[i].validityStart).isAfter(validityStart) || moment(rows[i].validityEnd).isBefore(validityEnd)) resultEdge.validityChanges = true;
+      edges.push(resultEdge);
+
     }
   }
   return edges;
@@ -297,7 +325,7 @@ function computeEdges(rows, queriedEntity) {
 function createGroups(view, type) {
   let groups = {};
   let i = 0;
-  let key = "g"+i;
+  let key = "g" + i;
   let group = {
     [key]: {
       "name": viewDictionary[type].name,
@@ -312,7 +340,7 @@ function createGroups(view, type) {
   Object.assign(groups, group);
   i++;
   view.forEach(v => {
-    let key = "g"+i;
+    let key = "g" + i;
     let group = {
       [key]: {
         "name": viewDictionary[v].name,

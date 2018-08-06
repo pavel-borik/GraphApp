@@ -25,7 +25,7 @@ class GraphComponentView1 extends Component {
 
     componentDidMount() {
         //TODO - highlight edges
-
+        this.highlightEdges();
         this.clusterByGroup();
     }
 
@@ -35,6 +35,7 @@ class GraphComponentView1 extends Component {
             this.network.setOptions(options);
             this.network.unselectAll();
             this.openAllClusters();
+            this.highlightEdges();
             this.clusterByGroup();
             this.legendNetwork.redraw();
         }
@@ -92,7 +93,11 @@ class GraphComponentView1 extends Component {
             }
         });
     }
-
+    highlightEdges = () => {
+        this.edgeDataset.map(edge => {
+            if (edge.validityChanges === true) this.edgeDataset.update({ id: edge.id, color: { color: "red", opacity: 0.1, highlight: "red" } });
+        })
+    }
     selectEdge = (event) => {
         const { edges } = event;
         if (edges.length === 1) {
@@ -176,7 +181,9 @@ class GraphComponentView1 extends Component {
                                 }
                             },
                             clusterEdgeProperties: {
-                                label: ''
+                                label: '',
+                                color: '#848484',
+                                opacity: 0.6,
                             }
                         };
                         this.network.cluster(clusterOptionsByData)
@@ -219,7 +226,9 @@ class GraphComponentView1 extends Component {
                     }
                 },
                 clusterEdgeProperties: {
-                    label: ''
+                    label: '',
+                    color: '#848484',
+                    opacity: 0.6,
                 }
             };
             this.network.cluster(clusterOptionsByData)
