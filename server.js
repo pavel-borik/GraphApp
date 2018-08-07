@@ -168,6 +168,7 @@ app.get('/api/getdata', (req, res) => {
     if (err) throw err;
     rows.map(node => {
       node.title = createNodeTooltipHtml(node);
+      node.typeFullName = viewDictionary[node.type].name;
     });
 
     /**
@@ -245,7 +246,7 @@ app.get('/api/getdata', (req, res) => {
         })
         const id = req.query.id;
         const name = queriedEntity.Name;
-        const typeFull = viewDictionary[req.query.type].name;
+        const typeFullName = viewDictionary[req.query.type].name;
         const type = viewDictionary[req.query.type].table;
         const actions = createNodeActions(queriedEntity);
 
@@ -255,7 +256,7 @@ app.get('/api/getdata', (req, res) => {
             "id": id,
             "name": name,
             "type": type,
-            "typeFull": typeFull,
+            "typeFullName": typeFullName,
             "actions": actions,
             "detail": detail,
           },
@@ -282,13 +283,14 @@ app.get('/api/getdetail', (req, res) => {
       for (let i = 0; i < keys.length; i++) {
         detail += `<li> ${keys[i]}: ${values[i]} </li>`
       }
+      detail += "<li> test: <a href='http://localhost:3000/getdata?id=EIC_10YNO_3________J&type=mba&validityStart=20150101&validityEnd=20180101&view=ro,mga,tso,country'>test</a></li>"
       detail += "</ul>"
       res.json({
         "queriedEntity": {
           "id": req.query.id,
           "name": rows[0].Name,
           "type": viewDictionary[req.query.type].table,
-          "typeFull": viewDictionary[req.query.type].name,
+          "typeFullName": viewDictionary[req.query.type].name,
           "actions": createNodeActions(rows[0]),
           "detail": detail,
         },
@@ -360,12 +362,7 @@ function createGroups(view, type) {
 
 
 function createNodeTooltipHtml(node) {
-  return (`<h3> ${node.id} </h3>
-      <ul class="tooltip-list">
-          <li>Validity start: ${node.validityStart}</li>
-          <li>Validity end: ${node.validityEnd}</li>
-      </ul>      
-   `);
+  return `<h3> ${node.id} </h3><ul class="tooltip-list"><li>Validity start: ${node.validityStart}</li><li>Validity end: ${node.validityEnd}</li></ul>`;
 }
 
 function createNodeActions(node) {

@@ -30,7 +30,7 @@ class CardWrapper extends Component {
     render() {
         const header = {
             "name": this.state.nodeDetail.name,
-            "type": this.state.nodeDetail.typeFull
+            "type": this.state.nodeDetail.typeFullName
         };
         const actions = this.state.nodeDetail.actions;
         const detail = this.state.nodeDetail.detail;
