@@ -3,10 +3,10 @@ import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
-import CardActions from '@material-ui/core/CardActions';
 import Typography from '@material-ui/core/Typography';
 import './InfoCard.css'
 import InfoCardDetail from './InfoCardDetail';
+import Button from '@material-ui/core/Button';
 
 const styles = {
   title: {
@@ -20,13 +20,31 @@ const styles = {
     listStyleType: 'none',
     padding: 0,
     margin: 0
-  }
+  },
+  button: {
+    marginRight: 5
+  },
 };
 
 class InfoCard extends PureComponent {
 
   render() {
     const { classes } = this.props;
+
+    let detailComponent = null;
+    if (this.props.selectedNode.hasOwnProperty("detail") && this.props.selectedNode.hasOwnProperty("actions")) {
+      detailComponent = (<div>
+        <div className="detail" dangerouslySetInnerHTML={{ __html: this.props.selectedNode.detail }}></div>
+        <div className="actions-container">{this.props.selectedNode.actions.map(a => {
+          return <Button className={classes.button} variant="outlined" size="small" color="primary" href={a.url}>{a.name}</Button>
+        })
+        }
+        </div>
+      </div>)
+    } else {
+      detailComponent = <InfoCardDetail internalId={this.props.selectedNode.internalId} type={this.props.selectedNode.type} />
+    }
+
     return (
       <div>
         <Card className={classes.card}>
@@ -38,13 +56,10 @@ class InfoCard extends PureComponent {
               {this.props.selectedNode.label ? this.props.selectedNode.label : this.props.selectedNode.name}
             </Typography>
             <Typography className={classes.pos} color="textSecondary">
-              {this.props.selectedNode.type}
+              {this.props.selectedNode.typeFullName}
             </Typography>
-              {this.props.selectedNode.detail ? <div className="detail" dangerouslySetInnerHTML={{ __html: this.props.selectedNode.detail }}></div> : <InfoCardDetail internalId={this.props.selectedNode.internalId} type={this.props.selectedNode.type} />}
+            {detailComponent}
           </CardContent>
-          <CardActions>
-            {/* {actionElements} */}
-          </CardActions>
         </Card>
       </div>
     );
