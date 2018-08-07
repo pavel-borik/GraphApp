@@ -25,11 +25,6 @@ class GraphComponentView2 extends Component {
     componentDidMount() {
         const displayedNodes = this.props.data.graph.nodes.filter(node => {
             return this.props.selectedDate.isBetween(moment(node.validityStart), node.validityEnd !== "unlimited" ? moment(node.validityEnd) : moment(), 'h', '[)');
-            // if (node.group === "g0") {
-            //     return true;
-            // } else {
-            //     return this.props.selectedDate.isBetween(moment(node.validityStart), node.validityEnd !== "unlimited" ? moment(node.validityEnd) : moment(), 'h', '[)');
-            // }
         });
 
         this.setState({
@@ -46,12 +41,6 @@ class GraphComponentView2 extends Component {
             if (!prevProps.selectedDate.isSame(this.props.selectedDate)) {
                 const displayedNodes = this.props.data.graph.nodes.filter(node => {
                     return this.props.selectedDate.isBetween(moment(node.validityStart), node.validityEnd !== "unlimited" ? moment(node.validityEnd) : moment('2100-01-01'), 'h', '[)');
-
-                    // if (node.group === "g0") {
-                    //     return true;
-                    // } else {
-
-                    // }
                 });
                 //console.log("displayed nodes", displayedNodes)
                 if (displayedNodes.length === this.state.nodes.length) {
@@ -71,12 +60,6 @@ class GraphComponentView2 extends Component {
         } else {
             const displayedNodes = this.props.data.graph.nodes.filter(node => {
                 return this.props.selectedDate.isBetween(moment(node.validityStart), node.validityEnd !== "unlimited" ? moment(node.validityEnd) : moment('2100-01-01'), 'h', '[)');
-
-                // if (node.group === "g0") {
-                //     return true;
-                // } else {
-                //     return this.props.selectedDate.isBetween(moment(node.validityStart), node.validityEnd !== "unlimited" ? moment(node.validityEnd) : moment('2100-01-01'), 'h', '[)');
-                // }
             });
 
             this.setState({
