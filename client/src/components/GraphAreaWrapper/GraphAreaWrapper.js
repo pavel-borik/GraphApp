@@ -5,7 +5,7 @@ import CustomProgress from '../GuiElements/CustomProgress';
 import moment from 'moment';
 import InfoCard from '../InfoCard/InfoCard'
 import './GraphAreaWrapper.css';
-import DatePicker from '../DatePicker/DatePicker';
+import EnhancedDatePicker from '../DatePicker/EnhancedDatePicker';
 import { Link } from 'react-router-dom';
 import SettingsWrapper from '../SettingsWrapper/SettingsWrapper';
 
@@ -114,6 +114,16 @@ class GraphAreaWrapper extends Component {
         }
     }
 
+    processNewDateRange = (newStartDate, newEndDate) => {
+        if (newStartDate.format("YYYYMMDD") !== this.state.graphData.config.range.validityStart || 
+            newEndDate.format("YYYYMMDD") !== this.state.graphData.config.range.validityEnd) {
+            const search = this.props.location.search;
+            const newUrl = this.props.location.pathname + search.replace(/validityStart=\d+/, `validityStart=${newStartDate.format("YYYYMMDD")}`)
+                .replace(/validityEnd=\d+/, `validityEnd=${newEndDate.format("YYYYMMDD")}`);
+            this.props.history.push(newUrl);
+        }
+    }
+
     render() {
 
         //const validityStart = this.props.location.search.validityStart.;
@@ -124,6 +134,7 @@ class GraphAreaWrapper extends Component {
         let cardComponent = null;
         let datePickerComponent = null;
         let progressComponent = null;
+        let settingsComponent = null;
 
         if (Object.keys(this.state.graphData).length === 0 && this.state.graphData.constructor === Object) {
             progressComponent = (<div className="progress-container"><CustomProgress className={"progress"} /></div>)
@@ -133,13 +144,17 @@ class GraphAreaWrapper extends Component {
             } else {
                 graphComponent = <GraphComponentView2 data={this.state.graphData} selectedDate={this.state.selectedDate} getSelectedNode={this.getSelectedNode} />
 
-                datePickerComponent = <DatePicker getSelectedDate={this.getSelectedDate}
+                datePickerComponent = <EnhancedDatePicker getSelectedDate={this.getSelectedDate}
                     jumpToPreviousBreak={this.jumpToPreviousBreak}
                     jumpToNextBreak={this.jumpToNextBreak}
                     selectedDate={this.state.selectedDate}
                     validityStart={this.state.graphData.config.range.validityStart}
                     validityEnd={this.state.graphData.config.range.validityEnd} />
+
+
             }
+            settingsComponent = <SettingsWrapper processNewDateRange={this.processNewDateRange} getSelectedView={this.getSelectedView} validityStart={this.state.graphData.config.range.validityStart}
+                validityEnd={this.state.graphData.config.range.validityEnd} />
             cardComponent = <InfoCard selectedNode={this.state.selectedNode} />
 
         }
@@ -147,7 +162,7 @@ class GraphAreaWrapper extends Component {
             <div className="base-container">
                 {progressComponent}
                 <div className="left-gui-elements">
-                    <SettingsWrapper getSelectedView={this.getSelectedView} />
+                    {settingsComponent}
                     <div className="datepicker-container">
                         {datePickerComponent}
                     </div>
