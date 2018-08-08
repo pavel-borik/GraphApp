@@ -16,7 +16,7 @@ class App extends Component {
       <Router>
         <div className="App">
           <div>
-            <NavBar />
+            {/* <NavBar /> */}
           </div>
           <div className="Graphdiv">
             <Route path="/getdata" render={GraphAreaWrapperWithProps} />
