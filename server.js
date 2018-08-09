@@ -21,7 +21,7 @@ let viewDictionary = {
   "mba": {
     "name": "Market Balance Area",
     "table": "mba",
-    "identifier": "internal_id",
+    "identifier": "Internal_ID",
     "color": "#e6194b",
     "rels": {
       "ro": {
@@ -57,7 +57,7 @@ let viewDictionary = {
   "ro": {
     "name": "Regulation Object",
     "table": "ro",
-    "identifier": "internal_id",
+    "identifier": "Internal_ID",
     "color": "#3cb44b",
     "rels": {
       "prod_type": {
@@ -93,39 +93,110 @@ let viewDictionary = {
   "mga": {
     "name": "Metering Grid Area",
     "table": "mga",
-    "identifier": "internal_id",
+    "identifier": "Internal_ID",
     "color": "#ffe119",
   },
   "tso": {
     "name": "Transmission System Operator",
     "table": "tso",
-    "identifier": "internal_id",
+    "identifier": "Internal_ID",
     "color": "#0082c8",
   },
   "country": {
     "name": "Country",
     "table": "country",
-    "identifier": "iso_code",
+    "identifier": "ISO_CODE",
     "color": "#f58231",
 
   },
   "prod_type": {
     "name": "Production type",
     "table": "prod_type",
-    "identifier": "internal_id",
+    "identifier": "Internal_ID",
     "color": "#911eb4",
   },
   "brp": {
     "name": "Balance Responsible Party",
     "table": "brp",
-    "identifier": "internal_id",
+    "identifier": "Internal_ID",
     "color": "#46f0f0",
+  },
+  "re": {
+    "name": "Retailer",
+    "table": "re",
+    "identifier": "Internal_ID",
+    "color": "#48ccbb",
+  },
+  "dso": {
+    "name": "Distribution System Operator",
+    "table": "dso",
+    "identifier": "Internal_ID",
+    "color": "#90770f",
+  },
+  "party": {
+    "name": "Company",
+    "table": "party",
+    "identifier": "WS_ID",
+    "color": "#ac90e3",
+    "rels": {
+      "tso": {
+        table: "tso",
+        identifier: "internal_id",
+        direction: "to",
+        where: "company",
+        timedependent: false,
+      },
+      "dso": {
+        table: "dso",
+        identifier: "internal_id",
+        direction: "to",
+        where: "company",
+        timedependent: false,
+      },
+      "country": {
+        table: "company_branch",
+        identifier: "country",
+        direction: "from",
+        where: "party",
+        timedependent: true,
+      },
+      "brp": {
+        table: "brp",
+        identifier: "internal_id",
+        direction: "to",
+        where: "company",
+        timedependent: false,
+      },
+    },
   },
   "pu": {
     "name": "Production Unit",
     "table": "pu",
     "identifier": "internal_id",
     "color": "#f032e6",
+    "rels": {
+      "mga": {
+        table: "pu_mga_rel",
+        identifier: "mga",
+        direction: "from",
+        where: "production_unit",
+        timedependent: false,
+      },
+      "re": {
+        table: "pu_re_rel",
+        identifier: "retailer",
+        direction: "from",
+        where: "production_unit",
+        timedependent: true,
+      },
+      "ro": {
+        table: "pu_ro_rel",
+        identifier: "Regulation_Object",
+        direction: "from",
+        where: "production_unit",
+        timedependent: true,
+      },
+    },
   },
 }
 
@@ -217,13 +288,13 @@ app.get('/api/getdata', (req, res) => {
     }
 
 
-    db.query(`select *, UUID() as uuid from ${viewDictionary[req.query.type].table} where internal_id = ?`, [req.query.id], function (err2, rows2, fields2) {
+    db.query(`select *, UUID() as uuid from ${viewDictionary[req.query.type].table} where ${viewDictionary[req.query.type].identifier} = ?`, [req.query.id], function (err2, rows2, fields2) {
       if (err2) throw err2;
       if (!rows2.length > 0) {
         res.json({});
       } else {
         const queriedEntity = rows2[0];
-
+        console.log(queriedEntity)
         const keys = Object.keys(rows2[0]);
         const values = Object.values(rows2[0]);
         let detail = "<ul>";
@@ -240,9 +311,10 @@ app.get('/api/getdata', (req, res) => {
         `)
         //console.log(detail)
         const edges = computeEdges(rows, queriedEntity, validityStart, validityEnd);
+        rows.map(r => delete r.direction)
         rows.push({
-          "id": queriedEntity.uuid, "internalId": queriedEntity.Internal_ID, "label": queriedEntity.Name,
-          "type": req.query.type, "group": "g0", "title": queriedEntity.title, "validityStart": queriedEntity.Validity_Start, "validityEnd": queriedEntity.Validity_End
+          "id": queriedEntity.uuid, "internalId": queriedEntity[viewDictionary[req.query.type].identifier], "label": queriedEntity.Name,
+          "type": req.query.type, "typeFullName": viewDictionary[req.query.type].name, "group": "g0", "title": queriedEntity.title, "validityStart": queriedEntity.Validity_Start, "validityEnd": queriedEntity.Validity_End
         })
         const id = req.query.id;
         const name = queriedEntity.Name;
@@ -253,10 +325,12 @@ app.get('/api/getdata', (req, res) => {
         res.json({
           "config": configGraph,
           "queriedEntity": {
+            /*
             "id": id,
             "name": name,
             "type": type,
             "typeFullName": typeFullName,
+            */
             "actions": actions,
             "detail": detail,
           },
@@ -287,10 +361,12 @@ app.get('/api/getdetail', (req, res) => {
       detail += "</ul>"
       res.json({
         "queriedEntity": {
-          "id": req.query.id,
-          "name": rows[0].Name,
-          "type": viewDictionary[req.query.type].table,
-          "typeFullName": viewDictionary[req.query.type].name,
+            /*
+            "id": id,
+            "name": name,
+            "type": type,
+            "typeFullName": typeFullName,
+            */
           "actions": createNodeActions(rows[0]),
           "detail": detail,
         },
