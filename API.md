@@ -14,18 +14,18 @@
 
    **Required:**
  
-   `id=[String]` - Unique identifier of the queried entity  
-   `type=[String]` - Type of the entity (e.g. MBA, MGA or TSO) - used to identify a table name (?)  
-   `validFrom=[String]` - Initial date of the queried relationships in a YYYYMMDD format  
-   `validTo=[String]` - Final date of the queried relationships in a YYYYMMDD format  
-   `view=[String]` - Comma-separated list of entitity types in a relationship with the queried entity, that are supposed to be displayed in the graph  
+   `id=[String]` - Identifier of the queried entity - used for the database query
+   `type=[String]` - Abbreviated type of the entity (e.g. mba, mga or tso) - used to identify the database table name
+   `validityStart=[String]` - Initial date of the queried relationships in a YYYYMMDD format  
+   `validityEnd=[String]` - Final date of the queried relationships in a YYYYMMDD format  
+   `view=[String]` - Code of the view  
    
 
    **Optional:**
 
 *   **Request example:**
 
-    `/api/getdata?id=EIC_10YNO_3________J&type=mba&validityStart=20160101&validityEnd=20180101&view=ro,mga,tso,country`
+    `/api/getdata?id=EIC_10YNO_3________J&type=mba&validityStart=20150101&validityEnd=20180101&view=ro,mga,tso,country`
 
 
 * **Data Params**
@@ -38,154 +38,67 @@
 
     ```javascript
     {
-        "config": {
-            "groups": {
-                /* key, starts from 0 */:
+    "config": {
+        "groups": { // definition of node groups
+            "g2": { // group key
+                "name": "Metering Grid Area", // group name, displayed in the legend
+                "color": { // group color styling - optional
+                    "background": "#ffe119", // node background color
+                    "highlight": { 
+                        "background": "#ffbcbc" // node background color when clicked on
+                    }
+                },
+                "clustering": [ // definition of sublusters
                     {
-                        "name":  // name of the group displayed in the legend (e.g. "Market Balance Area) 
-                        "color": { // Color settings - optional
-                            "background": // Node background
-                            "highlight": { 
-                                "background": // Node background when selected
-                            }
-                        }  // DOM coordinates
-                        "id": // unique id - required by Visjs
-                        "label": // node label to be displayed
-                        "group": // group id for node styling
-                    },
-                    //... other group definitions...//
-            },
-            "range": {
-                "validityStart": // range of queried relationships validity, YYYYMMDD format
-                "validityEnd": // range of queried relationships validity, YYYYMMDD format
+                        "id": 1, // subcluster id, should be unique in this array, used in vis.js clustering function
+                        "name": "Subcluster 1" // label of the cluster displayed on the cluster node
+                    }
+                ]
             }
         },
-        "queriedEntity": {
-            "id": // globally unique id
-            "name": // name of the entity displayed in the info card header
-            "type": // name of the entity displayed in the info card subheader, e.g. "Market Balance Area",
-            "actions": [
-                {
-                    "name": // action for an entity, also the label of corresponding button (for example "Edit")
-                    "url":  // target url
-                },
-            ],
-            "detail": {
-                //...all the attributes that should be displayed in the info card...        
+        "range": { // validity dates, used by datepickers, YYYYMMDD format
+            "validityStart": "20150101",
+            "validityEnd": "20180101"
+        }
+    },
+    "queriedEntity": { // entity information displayed in the info card - for optimization (same result as /getdetail endpoint)
+        "actions": [ // corresponding buttons are created from this array
+            {
+                "name": "Edit", // name label on the button
+                "url": "http://localhost:3000" // target url
             }
-        },
-        "graph": { // connectivity data for visjs, REQUIRED
-            "nodes": [
-                {
-                    "id": // required by Visjs - must be unique
-                    "label": // displays name of the node in the graph
-                    "group": // required - dictates the settings of the group of nodes (e.g. color, highlight color)
-                    "direction": "to",
-                    "type": "ro", // request parameter type, used to create a URL for getDetail endpoint
-                    "validityStart": // used for node filtering, YYYY-MM-DDTHH:MM format
-                    "validityEnd": // used for node filtering, YYYY-MM-DDTHH:MM format
-                    "title": // displays in a tooltip, can be html markup
-                },
-                //...other nodes to be displayed...
-            ],
-            "edges": [
-                {
-                    "from": // id of a node, required by Visjs
-                    "to": // id of a node, required by Visjs
-                },
-                //...other edges between nodes...
-            ]
-        },
+        ],
+        "detail": // string composed of HTML markup, displayed in the info card
+    },
+    "graph": { // connectivity information
+        "nodes": [
+            {
+                "id": "ac3f6ea5-9bbf-11e8-a86c-1c6f65c3aae2", // UUID - required by Vis.js
+                "internalId": "EIC_SC_RO106", // identifier used for composing getDetail query URL (should be able to query this id in the database)
+                "label": "SC RO106", // name of the entity - label in the vizualization, also displayed in the info card header
+                "group": "g1", // reference of the group key in the config part - used for styling and clustering
+                "type": "ro", // type identifier used for composing getDetail query URL (this should determine the target database table)
+                "validityStart": "2017-05-01T00:00", // starting date of the relationship validity  (not the validity of the node!), YYYY-MM-DDTHH:MM format, used for the filtering
+                "validityEnd": "2018-09-01T00:00", // end date of the relationship validity (not the validity of the node!), YYYY-MM-DDTHH:MM format, used for the filtering
+                "title": "<h3> ac3f6ea5-9bbf-11e8-a86c-1c6f65c3aae2 </h3><ul class=\"tooltip-list\"><li>Validity start: 2017-05-01T00:00</li><li>Validity end: 2018-09-01T00:00</li></ul>", // tooltip content (displayed after hovering over the node), in HTML markup
+                "typeFullName": "Regulation Object" // displayed in the info card header
+            }
+        ],
+        "edges": [
+            {
+                "from": "ac3f6ea5-9bbf-11e8-a86c-1c6f65c3aae2", // id of the node
+                "to": "ac415666-9bbf-11e8-a86c-1c6f65c3aae2", // id of the node
+                "hiddenLabel": "2017-05-01T00:00 -- 2018-09-01T00:00", // used for displaying edge label after clicking on it
+                "validityChanges": true // true if validity of this relationship STARTS AFTER the queried validity start date or ENDS BEFORE the end of the validity end date
+            }
+        ]
+    }
     }
     ```
 
 
   **Response example:**  
 
-    ```javascript
-    {
-        "config": {
-            "legend": {
-                "nodes": [
-                    {
-                        "x": 30,
-                        "y": 60,
-                        "id": "mba",
-                        "label": "mba",
-                        "group": "L0",
-                    },
-                   // ... other nodes ...
-                ]
-            },
-            "range": {
-                "validityStart": "01012017",
-                "validityEnd": "30122017"
-            }
-        },
-        "queriedEntity": {            
-            "id": "EIC_SC_MBA101",
-            "name": "SC MBA101",
-            "type": "Market Balance Area",
-            "actions": [
-                {
-                    "type": "Edit",
-                    "url": "http://localhost:3000"
-                },
-                {
-                    "type": "Delete",
-                    "url": "http://localhost:3000"
-                }
-            ] 
-            "detail": {
-                "id": 11,
-                "validityStart": "2015-01-01T00:00",
-                "validityEnd": "2021-01-01T00:00",
-                "Gate_Closure_TSO-TSO_Trade_Hour": "12.00",
-                "Gate_Closure_Supportive_Power_Hour": "12.00",
-                // ... other attributes ...
-            }
-        },
-        "graph": {
-            "nodes": [
-                {
-                    "id": "EIC_SC_RO09",
-                    "label": "EIC_SC_RO09",
-                    "group": 1,
-                    "direction": "to",
-                    "type": "ro",
-                    "validityStart": "2017-06-30T23:00",
-                    "validityEnd": "2017-12-31T23:00",
-                    "title": "<h3> EIC_SC_RO09 </h3>\n   <ul>\n    <li>Validity start: 2017-06-30T23:00</li>\n    <li>Validity end: 2017-12-31T23:00</li>\n   </ul>       \n   "
-                },
-                {
-                    "id": "EIC_SC_RO101",
-                    "label": "EIC_SC_RO101",
-                    "group": 1,
-                    "direction": "to",
-                    "type": "ro",
-                    "validityStart": "2016-12-31T23:00",
-                    "validityEnd": "2017-12-31T23:00",
-                    "title": "<h3> EIC_SC_RO101 </h3>\n   <ul>\n    <li>Validity start: 2016-12-31T23:00</li>\n    <li>Validity end: 2017-12-31T23:00</li>\n   </ul>       \n   "
-                },
-                // ... other nodes ...
-
-                { // ... queried node get a group of 0...
-                    "id": "EIC_SC_MBA101",
-                    "label": "SC MBA101",
-                    "type": "mba",
-                    "group": 0
-                }
-            ],
-            "edges": [
-                {
-                    "from": "EIC_SC_RO09",
-                    "to": "EIC_SC_MBA101"
-                },
-                // ... other edges ...
-            ]
-        }
-    }
-    ```
  
 * **Error Response:**
 
@@ -213,15 +126,15 @@ ____
 
    **Required:**
  
-   `id=[String]` - Unique identifier of the queried entity  
-   `type=[String]` - Type of the entity (e.g. MBA, MGA or TSO) - used to identify a table name (?)
+   `id=[String]` - Identifier of the queried entity - used for the database query
+   `type=[String]` - Abbreviated type of the entity (e.g. mba, mga or tso) - used to identify the database table name
    
 
    **Optional:**
 
 *   **Request example:**
 
-    `/api/getdetail?id=EIC_SC_MBA101&type=mba`
+    `/api/getdetail?id=EIC_10X1001A1001A38Y&type=tso`
 
 
 * **Data Params**
@@ -235,58 +148,24 @@ ____
 
     ```javascript
     {
-        "queriedEntity": {
-            "id": // globally unique id
-            "name": // name of the entity displayed in the info card header
-            "type": // name of the entity displayed in the info card subheader, e.g. "Market Balance Area",
-            "actions": [
-                {
-                    "type": // Actions for entity, also the label of corresponding button (for example "Edit")
-                    "url":  // target url
-                },
-            ],
-            "detail": {
-                //...all the attributes that should be displayed in the info card...        
+    "queriedEntity": {
+        "actions": [ // corresponding buttons are created from this array
+            {
+                "name": "Edit", // name label on the button
+                "url": "http://localhost:3000" // target URL
+            },
+            {
+                "name": "Delete",
+                "url": "http://localhost:3000"
             }
-        },
+        ],
+        "detail": ""  // string composed of HTML markup, displayed in the info card
+    }
     }
 
     ```
 
   **Response example:**  
-
-    ```javascript
-    {
-        "queriedEntity": {
-            
-            "id": "EIC_SC_MGA102",
-            "name": "SC MGA102",
-            "type": "Metering Grid Area",
-            "actions": [
-                {
-                    "type": "Edit",
-                    "url": "http://localhost:3000"
-                },
-                {
-                    "type": "Delete",
-                    "url": "http://localhost:3000"
-                }
-            ],
-            
-            "detail": {
-                "id": 3,
-                "validityStart": "2015-05-31T23:00",
-                "validityEnd": "2020-12-31T23:00",
-                "Coding_Scheme": "EIC",
-                "MGA_Type": "DISTRIBUTION",
-                "Short_name": null,
-                "Name": "SC MGA102",
-                "Code": "SC_MGA102",
-                "Internal_ID": "EIC_SC_MGA102"
-            }
-        }
-    }
-    ```
  
 * **Error Response:**
 
