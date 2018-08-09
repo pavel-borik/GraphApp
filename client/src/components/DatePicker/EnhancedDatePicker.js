@@ -61,7 +61,7 @@ class CustomDatePicker extends React.Component {
           showTimeSelect
           timeFormat="HH:mm"
           timeIntervals={60}
-          dateFormat="YYYY-MM-DD HH:mm"
+          dateFormat="MMM DD YYYY HH:mm"
           timeCaption="Time"
           placeholderText="Select a date"
         />

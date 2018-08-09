@@ -26,6 +26,7 @@ export default class ValidityRangeSettings extends Component {
                         className="form-control"
                         selected={this.props.startDate}
                         selectsStart
+                        dateFormat="MMM DD YYYY"
                         maxDate={this.props.endDate}
                         startDate={this.props.startDate}
                         endDate={this.props.endDate}
@@ -37,6 +38,7 @@ export default class ValidityRangeSettings extends Component {
                         className="form-control"
                         selected={this.props.endDate}
                         selectsEnd
+                        dateFormat="MMM DD YYYY"
                         minDate={this.props.startDate}
                         startDate={this.props.startDate}
                         endDate={this.props.endDate}
