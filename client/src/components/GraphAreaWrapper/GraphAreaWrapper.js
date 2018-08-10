@@ -149,9 +149,9 @@ class GraphAreaWrapper extends Component {
                     jumpToNextBreak={this.jumpToNextBreak}
                     selectedDate={this.state.selectedDate}
                     validityStart={this.state.graphData.config.range.validityStart}
-                    validityEnd={this.state.graphData.config.range.validityEnd} />
-
-
+                    validityEnd={this.state.graphData.config.range.validityEnd}
+                    timeBreaks={this.state.timeBreaks}
+                    />
             }
             settingsComponent = <SettingsWrapper processNewDateRange={this.processNewDateRange} getSelectedView={this.getSelectedView} validityStart={this.state.graphData.config.range.validityStart}
                 validityEnd={this.state.graphData.config.range.validityEnd} />

@@ -24,7 +24,7 @@ const styles = theme => ({
   },
 });
 
-class CustomDatePicker extends React.Component {
+class EnhancedDatePicker extends React.Component {
 
   handleChange = (date) => {
     this.props.getSelectedDate(date);
@@ -46,7 +46,8 @@ class CustomDatePicker extends React.Component {
     const maxValidity = moment(this.props.validityEnd, "YYYYMMDD");
     return (
       <div className={classes.root}>
-        <IconButton className={classes.button} aria-label="Previous break" onClick={this.props.jumpToPreviousBreak}>
+        <IconButton className={classes.button} aria-label="Previous break" onClick={this.props.jumpToPreviousBreak} disabled={
+          this.props.selectedDate.isSameOrBefore(this.props.timeBreaks[0]) ? true : false}>
           <ArrowLeft />
         </IconButton>
         <IconButton className={classes.button} aria-label="Decrease date" disabled={this.props.selectedDate.clone().subtract(1, 'd').isBefore(minValidity, 'd') ? true : false} onClick={this.decreaseDate}>
@@ -68,7 +69,8 @@ class CustomDatePicker extends React.Component {
         <IconButton className={classes.button} aria-label="Increase date" disabled={this.props.selectedDate.clone().add(1, 'd').isAfter(maxValidity, 'd') ? true : false} onClick={this.increaseDate}>
           <ArrowUp />
         </IconButton>
-        <IconButton className={classes.button} aria-label="Next break" onClick={this.props.jumpToNextBreak}>
+        <IconButton className={classes.button} aria-label="Next break" onClick={this.props.jumpToNextBreak} disabled={
+          this.props.selectedDate.isSameOrAfter(this.props.timeBreaks[this.props.timeBreaks.length - 1]) ? true : false}>
           <ArrowRight />
         </IconButton>
       </div>
@@ -76,12 +78,19 @@ class CustomDatePicker extends React.Component {
   }
 }
 
-CustomDatePicker.propTypes = {
-  selectedDate: PropTypes.object,
+EnhancedDatePicker.propTypes = {
+  selectedDate: PropTypes.object.isRequired,
+  timeBreaks: PropTypes.array.isRequired,
+  jumpToPreviousBreak: PropTypes.func,
+  jumpToNextBreak: PropTypes.func,
+  validityStart: PropTypes.string.isRequired,
+  validityEnd: PropTypes.string.isRequired,
+
 };
 
-CustomDatePicker.defaultProps = {
-  selectedDate: moment()
+EnhancedDatePicker.defaultProps = {
+  selectedDate: moment(),
+  timeBreaks: [moment()]
 };
 
-export default withStyles(styles)(CustomDatePicker);
+export default withStyles(styles)(EnhancedDatePicker);
