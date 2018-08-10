@@ -36,7 +36,7 @@
 
   **Response structure:**  
 
-    ```javascript
+    ```json
     {
     "config": {
         "groups": { // definition of node groups
@@ -54,7 +54,8 @@
                         "name": "Subcluster 1" // label of the cluster displayed on the cluster node
                     }
                 ]
-            }
+            },
+            // ...other group definitions...
         },
         "range": { // validity dates, used by datepickers, YYYYMMDD format
             "validityStart": "20150101",
@@ -62,11 +63,14 @@
         }
     },
     "queriedEntity": { // entity information displayed in the info card - for optimization (same result as /getdetail endpoint)
+        "name": "NO3", // entity name displayed in the info card header
+        "typeFullName": "Market Balance Area", // entity type name displayed in the info card header
         "actions": [ // corresponding buttons are created from this array
             {
                 "name": "Edit", // name label on the button
                 "url": "http://localhost:3000" // target url
-            }
+            },
+            // ...other action definitions...
         ],
         "detail": // string composed of HTML markup, displayed in the info card
     },
@@ -82,7 +86,8 @@
                 "validityEnd": "2018-09-01T00:00", // end date of the relationship validity (not the validity of the node!), YYYY-MM-DDTHH:MM format, used for the filtering
                 "title": "<h3> ac3f6ea5-9bbf-11e8-a86c-1c6f65c3aae2 </h3><ul class=\"tooltip-list\"><li>Validity start: 2017-05-01T00:00</li><li>Validity end: 2018-09-01T00:00</li></ul>", // tooltip content (displayed after hovering over the node), in HTML markup
                 "typeFullName": "Regulation Object" // displayed in the info card header
-            }
+            },
+            // ...other nodes definitions...
         ],
         "edges": [
             {
@@ -90,7 +95,8 @@
                 "to": "ac415666-9bbf-11e8-a86c-1c6f65c3aae2", // id of the node
                 "hiddenLabel": "2017-05-01T00:00 -- 2018-09-01T00:00", // used for displaying edge label after clicking on it
                 "validityChanges": true // true if validity of this relationship STARTS AFTER the queried validity start date or ENDS BEFORE the end of the validity end date
-            }
+            },
+            // ...other edges definitions...
         ]
     }
     }
@@ -146,7 +152,7 @@ ____
 
   **Response structure:** 
 
-    ```javascript
+    ```json
     {
     "queriedEntity": {
         "actions": [ // corresponding buttons are created from this array

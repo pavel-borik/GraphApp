@@ -325,12 +325,10 @@ app.get('/api/getdata', (req, res) => {
         res.json({
           "config": configGraph,
           "queriedEntity": {
-            /*
-            "id": id,
+            //"id": id,
             "name": name,
-            "type": type,
+            //"type": type,
             "typeFullName": typeFullName,
-            */
             "actions": actions,
             "detail": detail,
           },
