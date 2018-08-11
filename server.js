@@ -217,7 +217,7 @@ app.get('/api/getdata', (req, res) => {
     const where = viewDictionary[req.query.type].rels[view[i]].where;
     const type = view[i];
     queryString +=
-      `select UUID() as id, x.${identifier} as internalId, y.name as label, "${("g" + (i + 1))}" as "group",
+      `select UUID() as id, x.${identifier} as internalId, y.name as name, "${("g" + (i + 1))}" as "group",
       "${direction}" as direction, "${type}" as "type", x.validity_start as validityStart, x.validity_end as validityEnd
       from ${table} x left join ${joinTable} y on x.${identifier} = y.${joinIdentifier} where x.${where} like ?
       union `;
@@ -314,7 +314,7 @@ app.get('/api/getdata', (req, res) => {
         const edges = computeEdges(rows, queriedEntity, validityStart, validityEnd);
         rows.map(r => delete r.direction)
         rows.push({
-          "id": queriedEntity.uuid, "internalId": queriedEntity[viewDictionary[req.query.type].identifier], "label": queriedEntity.Name,
+          "id": queriedEntity.uuid, "internalId": queriedEntity[viewDictionary[req.query.type].identifier], "name": queriedEntity.Name,
           "type": req.query.type, "typeFullName": viewDictionary[req.query.type].name, "group": "g0", "title": queriedEntity.title, "validityStart": queriedEntity.Validity_Start, "validityEnd": queriedEntity.Validity_End
         })
         let obj = {};let objs = [];
@@ -394,12 +394,12 @@ function computeEdges(rows, queriedEntity, validityStart, validityEnd) {
   for (var i = 0; i < rows.length; i++) {
     let classes = "autorotate"
     if (rows[i].direction.localeCompare("from")) {
-      const resultEdge = {data:  { "source": rows[i].id, "target": queriedEntity.uuid, "hiddenLabel": rows[i].validityStart + " -- " + rows[i].validityEnd, } }
+      const resultEdge = {data:  { "source": rows[i].id, "target": queriedEntity.uuid, "label": "", "hiddenLabel": rows[i].validityStart + " -- " + rows[i].validityEnd, } }
       if (moment(rows[i].validityStart).isAfter(validityStart) || moment(rows[i].validityEnd).isBefore(validityEnd)) classes += " changesValidity";
       resultEdge.classes = classes;
       edges.push(resultEdge);
     } else if (rows[i].direction.localeCompare("to")) {
-      const resultEdge = { data: { "source": queriedEntity.uuid, "target": rows[i].id, "hiddenLabel": rows[i].validityStart + " -- " + rows[i].validityEnd, } }
+      const resultEdge = { data: { "source": queriedEntity.uuid, "target": rows[i].id, "label": "", "hiddenLabel": rows[i].validityStart + " -- " + rows[i].validityEnd, } }
       if (moment(rows[i].validityStart).isAfter(validityStart) || moment(rows[i].validityEnd).isBefore(validityEnd)) classes += " changesValidity";
       resultEdge.classes = classes;
       edges.push(resultEdge);

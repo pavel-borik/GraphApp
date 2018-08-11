@@ -1,5 +1,8 @@
 import React, { Component } from 'react';
 import cytoscape from 'cytoscape';
+import spread from 'cytoscape-spread'
+
+spread(cytoscape);
 
 let cyStyle = {
     position: 'absolute',
@@ -17,7 +20,7 @@ let conf = {
             style: {
                 'text-opacity': 0.5,
                 'text-valign': 'bottom',
-                'label': 'data(typeFullName)'
+                'label': 'data(name)'
             }
         },
         {
@@ -28,16 +31,20 @@ let conf = {
                 'target-arrow-shape': 'triangle',
                 'line-color': 'gray',
                 'target-arrow-color': 'gray',
-                'label': 'data(hiddenLabel)',
                 'text-rotation': 'autorotate',
+                'label': 'data(label)'
+
+            }
+        },
+        {
+            selector: '.changesValidity',
+            style: {
+                'line-color':'red'
             }
         }
     ],
     layout: {
-        name: 'concentric',
-        nodeDimensionsIncludeLabels: true
-        //animate:true,
-        //animationDuration: 5000
+        name: 'spread',
     }
 };
 
