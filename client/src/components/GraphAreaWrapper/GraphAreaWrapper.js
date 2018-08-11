@@ -17,12 +17,14 @@ class GraphAreaWrapper extends Component {
             selectedNode: {},
             selectedDate: {},
             timeBreaks: [],
-            view: "1"
+            view: "1",
+            isLoading: false,
         };
     }
 
     componentDidMount() {
         const url = 'api' + this.props.location.pathname + this.props.location.search;
+        this.setState({isLoading: true});
         fetch(url)
             .then((res) => {
                 if (res.ok) {
@@ -31,13 +33,14 @@ class GraphAreaWrapper extends Component {
                     throw new Error('Something went wrong');
                 }
             })
-            .then(data => this.setState({ graphData: data, selectedDate: moment(data.config.range.validityStart, 'YYYYMMDD'), selectedNode: data.queriedEntity },
+            .then(data => this.setState({ graphData: data, selectedDate: moment(data.config.range.validityStart, 'YYYYMMDD'), selectedNode: data.queriedEntity, isLoading: false },
                 () => this.computeTimeBreaks()
             ));
     }
 
     componentDidUpdate(prevProps) {
         if (this.props.location.search !== prevProps.location.search) {
+            this.setState({isLoading: true});
             const url = 'api' + this.props.location.pathname + this.props.location.search;
             fetch(url)
                 .then((res) => {
@@ -47,7 +50,7 @@ class GraphAreaWrapper extends Component {
                         throw new Error('Something went wrong');
                     }
                 })
-                .then(data => this.setState({ graphData: data, selectedDate: moment(data.config.range.validityStart, 'YYYYMMDD'), selectedNode: data.queriedEntity },
+                .then(data => this.setState({ graphData: data, selectedDate: moment(data.config.range.validityStart, 'YYYYMMDD'), selectedNode: data.queriedEntity, isLoading: false },
                     () => this.computeTimeBreaks()
                 ));
         }
@@ -125,9 +128,6 @@ class GraphAreaWrapper extends Component {
     }
 
     render() {
-
-        //const validityStart = this.props.location.search.validityStart.;
-        //const validityEnd = this.props.location.search.validityEnd.toString();
         console.log('graphwrapper state', this.state);
         //console.log(this.props.location.pathname+this.props.location.search);
         let graphComponent = null;
@@ -139,6 +139,8 @@ class GraphAreaWrapper extends Component {
         if (Object.keys(this.state.graphData).length === 0 && this.state.graphData.constructor === Object) {
             progressComponent = (<div className="progress-container"><CustomProgress className={"progress"} /></div>)
         } else {
+            if(this.state.isLoading === true) progressComponent = (<div className="progress-container"><CustomProgress className={"progress"} /></div>)
+
             if (this.state.view === "1") {
                 graphComponent = <GraphComponentView1 data={this.state.graphData} selectedDate={this.state.selectedDate} getSelectedNode={this.getSelectedNode} />
             } else {
@@ -156,8 +158,8 @@ class GraphAreaWrapper extends Component {
             settingsComponent = <SettingsWrapper processNewDateRange={this.processNewDateRange} getSelectedView={this.getSelectedView} validityStart={this.state.graphData.config.range.validityStart}
                 validityEnd={this.state.graphData.config.range.validityEnd} />
             cardComponent = <InfoCard selectedNode={this.state.selectedNode} />
-
         }
+
         return (
             <div className="base-container">
                 {progressComponent}
