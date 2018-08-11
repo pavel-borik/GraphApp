@@ -8,6 +8,7 @@ import './GraphAreaWrapper.css';
 import EnhancedDatePicker from '../DatePicker/EnhancedDatePicker';
 import { Link } from 'react-router-dom';
 import SettingsWrapper from '../SettingsWrapper/SettingsWrapper';
+import GraphComponentViewCy from '../GraphComponent/GraphComponentViewCy'
 
 class GraphAreaWrapper extends Component {
     constructor(props) {
@@ -173,8 +174,11 @@ class GraphAreaWrapper extends Component {
                         <Link className="link" to="/getdata?id=EIC_10YNO_3________J&type=mba&validityStart=20150101&validityEnd=20180101&view=ro,mga,tso,country">Link 3</Link>
                     </div>
                 </div>
-                <div className="graph-container">
+                {/* <div className="graph-container">
                     {graphComponent}
+                </div> */}
+                <div className="cy">
+                    <GraphComponentViewCy elements={this.state.graphData.graph}/>
                 </div>
             </div>
         )

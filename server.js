@@ -245,6 +245,7 @@ app.get('/api/getdata', (req, res) => {
     /**
      * Calculating subclustering
      */
+    /*
     let countPerGroup = new Map();
     for (let i = 0; i < Object.keys(groups).length; i++) {
       countPerGroup.set(Object.keys(groups)[i], 0);
@@ -286,7 +287,7 @@ app.get('/api/getdata', (req, res) => {
       }
       groups[key].clustering = clusteringDescription;
     }
-
+    */
 
     db.query(`select *, UUID() as uuid from ${viewDictionary[req.query.type].table} where ${viewDictionary[req.query.type].identifier} = ?`, [req.query.id], function (err2, rows2, fields2) {
       if (err2) throw err2;
@@ -294,7 +295,7 @@ app.get('/api/getdata', (req, res) => {
         res.json({});
       } else {
         const queriedEntity = rows2[0];
-        console.log(queriedEntity)
+        //console.log(queriedEntity)
         const keys = Object.keys(rows2[0]);
         const values = Object.values(rows2[0]);
         let detail = "<ul>";
@@ -316,6 +317,13 @@ app.get('/api/getdata', (req, res) => {
           "id": queriedEntity.uuid, "internalId": queriedEntity[viewDictionary[req.query.type].identifier], "label": queriedEntity.Name,
           "type": req.query.type, "typeFullName": viewDictionary[req.query.type].name, "group": "g0", "title": queriedEntity.title, "validityStart": queriedEntity.Validity_Start, "validityEnd": queriedEntity.Validity_End
         })
+        let obj = {};let objs = [];
+        rows.map(node => {
+          obj.data = node;
+          objs.push(obj);
+          obj = {};
+        });
+
         const id = req.query.id;
         const name = queriedEntity.Name;
         const typeFullName = viewDictionary[req.query.type].name;
@@ -333,7 +341,7 @@ app.get('/api/getdata', (req, res) => {
             "detail": detail,
           },
           "graph": {
-            "nodes": rows,
+            "nodes": objs,
             "edges": edges
           },
         });
@@ -384,13 +392,16 @@ function computeEdges(rows, queriedEntity, validityStart, validityEnd) {
   validityStartMoment = moment(validityStart);
   validityEndMoment = moment(validityEnd);
   for (var i = 0; i < rows.length; i++) {
+    let classes = "autorotate"
     if (rows[i].direction.localeCompare("from")) {
-      const resultEdge = { "from": rows[i].id, "to": queriedEntity.uuid, "hiddenLabel": rows[i].validityStart + " -- " + rows[i].validityEnd, "validityChanges": false }
-      if (moment(rows[i].validityStart).isAfter(validityStart) || moment(rows[i].validityEnd).isBefore(validityEnd)) resultEdge.validityChanges = true;
+      const resultEdge = {data:  { "source": rows[i].id, "target": queriedEntity.uuid, "hiddenLabel": rows[i].validityStart + " -- " + rows[i].validityEnd, } }
+      if (moment(rows[i].validityStart).isAfter(validityStart) || moment(rows[i].validityEnd).isBefore(validityEnd)) classes += " changesValidity";
+      resultEdge.classes = classes;
       edges.push(resultEdge);
     } else if (rows[i].direction.localeCompare("to")) {
-      const resultEdge = { "from": queriedEntity.uuid, "to": rows[i].id, "hiddenLabel": rows[i].validityStart + " -- " + rows[i].validityEnd, "validityChanges": false }
-      if (moment(rows[i].validityStart).isAfter(validityStart) || moment(rows[i].validityEnd).isBefore(validityEnd)) resultEdge.validityChanges = true;
+      const resultEdge = { data: { "source": queriedEntity.uuid, "target": rows[i].id, "hiddenLabel": rows[i].validityStart + " -- " + rows[i].validityEnd, } }
+      if (moment(rows[i].validityStart).isAfter(validityStart) || moment(rows[i].validityEnd).isBefore(validityEnd)) classes += " changesValidity";
+      resultEdge.classes = classes;
       edges.push(resultEdge);
 
     }
