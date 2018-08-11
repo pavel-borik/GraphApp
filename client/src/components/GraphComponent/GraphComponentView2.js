@@ -152,18 +152,21 @@ class GraphComponentView2 extends Component {
         const { nodes } = event;
         const clickedNode = nodes[0];
         const selectedNode = this.state.nodes.find(node => { return node.id === clickedNode; });
-
+        
         if (this.network.isCluster(clickedNode) === true) {
-            this.network.openCluster(clickedNode);
+            const clusterNodeInfo = this.network.clustering.body.nodes[clickedNode];
+            if(!clusterNodeInfo.options.isCluster === true) {
+                this.network.openCluster(clickedNode);
+                this.createSubclusters();
+            } else {
+                this.network.openCluster(clickedNode);
+            }
             return;
-            //networkInstance.setData({nodes: this.state.nodes, edges: this.props.data.graph.edges})
         }
 
         if (selectedNode !== undefined) {
-            //this.setState({ selectedNodeId: selectedNode.id });
             this.props.getSelectedNode(selectedNode);
         }
-        //console.log(selectedNode);
     }
 
     click = (event) => {
@@ -188,20 +191,21 @@ class GraphComponentView2 extends Component {
                                 return nodeOptions.subcluster === c.id;
                             },
                             processProperties: (clusterOptions, childNodes, childEdges) => {
-                                clusterOptions.label = c.name;
+                                clusterOptions.label = `${c.name}\n Contains: \n ${childNodes.length} nodes`;
+                                clusterOptions.nOfNodes = childNodes.length;
+                                clusterOptions.isCluster = true;
                                 return clusterOptions;
                             },
                             clusterNodeProperties: {
                                 id: groupKey + "_" + c.id,
                                 group: groupKey,
-                                isCluster: true,
                                 borderWidth: 3,
                                 shape: 'circle',
                                 labelHighlightBold: false,
                                 font: {
                                     face: 'georgia',
                                     color: "black",
-                                    size: 14,
+                                    size: 12,
                                     align: 'center',
                                     multi: 'html',
                                     bold: {
@@ -211,7 +215,9 @@ class GraphComponentView2 extends Component {
                                 }
                             },
                             clusterEdgeProperties: {
-                                label: ''
+                                label: '',
+                                color: '#848484',
+                                opacity: 0.6,
                             }
                         };
                         this.network.cluster(clusterOptionsByData)
@@ -222,17 +228,23 @@ class GraphComponentView2 extends Component {
     }
 
     clusterByGroup = () => {
-        this.createSubclusters();
+        //this.createSubclusters();
         const groupKeys = Object.keys(this.props.data.config.groups);
         const groupcount = groupKeys.length;
         let clusterOptionsByData;
-        for (let i = 0; i <= groupcount; i++) {
+        for (let i = 0; i < groupcount; i++) {
             clusterOptionsByData = {
                 joinCondition: (nodeOptions) => {
                     return nodeOptions.group == groupKeys[i];
                 },
                 processProperties: (clusterOptions, childNodes, childEdges) => {
-                    clusterOptions.label = 'Node count:\n' + '<b>' + childNodes.length + '</b>';
+                    let sumOfNodes = childNodes.length;
+                    for(let i = 0; i < childNodes.length; i++) {
+                        if(childNodes[i].isCluster === true) {
+                            sumOfNodes += childNodes[i].nOfNodes - 1;
+                        }
+                    }
+                    clusterOptions.label = `Node count:\n <b> ${sumOfNodes} </b>`;
                     return clusterOptions;
                 },
                 clusterNodeProperties: {
@@ -243,8 +255,8 @@ class GraphComponentView2 extends Component {
                     labelHighlightBold: false,
                     font: {
                         face: 'georgia',
-                        color: "white",
-                        size: 14,
+                        color: "black",
+                        size: 12,
                         align: 'center',
                         multi: 'html',
                         bold: {
@@ -254,7 +266,9 @@ class GraphComponentView2 extends Component {
                     }
                 },
                 clusterEdgeProperties: {
-                    label: ''
+                    label: '',
+                    color: '#848484',
+                    opacity: 0.6,
                 }
             };
             this.network.cluster(clusterOptionsByData)
@@ -293,6 +307,7 @@ class GraphComponentView2 extends Component {
                 <div style={{ display: 'flex' }}>
                     <CustomButton onClick={this.clusterByGroup} name={'Cluster'} />
                     <CustomButton onClick={this.fitToScreen} name={'Fit to screen'} />
+                    <CustomButton onClick={this.createSubclusters} name={'Subcluster'} />
                 </div>
             </div>
         )
