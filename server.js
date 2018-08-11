@@ -223,7 +223,7 @@ app.get('/api/getdata', (req, res) => {
       union `;
     queryParams.push(req.query.id);
   }
-  console.log(queryString)
+  //console.log(queryString)
   let lastIndex = queryString.trim().lastIndexOf(" ");
   queryString = queryString.substring(0, lastIndex);
   const groups = createGroups(view, req.query.type);
@@ -241,7 +241,10 @@ app.get('/api/getdata', (req, res) => {
       node.title = createNodeTooltipHtml(node);
       node.typeFullName = viewDictionary[node.type].name;
     });
-
+    rows = rows.filter(node => {
+      return !(node.validityEnd === "unlimited" ? false : moment(node.validityEnd, 'YYYY-MM-DDTHH:MM').isBefore(moment(validityStart)) || moment(node.validityStart, 'YYYY-MM-DDTHH:MM').isAfter(moment(validityEnd)));
+    })
+    
     /**
      * Calculating subclustering
      */
@@ -294,7 +297,7 @@ app.get('/api/getdata', (req, res) => {
         res.json({});
       } else {
         const queriedEntity = rows2[0];
-        console.log(queriedEntity)
+        //console.log(queriedEntity)
         const keys = Object.keys(rows2[0]);
         const values = Object.values(rows2[0]);
         let detail = "<ul>";
@@ -386,11 +389,11 @@ function computeEdges(rows, queriedEntity, validityStart, validityEnd) {
   for (var i = 0; i < rows.length; i++) {
     if (rows[i].direction.localeCompare("from")) {
       const resultEdge = { "from": rows[i].id, "to": queriedEntity.uuid, "hiddenLabel": rows[i].validityStart + " -- " + rows[i].validityEnd, "validityChanges": false }
-      if (moment(rows[i].validityStart).isAfter(validityStart) || moment(rows[i].validityEnd).isBefore(validityEnd)) resultEdge.validityChanges = true;
+      if (moment(rows[i].validityStart).isAfter(validityStartMoment) || (rows[i].validityEnd === "unlimited" ? false : moment(rows[i].validityEnd).isBefore(validityEndMoment))) resultEdge.validityChanges = true;
       edges.push(resultEdge);
     } else if (rows[i].direction.localeCompare("to")) {
       const resultEdge = { "from": queriedEntity.uuid, "to": rows[i].id, "hiddenLabel": rows[i].validityStart + " -- " + rows[i].validityEnd, "validityChanges": false }
-      if (moment(rows[i].validityStart).isAfter(validityStart) || moment(rows[i].validityEnd).isBefore(validityEnd)) resultEdge.validityChanges = true;
+      if (moment(rows[i].validityStart).isAfter(validityStartMoment) || (rows[i].validityEnd === "unlimited" ? false : moment(rows[i].validityEnd).isBefore(validityEndMoment))) resultEdge.validityChanges = true;
       edges.push(resultEdge);
 
     }
