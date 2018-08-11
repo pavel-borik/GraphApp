@@ -56,7 +56,11 @@ export default class SettingsWrapper extends Component {
                         <div className="range-form-container">
                             <ValidityRangeSettings startDate={this.state.startDate}
                                 endDate={this.state.endDate} handleChangeStart={this.handleChangeStart} handleChangeEnd={this.handleChangeEnd} />
-                            <IconButton onClick={this.confirmNewDateRange} color="inherit" aria-label="Menu" style={{width:40, height:40}}>
+                            <IconButton disabled={ moment(this.props.validityStart).isSame(this.state.startDate) && 
+                                moment(this.props.validityEnd).isSame(this.state.endDate)} 
+                                onClick={this.confirmNewDateRange} 
+                                color="inherit" aria-label="Menu" 
+                                style={{width:40, height:40}}>
                                 <CheckCircle/>
                             </IconButton>
                         </div>
