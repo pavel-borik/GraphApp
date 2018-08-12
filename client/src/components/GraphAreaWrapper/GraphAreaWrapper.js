@@ -87,36 +87,6 @@ class GraphAreaWrapper extends Component {
         this.setState({ view: event.target.value });
     }
 
-    jumpToPreviousBreak = () => {
-        const len = this.state.timeBreaks.length;
-        if (len > 0) {
-            let prevDate = this.state.selectedDate;
-            for (let i = len - 1; i >= 0; i--) {
-                const timeBreak = this.state.timeBreaks[i];
-                if (timeBreak.isBefore(this.state.selectedDate)) {
-                    prevDate = timeBreak;
-                    break;
-                }
-            }
-            this.setState({ selectedDate: prevDate });
-        }
-    }
-
-    jumpToNextBreak = () => {
-        const len = this.state.timeBreaks.length;
-        if (len > 0) {
-            let nextDate = this.state.selectedDate;
-            for (let i = 0; i < len; i++) {
-                const timeBreak = this.state.timeBreaks[i];
-                if (timeBreak.isAfter(this.state.selectedDate)) {
-                    nextDate = timeBreak;
-                    break;
-                }
-            }
-            this.setState({ selectedDate: nextDate });
-        }
-    }
-
     processNewDateRange = (newStartDate, newEndDate) => {
         if (newStartDate.format("YYYYMMDD") !== this.state.graphData.config.range.validityStart || 
             newEndDate.format("YYYYMMDD") !== this.state.graphData.config.range.validityEnd) {

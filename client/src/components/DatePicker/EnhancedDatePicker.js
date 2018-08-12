@@ -36,8 +36,38 @@ class EnhancedDatePicker extends React.Component {
   }
 
   increaseDate = () => {
-     const newDate = this.props.selectedDate.clone().add(1, 'd');
-     this.props.getSelectedDate(newDate);
+    const newDate = this.props.selectedDate.clone().add(1, 'd');
+    this.props.getSelectedDate(newDate);
+  }
+
+  jumpToPreviousBreak = () => {
+    const len = this.props.timeBreaks.length;
+    if (len > 0) {
+      let prevDate = this.props.selectedDate;
+      for (let i = len - 1; i >= 0; i--) {
+        const timeBreak = this.props.timeBreaks[i];
+        if (timeBreak.isBefore(this.props.selectedDate)) {
+          prevDate = timeBreak;
+          break;
+        }
+      }
+      this.props.getSelectedDate(prevDate);
+    }
+  }
+
+  jumpToNextBreak = () => {
+    const len = this.props.timeBreaks.length;
+    if (len > 0) {
+      let nextDate = this.props.selectedDate;
+      for (let i = 0; i < len; i++) {
+        const timeBreak = this.props.timeBreaks[i];
+        if (timeBreak.isAfter(this.props.selectedDate)) {
+          nextDate = timeBreak;
+          break;
+        }
+      }
+      this.props.getSelectedDate(nextDate);
+    }
   }
 
   render() {
@@ -46,14 +76,14 @@ class EnhancedDatePicker extends React.Component {
     const maxValidity = moment(this.props.validityEnd, "YYYYMMDD");
     return (
       <div className={classes.root}>
-        <IconButton className={classes.button} aria-label="Previous break" onClick={this.props.jumpToPreviousBreak} disabled={
+        <IconButton className={classes.button} aria-label="Previous break" onClick={this.jumpToPreviousBreak} disabled={
           this.props.selectedDate.isSameOrBefore(this.props.timeBreaks[0]) ? true : false}>
           <ArrowLeft />
         </IconButton>
         <IconButton className={classes.button} aria-label="Decrease date" disabled={this.props.selectedDate.clone().subtract(1, 'd').isBefore(minValidity, 'd') ? true : false} onClick={this.decreaseDate}>
           <ArrowDown />
         </IconButton>
-        <DatePicker 
+        <DatePicker
           className="form-control"
           selected={this.props.selectedDate}
           onChange={this.handleChange}
@@ -69,7 +99,7 @@ class EnhancedDatePicker extends React.Component {
         <IconButton className={classes.button} aria-label="Increase date" disabled={this.props.selectedDate.clone().add(1, 'd').isAfter(maxValidity, 'd') ? true : false} onClick={this.increaseDate}>
           <ArrowUp />
         </IconButton>
-        <IconButton className={classes.button} aria-label="Next break" onClick={this.props.jumpToNextBreak} disabled={
+        <IconButton className={classes.button} aria-label="Next break" onClick={this.jumpToNextBreak} disabled={
           this.props.selectedDate.isSameOrAfter(this.props.timeBreaks[this.props.timeBreaks.length - 1]) ? true : false}>
           <ArrowRight />
         </IconButton>
@@ -81,8 +111,6 @@ class EnhancedDatePicker extends React.Component {
 EnhancedDatePicker.propTypes = {
   selectedDate: PropTypes.object.isRequired,
   timeBreaks: PropTypes.array.isRequired,
-  jumpToPreviousBreak: PropTypes.func,
-  jumpToNextBreak: PropTypes.func,
   validityStart: PropTypes.string.isRequired,
   validityEnd: PropTypes.string.isRequired,
 
