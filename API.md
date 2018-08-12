@@ -14,11 +14,11 @@
 
    **Required:**
  
-   `id=[String]` - Identifier of the queried entity - used for the database query
-   `type=[String]` - Abbreviated type of the entity (e.g. mba, mga or tso) - used to identify the database table name
+   `id=[String]` - Identifier of the queried entity - used for the database query  
+   `type=[String]` - Abbreviated type of the entity (e.g. mba, mga or tso) - used to identify the database table name  
    `validityStart=[String]` - Initial date of the queried relationships in a YYYYMMDD format  
    `validityEnd=[String]` - Final date of the queried relationships in a YYYYMMDD format  
-   `view=[String]` - Code of the view  
+   `view=[String]` - Identifier of the view to display  
    
 
    **Optional:**
@@ -27,6 +27,9 @@
 
     `/api/getdata?id=EIC_10YNO_3________J&type=mba&validityStart=20150101&validityEnd=20180101&view=ro,mga,tso,country`
 
+*   **URL usage example:**
+
+    `http://localhost:3000/getdata?id=EIC_10YNO_3________J&type=mba&validityStart=20150101&validityEnd=20180101&view=ro,mga,tso,country`
 
 * **Data Params**
 
@@ -36,7 +39,7 @@
 
   **Response structure:**  
 
-    ```json
+    ```javascript
     {
     "config": {
         "groups": { // definition of node groups
@@ -62,7 +65,7 @@
             "validityEnd": "20180101"
         }
     },
-    "queriedEntity": { // entity information displayed in the info card - for optimization (same result as /getdetail endpoint)
+    "queriedEntity": { // entity information displayed in the info card - for optimization
         "name": "NO3", // entity name displayed in the info card header
         "typeFullName": "Market Balance Area", // entity type name displayed in the info card header
         "actions": [ // corresponding buttons are created from this array
@@ -132,7 +135,7 @@ ____
 
    **Required:**
  
-   `id=[String]` - Identifier of the queried entity - used for the database query
+   `id=[String]` - Identifier of the queried entity - used for the database query  
    `type=[String]` - Abbreviated type of the entity (e.g. mba, mga or tso) - used to identify the database table name
    
 
@@ -142,9 +145,7 @@ ____
 
     `/api/getdetail?id=EIC_10X1001A1001A38Y&type=tso`
 
-
 * **Data Params**
-
 
 * **Success Response:**
 
@@ -152,7 +153,7 @@ ____
 
   **Response structure:** 
 
-    ```json
+    ```javascript
     {
     "queriedEntity": {
         "actions": [ // corresponding buttons are created from this array
@@ -168,7 +169,6 @@ ____
         "detail": ""  // string composed of HTML markup, displayed in the info card
     }
     }
-
     ```
 
   **Response example:**  

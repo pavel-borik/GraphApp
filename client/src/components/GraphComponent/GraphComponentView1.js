@@ -120,8 +120,7 @@ class GraphComponentView1 extends Component {
     selectNode = (event) => {
         const { nodes } = event;
         const clickedNode = nodes[0];
-        const selectedNode = this.state.nodes.find(node => { return node.id === clickedNode; });
-        
+        const selectedNode = this.props.data.graph.nodes.find(node => { return node.id === clickedNode; });
         if (this.network.isCluster(clickedNode) === true) {
             const clusterNodeInfo = this.network.clustering.body.nodes[clickedNode];
             if(!clusterNodeInfo.options.isCluster === true) {
@@ -259,7 +258,7 @@ class GraphComponentView1 extends Component {
                 <div style={{ width: '73%', position: 'absolute' }}>
                     <Graph graph={{ nodes: [], edges: [] }}
                         options={{ autoResize: true }}
-                        style={{ height: "900px" }}
+                        style={{ height: "99vh" }}
                         getNetwork={this.initLegendNetworkInstance}
                     />
                 </div>
@@ -267,7 +266,7 @@ class GraphComponentView1 extends Component {
                     <Graph graph={{ nodes: this.props.data.graph.nodes, edges: this.props.data.graph.edges }}
                         options={options}
                         events={events}
-                        style={{ height: "900px" }}
+                        style={{ height: "99vh" }}
                         getNetwork={this.initNetworkInstance}
                         getNodes={this.initNodeDatasetInstance}
                         getEdges={this.initEdgeDatasetInstance}

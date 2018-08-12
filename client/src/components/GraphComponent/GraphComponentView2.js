@@ -30,9 +30,7 @@ class GraphComponentView2 extends Component {
         this.setState({
             nodes: displayedNodes,
         }, () => {
-            console.log("gc")
             this.clusterByGroup();
-            console.log("gc")
         });
     }
 
@@ -290,7 +288,7 @@ class GraphComponentView2 extends Component {
                 <div style={{ width: '73%', position: 'absolute' }}>
                     <Graph graph={{ nodes: [], edges: [] }}
                         options={{ autoResize: true }}
-                        style={{ height: "900px" }}
+                        style={{ height: "99vh" }}
                         getNetwork={this.initLegendNetworkInstance}
                     />
                 </div>
@@ -298,7 +296,7 @@ class GraphComponentView2 extends Component {
                     <Graph graph={{ nodes: this.state.nodes, edges: this.props.data.graph.edges }}
                         options={options}
                         events={events}
-                        style={{ height: "900px" }}
+                        style={{ height: "99vh" }}
                         getNetwork={this.initNetworkInstance}
                         getNodes={this.initNodeDatasetInstance}
                         getEdges={this.initEdgeDatasetInstance}
