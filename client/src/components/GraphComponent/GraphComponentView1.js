@@ -29,7 +29,7 @@ class GraphComponentView1 extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        if (JSON.stringify(this.props.data.graph.nodes) !== JSON.stringify(prevProps.data.graph.nodes)) {
+        if (JSON.stringify(this.props.data.graph) !== JSON.stringify(prevProps.data.graph)) {
             Object.assign(options.groups, this.props.data.config.groups);
             this.network.setOptions(options);
             this.network.unselectAll();
@@ -130,9 +130,7 @@ class GraphComponentView1 extends Component {
                 this.network.openCluster(clickedNode);
             }
             return;
-        }
-
-        if (selectedNode !== undefined) {
+        } else if (selectedNode !== undefined) {
             this.props.getSelectedNode(selectedNode);
         }
     }
@@ -244,7 +242,6 @@ class GraphComponentView1 extends Component {
     }
 
     render() {
-        console.log('rr')
         Object.assign(options.groups, this.props.data.config.groups);
         const events = {
             selectNode: this.selectNode,
