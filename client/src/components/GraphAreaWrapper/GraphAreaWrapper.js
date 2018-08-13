@@ -62,11 +62,11 @@ class GraphAreaWrapper extends Component {
         const validityRangeEnd = moment(this.state.graphData.config.range.validityEnd);
         if (validityRangeStart.isValid) newIntervals.add(this.state.graphData.config.range.validityStart)
 
-        this.state.graphData.graph.nodes.forEach(node => {
-            const validityStart = moment(node.validityStart);
-            const validityEnd = moment(node.validityEnd);
-            if (validityStart.isBetween(validityRangeStart, validityRangeEnd)) newIntervals.add(node.validityStart);
-            if (validityEnd.isBetween(validityRangeStart, validityRangeEnd)) newIntervals.add(node.validityEnd);
+        this.state.graphData.graph.edges.forEach(edge => {
+            const validityStart = moment(edge.validityStart);
+            const validityEnd = moment(edge.validityEnd);
+            if (validityStart.isBetween(validityRangeStart, validityRangeEnd)) newIntervals.add(edge.validityStart);
+            if (validityEnd.isBetween(validityRangeStart, validityRangeEnd)) newIntervals.add(edge.validityEnd);
         });
         const intervalsAsMoments = Array.from(newIntervals).map(i => {
             return moment(i);

@@ -85,8 +85,6 @@
                 "label": "SC RO106", // name of the entity - label in the vizualization, also displayed in the info card header
                 "group": "g1", // reference of the group key in the config part - used for styling and clustering
                 "type": "ro", // type identifier used for composing getDetail query URL (this should determine the target database table)
-                "validityStart": "2017-05-01T00:00", // starting date of the relationship validity  (not the validity of the node!), YYYY-MM-DDTHH:MM format, used for the filtering
-                "validityEnd": "2018-09-01T00:00", // end date of the relationship validity (not the validity of the node!), YYYY-MM-DDTHH:MM format, used for the filtering
                 "title": "<h3> ac3f6ea5-9bbf-11e8-a86c-1c6f65c3aae2 </h3><ul class=\"tooltip-list\"><li>Validity start: 2017-05-01T00:00</li><li>Validity end: 2018-09-01T00:00</li></ul>", // tooltip content (displayed after hovering over the node), in HTML markup
                 "typeFullName": "Regulation Object" // displayed in the info card header
             },
@@ -96,6 +94,8 @@
             {
                 "from": "ac3f6ea5-9bbf-11e8-a86c-1c6f65c3aae2", // id of the node
                 "to": "ac415666-9bbf-11e8-a86c-1c6f65c3aae2", // id of the node
+                "validityStart": "2017-05-01T00:00", // starting date of the relationship validity, YYYY-MM-DDTHH:MM format, used for the filtering
+                "validityEnd": "2018-09-01T00:00", // end date of the relationship validity, YYYY-MM-DDTHH:MM format, used for the filtering
                 "hiddenLabel": "2017-05-01T00:00 -- 2018-09-01T00:00", // used for displaying edge label after clicking on it
                 "validityChanges": true // true if validity of this relationship STARTS AFTER the queried validity start date or ENDS BEFORE the end of the validity end date
             },

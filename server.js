@@ -314,7 +314,11 @@ app.get('/api/getdata', (req, res) => {
         `)
         //console.log(detail)
         const edges = computeEdges(rows, queriedEntity, validityStart, validityEnd);
-        rows.map(r => delete r.direction)
+        rows.map(r => {
+          delete r.direction;
+          delete r.validityStart;
+          delete r.validityEnd
+        });
         rows.push({
           "id": queriedEntity.uuid, "internalId": queriedEntity[viewDictionary[req.query.type].identifier], "label": queriedEntity.Name,
           "type": req.query.type, "typeFullName": viewDictionary[req.query.type].name, "group": "g0", "title": queriedEntity.title, "validityStart": queriedEntity.Validity_Start, "validityEnd": queriedEntity.Validity_End
@@ -388,11 +392,11 @@ function computeEdges(rows, queriedEntity, validityStart, validityEnd) {
   validityEndMoment = moment(validityEnd);
   for (var i = 0; i < rows.length; i++) {
     if (rows[i].direction.localeCompare("from")) {
-      const resultEdge = { "from": rows[i].id, "to": queriedEntity.uuid, "hiddenLabel": rows[i].validityStart + " -- " + rows[i].validityEnd, "validityChanges": false }
+      const resultEdge = { "from": rows[i].id, "to": queriedEntity.uuid, "validityStart": rows[i].validityStart, "validityEnd": rows[i].validityEnd, "hiddenLabel": rows[i].validityStart + " -- " + rows[i].validityEnd, "validityChanges": false }
       if (moment(rows[i].validityStart).isAfter(validityStartMoment) || (rows[i].validityEnd === "unlimited" ? false : moment(rows[i].validityEnd).isBefore(validityEndMoment))) resultEdge.validityChanges = true;
       edges.push(resultEdge);
     } else if (rows[i].direction.localeCompare("to")) {
-      const resultEdge = { "from": queriedEntity.uuid, "to": rows[i].id, "hiddenLabel": rows[i].validityStart + " -- " + rows[i].validityEnd, "validityChanges": false }
+      const resultEdge = { "from": queriedEntity.uuid, "to": rows[i].id, "validityStart": rows[i].validityStart, "validityEnd": rows[i].validityEnd, "hiddenLabel": rows[i].validityStart + " -- " + rows[i].validityEnd, "validityChanges": false }
       if (moment(rows[i].validityStart).isAfter(validityStartMoment) || (rows[i].validityEnd === "unlimited" ? false : moment(rows[i].validityEnd).isBefore(validityEndMoment))) resultEdge.validityChanges = true;
       edges.push(resultEdge);
 

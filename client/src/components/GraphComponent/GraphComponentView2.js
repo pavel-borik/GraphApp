@@ -15,6 +15,7 @@ class GraphComponentView2 extends Component {
         this.state = {
             nodes: [],
             edges: [],
+            initPass: true,
         }
         const network = null;
         const legendNetwork = null;
@@ -23,45 +24,72 @@ class GraphComponentView2 extends Component {
     }
 
     componentDidMount() {
-        const displayedNodes = this.props.data.graph.nodes.filter(node => {
-            return this.props.selectedDate.isBetween(moment(node.validityStart), node.validityEnd !== "unlimited" ? moment(node.validityEnd) : moment(), 'h', '[)');
+        // const displayedNodes = this.props.data.graph.nodes.filter(node => {
+        //     return this.props.selectedDate.isBetween(moment(node.validityStart), node.validityEnd !== "unlimited" ? moment(node.validityEnd) : moment(), 'h', '[)');
+        // });
+
+        const displayedEdges = this.props.data.graph.edges.filter(edge => {
+            return this.props.selectedDate.isBetween(moment(edge.validityStart), edge.validityEnd !== "unlimited" ? moment(edge.validityEnd) : moment('2100-01-01'), 'h', '[)');
         });
+        const displayedNodes = this.props.data.graph.nodes.filter(node => {
+            const res = displayedEdges.filter(function (edge) {
+                return edge.from === node.id || edge.to === node.id;
+            });
+            return res.length > 0;
+        })
 
         this.setState({
             nodes: displayedNodes,
+            edges: displayedEdges
         }, () => {
             this.clusterByGroup();
         });
     }
 
     componentDidUpdate(prevProps) {
-        if (JSON.stringify(this.props.data.graph.nodes) === JSON.stringify(prevProps.data.graph.nodes)) {
+        if (JSON.stringify(this.props.data.graph) === JSON.stringify(prevProps.data.graph)) {
             if (!prevProps.selectedDate.isSame(this.props.selectedDate)) {
-                const displayedNodes = this.props.data.graph.nodes.filter(node => {
-                    return this.props.selectedDate.isBetween(moment(node.validityStart), node.validityEnd !== "unlimited" ? moment(node.validityEnd) : moment('2100-01-01'), 'h', '[)');
+
+                const displayedEdges = this.props.data.graph.edges.filter(edge => {
+                    return this.props.selectedDate.isBetween(moment(edge.validityStart), edge.validityEnd !== "unlimited" ? moment(edge.validityEnd) : moment('2100-01-01'), 'h', '[)');
                 });
+                const displayedNodes = this.props.data.graph.nodes.filter(node => {
+                    const res = displayedEdges.filter(function (edge) {
+                        return edge.from === node.id || edge.to === node.id;
+                    });
+                    return res.length > 0;
+                })
+
                 //console.log("displayed nodes", displayedNodes)
                 if (displayedNodes.length === this.state.nodes.length) {
                     if (JSON.stringify(displayedNodes) !== JSON.stringify(this.state.nodes)) {
-                        this.setState({ nodes: displayedNodes }, () => {
-                            Object.assign(options.groups, this.props.data.config.groups);
-                            this.network.setOptions(options);
+                        this.setState({ nodes: displayedNodes, edges: displayedEdges }, () => {
                             this.network.unselectAll();
                             this.openAllClusters();
                             this.clusterByGroup();
                         });
                     }
                 } else {
-                    this.setState({ nodes: displayedNodes }, () => { this.network.unselectAll(); this.openAllClusters(); this.clusterByGroup() });
+                    this.setState({ nodes: displayedNodes , edges: displayedEdges }, () => { 
+                        this.network.unselectAll(); 
+                        this.openAllClusters(); 
+                        this.clusterByGroup() });
                 }
             }
         } else {
-            const displayedNodes = this.props.data.graph.nodes.filter(node => {
-                return this.props.selectedDate.isBetween(moment(node.validityStart), node.validityEnd !== "unlimited" ? moment(node.validityEnd) : moment('2100-01-01'), 'h', '[)');
+            const displayedEdges = this.props.data.graph.edges.filter(edge => {
+                return this.props.selectedDate.isBetween(moment(edge.validityStart), edge.validityEnd !== "unlimited" ? moment(edge.validityEnd) : moment('2100-01-01'), 'h', '[)');
             });
+            const displayedNodes = this.props.data.graph.nodes.filter(node => {
+                const res = displayedEdges.filter(function (edge) {
+                    return edge.from === node.id || edge.to === node.id;
+                });
+                return res.length > 0;
+            })
 
             this.setState({
-                nodes: displayedNodes,// edges: this.props.data.graph.edges
+                nodes: displayedNodes,
+                edges: displayedEdges
             }, () => {
                 Object.assign(options.groups, this.props.data.config.groups);
                 this.network.setOptions(options);
@@ -150,21 +178,20 @@ class GraphComponentView2 extends Component {
         const { nodes } = event;
         const clickedNode = nodes[0];
         const selectedNode = this.state.nodes.find(node => { return node.id === clickedNode; });
-        
+
         if (this.network.isCluster(clickedNode) === true) {
             const clusterNodeInfo = this.network.clustering.body.nodes[clickedNode];
-            if(!clusterNodeInfo.options.isCluster === true) {
+            if (!clusterNodeInfo.options.isCluster === true) {
                 this.network.openCluster(clickedNode);
                 this.createSubclusters();
             } else {
                 this.network.openCluster(clickedNode);
             }
             return;
-        }
-
-        if (selectedNode !== undefined) {
+        } else if (selectedNode !== undefined) {
             this.props.getSelectedNode(selectedNode);
         }
+
     }
 
     click = (event) => {
@@ -237,8 +264,8 @@ class GraphComponentView2 extends Component {
                 },
                 processProperties: (clusterOptions, childNodes, childEdges) => {
                     let sumOfNodes = childNodes.length;
-                    for(let i = 0; i < childNodes.length; i++) {
-                        if(childNodes[i].isCluster === true) {
+                    for (let i = 0; i < childNodes.length; i++) {
+                        if (childNodes[i].isCluster === true) {
                             sumOfNodes += childNodes[i].nOfNodes - 1;
                         }
                     }
@@ -293,7 +320,7 @@ class GraphComponentView2 extends Component {
                     />
                 </div>
                 <div style={{ width: '73%', position: 'absolute' }}>
-                    <Graph graph={{ nodes: this.state.nodes, edges: this.props.data.graph.edges }}
+                    <Graph graph={{ nodes: this.state.nodes, edges: this.state.edges }}
                         options={options}
                         events={events}
                         style={{ height: "99vh" }}
