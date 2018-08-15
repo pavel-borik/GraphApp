@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import cytoscape from 'cytoscape';
-import spread from 'cytoscape-spread'
+import spread from 'cytoscape-spread';
+import cola from 'cytoscape-cola';
 
-spread(cytoscape);
+cytoscape.use( cola );
 
 let cyStyle = {
     position: 'absolute',
@@ -14,6 +15,7 @@ let conf = {
     boxSelectionEnabled: false,
     autounselectify: true,
     zoomingEnabled: true,
+    wheelSensitivity: 0.2,
     style: [
         {
             selector: 'node',
@@ -32,8 +34,7 @@ let conf = {
                 'line-color': 'gray',
                 'target-arrow-color': 'gray',
                 'text-rotation': 'autorotate',
-                'label': 'data(label)'
-
+                'label': 'data(label)',
             }
         },
         {
@@ -44,7 +45,10 @@ let conf = {
         }
     ],
     layout: {
-        name: 'spread',
+        name: 'cola',
+        nodeDimensionsIncludeLabels: true,
+        infinite: true,
+        fit: false,
     }
 };
 
