@@ -88,6 +88,16 @@
                 "title": "<h3> ac3f6ea5-9bbf-11e8-a86c-1c6f65c3aae2 </h3><ul class=\"tooltip-list\"><li>Validity start: 2017-05-01T00:00</li><li>Validity end: 2018-09-01T00:00</li></ul>", // tooltip content (displayed after hovering over the node), in HTML markup
                 "typeFullName": "Regulation Object" // displayed in the info card header
             },
+            {
+                "id": "2a29a9f5-9f1c-11e8-8dc4-448a5b4137ef",
+                "internalId": "EIC_MR_MGA218",
+                "label": "MR MGA218",
+                "group": "g2",
+                "type": "mga",
+                "title": "<h3> 2a29a9f5-9f1c-11e8-8dc4-448a5b4137ef </h3><ul class=\"tooltip-list\"><li>Validity start: 2015-07-30T23:00</li><li>Validity end: unlimited</li></ul>",
+                "typeFullName": "Metering Grid Area",
+                "subcluster": 1 // subcluster key reference if clustering was defined in config.groups
+            },
             // ...other nodes definitions...
         ],
         "edges": [
