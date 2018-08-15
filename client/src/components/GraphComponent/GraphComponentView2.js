@@ -70,10 +70,11 @@ class GraphComponentView2 extends Component {
                         });
                     }
                 } else {
-                    this.setState({ nodes: displayedNodes , edges: displayedEdges }, () => { 
-                        this.network.unselectAll(); 
-                        this.openAllClusters(); 
-                        this.clusterByGroup() });
+                    this.setState({ nodes: displayedNodes, edges: displayedEdges }, () => {
+                        this.network.unselectAll();
+                        this.openAllClusters();
+                        this.clusterByGroup()
+                    });
                 }
             }
         } else {
@@ -183,7 +184,7 @@ class GraphComponentView2 extends Component {
             const clusterNodeInfo = this.network.clustering.body.nodes[clickedNode];
             if (!clusterNodeInfo.options.isCluster === true) {
                 this.network.openCluster(clickedNode);
-                this.createSubclusters();
+                this.createSubclusters(clusterNodeInfo.options.group);
             } else {
                 this.network.openCluster(clickedNode);
             }
@@ -201,53 +202,49 @@ class GraphComponentView2 extends Component {
         this.network.fit({ animation: { duration: 1000, easingFunction: 'easeOutQuart' } });
     }
 
-    createSubclusters = () => {
-        const groups = Object.values(this.props.data.config.groups);
-        const groupKeys = Object.keys(this.props.data.config.groups);
-        for (let i = 0; i < groups.length; i++) {
-            const g = groups[i];
-            const groupKey = groupKeys[i];
-            if (g.hasOwnProperty("clustering")) {
-                if (g.clustering.length > 0) {
-                    g.clustering.forEach(c => {
-                        let clusterOptionsByData;
-                        clusterOptionsByData = {
-                            joinCondition: (nodeOptions) => {
-                                return nodeOptions.subcluster === c.id;
-                            },
-                            processProperties: (clusterOptions, childNodes, childEdges) => {
-                                clusterOptions.label = `${c.name}\n Contains: \n ${childNodes.length} nodes`;
-                                clusterOptions.nOfNodes = childNodes.length;
-                                clusterOptions.isCluster = true;
-                                return clusterOptions;
-                            },
-                            clusterNodeProperties: {
-                                id: groupKey + "_" + c.id,
-                                group: groupKey,
-                                borderWidth: 3,
-                                shape: 'circle',
-                                labelHighlightBold: false,
-                                font: {
-                                    face: 'georgia',
-                                    color: "black",
-                                    size: 12,
-                                    align: 'center',
-                                    multi: 'html',
-                                    bold: {
-                                        size: 18,
-                                        vadjust: 2
-                                    }
+    createSubclusters = (groupId) => {
+        const g = this.props.data.config.groups[groupId];
+        const groupKey = groupId;
+        if (g.hasOwnProperty("clustering")) {
+            if (g.clustering.length > 0) {
+                g.clustering.forEach(c => {
+                    let clusterOptionsByData;
+                    clusterOptionsByData = {
+                        joinCondition: (nodeOptions) => {
+                            return nodeOptions.subcluster === c.id;
+                        },
+                        processProperties: (clusterOptions, childNodes, childEdges) => {
+                            clusterOptions.label = `${c.name}\n Contains: \n ${childNodes.length} nodes`;
+                            clusterOptions.nOfNodes = childNodes.length;
+                            clusterOptions.isCluster = true;
+                            return clusterOptions;
+                        },
+                        clusterNodeProperties: {
+                            id: groupKey + "_" + c.id,
+                            group: groupKey,
+                            borderWidth: 3,
+                            shape: 'circle',
+                            labelHighlightBold: false,
+                            font: {
+                                face: 'georgia',
+                                color: "black",
+                                size: 12,
+                                align: 'center',
+                                multi: 'html',
+                                bold: {
+                                    size: 18,
+                                    vadjust: 2
                                 }
-                            },
-                            clusterEdgeProperties: {
-                                label: '',
-                                color: '#848484',
-                                opacity: 0.6,
                             }
-                        };
-                        this.network.cluster(clusterOptionsByData)
-                    })
-                }
+                        },
+                        clusterEdgeProperties: {
+                            label: '',
+                            color: '#848484',
+                            opacity: 0.6,
+                        }
+                    };
+                    this.network.cluster(clusterOptionsByData)
+                })
             }
         }
     }
@@ -332,7 +329,6 @@ class GraphComponentView2 extends Component {
                 <div style={{ display: 'flex' }}>
                     <CustomButton onClick={this.clusterByGroup} name={'Cluster'} />
                     <CustomButton onClick={this.fitToScreen} name={'Fit to screen'} />
-                    <CustomButton onClick={this.createSubclusters} name={'Subcluster'} />
                 </div>
             </div>
         )
