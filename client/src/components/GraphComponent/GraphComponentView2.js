@@ -24,18 +24,14 @@ class GraphComponentView2 extends Component {
     }
 
     componentDidMount() {
-        // const displayedNodes = this.props.data.graph.nodes.filter(node => {
-        //     return this.props.selectedDate.isBetween(moment(node.validityStart), node.validityEnd !== "unlimited" ? moment(node.validityEnd) : moment(), 'h', '[)');
-        // });
-
         const displayedEdges = this.props.data.graph.edges.filter(edge => {
             return this.props.selectedDate.isBetween(moment(edge.validityStart), edge.validityEnd !== "unlimited" ? moment(edge.validityEnd) : moment('2100-01-01'), 'h', '[)');
         });
         const displayedNodes = this.props.data.graph.nodes.filter(node => {
-            const res = displayedEdges.filter(function (edge) {
+            const edgeCount = displayedEdges.filter( edge => {
                 return edge.from === node.id || edge.to === node.id;
             });
-            return res.length > 0;
+            return edgeCount.length > 0;
         })
 
         this.setState({
@@ -54,10 +50,10 @@ class GraphComponentView2 extends Component {
                     return this.props.selectedDate.isBetween(moment(edge.validityStart), edge.validityEnd !== "unlimited" ? moment(edge.validityEnd) : moment('2100-01-01'), 'h', '[)');
                 });
                 const displayedNodes = this.props.data.graph.nodes.filter(node => {
-                    const res = displayedEdges.filter(function (edge) {
+                    const edgeCount = displayedEdges.filter( edge => {
                         return edge.from === node.id || edge.to === node.id;
                     });
-                    return res.length > 0;
+                    return edgeCount.length > 0;
                 })
 
                 //console.log("displayed nodes", displayedNodes)
@@ -82,10 +78,10 @@ class GraphComponentView2 extends Component {
                 return this.props.selectedDate.isBetween(moment(edge.validityStart), edge.validityEnd !== "unlimited" ? moment(edge.validityEnd) : moment('2100-01-01'), 'h', '[)');
             });
             const displayedNodes = this.props.data.graph.nodes.filter(node => {
-                const res = displayedEdges.filter(function (edge) {
+                const edgeCount = displayedEdges.filter( edge => {
                     return edge.from === node.id || edge.to === node.id;
                 });
-                return res.length > 0;
+                return edgeCount.length > 0;
             })
 
             this.setState({
@@ -104,7 +100,6 @@ class GraphComponentView2 extends Component {
 
     initNetworkInstance = (networkInstance) => {
         this.network = networkInstance;
-        //console.log(this.network);
     }
 
     initLegendNetworkInstance = (networkInstance) => {
@@ -140,11 +135,10 @@ class GraphComponentView2 extends Component {
 
     initNodeDatasetInstance = (nodeDatasetInstance) => {
         this.nodeDataset = nodeDatasetInstance;
-        //console.log(this.network);
     }
+
     initEdgeDatasetInstance = (edgeDatasetInstance) => {
         this.edgeDataset = edgeDatasetInstance;
-        //console.log(this.network);
     }
 
     openAllClusters = () => {
@@ -178,8 +172,6 @@ class GraphComponentView2 extends Component {
     selectNode = (event) => {
         const { nodes } = event;
         const clickedNode = nodes[0];
-        const selectedNode = this.state.nodes.find(node => { return node.id === clickedNode; });
-
         if (this.network.isCluster(clickedNode) === true) {
             const clusterNodeInfo = this.network.clustering.body.nodes[clickedNode];
             if (!clusterNodeInfo.options.isCluster === true) {
@@ -189,10 +181,10 @@ class GraphComponentView2 extends Component {
                 this.network.openCluster(clickedNode);
             }
             return;
-        } else if (selectedNode !== undefined) {
-            this.props.getSelectedNode(selectedNode);
+        } else {
+            const selectedNode = this.props.data.graph.nodes.find(node => { return node.id === clickedNode; });
+            if (selectedNode !== undefined) this.props.getSelectedNode(selectedNode);   
         }
-
     }
 
     click = (event) => {
@@ -300,13 +292,13 @@ class GraphComponentView2 extends Component {
 
     render() {
         Object.assign(options.groups, this.props.data.config.groups);
-
         const events = {
             selectNode: this.selectNode,
             selectEdge: this.selectEdge,
             deselectEdge: this.deselectEdge,
             click: this.click,
         };
+
         return (
             <div>
                 <div style={{ width: '73%', position: 'absolute' }}>

@@ -306,8 +306,9 @@ app.get('/api/getdata', (req, res) => {
         }
         detail += "</ul>"
 
-        queriedEntity.title = (`<h3> ${queriedEntity.Internal_ID} </h3>
+        queriedEntity.title = (`<h3> ${queriedEntity.Name} </h3>
         <ul class="tooltip-list">
+            <li>Type: ${viewDictionary[req.query.type].name}</li>
             <li>Validity start: ${queriedEntity.Validity_Start}</li>
             <li>Validity end: ${queriedEntity.Validity_End}</li>
         </ul>      
@@ -321,7 +322,7 @@ app.get('/api/getdata', (req, res) => {
         });
         rows.push({
           "id": queriedEntity.uuid, "internalId": queriedEntity[viewDictionary[req.query.type].identifier], "label": queriedEntity.Name,
-          "type": req.query.type, "typeFullName": viewDictionary[req.query.type].name, "group": "g0", "title": queriedEntity.title, "validityStart": queriedEntity.Validity_Start, "validityEnd": queriedEntity.Validity_End
+          "type": req.query.type, "typeFullName": viewDictionary[req.query.type].name, "group": "g0", "title": queriedEntity.title
         })
         const id = req.query.id;
         const name = queriedEntity.Name;
@@ -443,7 +444,7 @@ function createGroups(view, type) {
 
 
 function createNodeTooltipHtml(node) {
-  return `<h3> ${node.id} </h3><ul class="tooltip-list"><li>Validity start: ${node.validityStart}</li><li>Validity end: ${node.validityEnd}</li></ul>`;
+  return `<h3> ${node.label} </h3><ul class="tooltip-list"><li>Type: ${node.type}</li></ul>`;
 }
 
 function createNodeActions(node) {

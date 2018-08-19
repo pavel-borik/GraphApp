@@ -42,7 +42,6 @@ class GraphComponentView1 extends Component {
 
     initNetworkInstance = (networkInstance) => {
         this.network = networkInstance;
-        //console.log(this.network);
     }
 
     initLegendNetworkInstance = (networkInstance) => {
@@ -78,11 +77,9 @@ class GraphComponentView1 extends Component {
 
     initNodeDatasetInstance = (nodeDatasetInstance) => {
         this.nodeDataset = nodeDatasetInstance;
-        //console.log(this.network);
     }
     initEdgeDatasetInstance = (edgeDatasetInstance) => {
         this.edgeDataset = edgeDatasetInstance;
-        //console.log(this.network);
     }
 
     openAllClusters = () => {
@@ -92,11 +89,13 @@ class GraphComponentView1 extends Component {
             }
         });
     }
+
     highlightEdges = () => {
         this.edgeDataset.map(edge => {
             if (edge.validityChanges === true) this.edgeDataset.update({ id: edge.id, color: { color: "#ff6363", opacity: 0.5, highlight: "#fb1414" } });
         })
     }
+    
     selectEdge = (event) => {
         const { edges } = event;
         if (edges.length === 1) {
@@ -120,7 +119,7 @@ class GraphComponentView1 extends Component {
     selectNode = (event) => {
         const { nodes } = event;
         const clickedNode = nodes[0];
-        const selectedNode = this.props.data.graph.nodes.find(node => { return node.id === clickedNode; });
+
         if (this.network.isCluster(clickedNode) === true) {
             const clusterNodeInfo = this.network.clustering.body.nodes[clickedNode];
             if (!clusterNodeInfo.options.isCluster === true) {
@@ -130,8 +129,9 @@ class GraphComponentView1 extends Component {
                 this.network.openCluster(clickedNode);
             }
             return;
-        } else if (selectedNode !== undefined) {
-            this.props.getSelectedNode(selectedNode);
+        } else {
+            const selectedNode = this.props.data.graph.nodes.find(node => { return node.id === clickedNode; });
+            if (selectedNode !== undefined) this.props.getSelectedNode(selectedNode);   
         }
     }
 

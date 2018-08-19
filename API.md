@@ -51,11 +51,16 @@
                         "background": "#ffbcbc" // node background color when clicked on
                     }
                 },
-                "clustering": [ // definition of sublusters
+                "clustering": [ // definition of subclusters
                     {
                         "id": 1, // subcluster id, should be unique in this array, used in vis.js clustering function
                         "name": "Subcluster 1" // label of the cluster displayed on the cluster node
-                    }
+                    },
+                    {
+                        "id": 2,
+                        "name": "Subcluster 2" 
+                    },
+                    // ... other subcluster definitions
                 ]
             },
             // ...other group definitions...
