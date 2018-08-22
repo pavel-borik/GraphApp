@@ -227,13 +227,7 @@ app.get('/api/getdata', (req, res) => {
   let lastIndex = queryString.trim().lastIndexOf(" ");
   queryString = queryString.substring(0, lastIndex);
   const groups = createGroups(view, req.query.type);
-  let configGraph = {
-    "groups": groups,
-    "range": {
-      "validityStart": validityStart,
-      "validityEnd": validityEnd
-    }
-  };
+
 
   db.query(queryString, queryParams, function (err, rows, fields) {
     if (err) throw err;
@@ -241,10 +235,15 @@ app.get('/api/getdata', (req, res) => {
       node.title = createNodeTooltipHtml(node);
       node.typeFullName = viewDictionary[node.type].name;
     });
+
     rows = rows.filter(node => {
-      return !(node.validityEnd === "unlimited" ? false : moment(node.validityEnd, 'YYYY-MM-DDTHH:MM').isBefore(moment(validityStart)) || moment(node.validityStart, 'YYYY-MM-DDTHH:MM').isAfter(moment(validityEnd)));
+      return !(moment(node.validityStart).isAfter(moment(validityEnd)));
     })
-    
+
+    rows = rows.filter(node => {
+      return !(node.validityEnd === "unlimited" ? false : moment(node.validityEnd).isBefore(moment(validityStart)));
+    })
+
     /**
      * Calculating subclustering
      */
@@ -259,28 +258,32 @@ app.get('/api/getdata', (req, res) => {
     for (let [key, value] of countPerGroup.entries()) {
       let clusteringDescription = [];
       if (value > 50) {
-        const nOfSubclusters = Math.ceil(value / 50);
+        const nOfSubclusters = Math.ceil(value / 40);
         const maxPerCluster = Math.round(value / nOfSubclusters);
 
         let count = 1;
         let currentSubcluster = 1
         desc = {
-          "id": currentSubcluster,
+          "id": key.toString() + "_" + currentSubcluster,
           "name": "Subcluster " + currentSubcluster.toString(),
+          "parent": key
         }
+        const id = key.toString() + "_" + currentSubcluster;
+        groups[id] = desc;
         clusteringDescription.push(desc);
         rows.forEach(r => {
           if (r.group == key) {
             if (count < maxPerCluster) {
-              r.subcluster = currentSubcluster;
+              r.subcluster = key.toString() + "_" + currentSubcluster;
               count++;
             } else if (count === maxPerCluster) {
-              r.subcluster = currentSubcluster;
+              r.subcluster = key.toString() + "_" + currentSubcluster;
               count = 0;
               currentSubcluster++;
               desc = {
-                "id": currentSubcluster,
+                "id": key.toString() + "_" + currentSubcluster,
                 "name": "Subcluster " + currentSubcluster.toString(),
+                "parent": key
               }
               clusteringDescription.push(desc);
             }
@@ -289,7 +292,15 @@ app.get('/api/getdata', (req, res) => {
       }
       groups[key].clustering = clusteringDescription;
     }
+    /* end */
 
+    let configGraph = {
+      "groups": groups,
+      "range": {
+        "validityStart": validityStart,
+        "validityEnd": validityEnd
+      }
+    };
 
     db.query(`select *, UUID() as uuid from ${viewDictionary[req.query.type].table} where ${viewDictionary[req.query.type].identifier} = ?`, [req.query.id], function (err2, rows2, fields2) {
       if (err2) throw err2;
@@ -367,12 +378,12 @@ app.get('/api/getdetail', (req, res) => {
       detail += "</ul>"
       res.json({
         "queriedEntity": {
-            /*
-            "id": id,
-            "name": name,
-            "type": type,
-            "typeFullName": typeFullName,
-            */
+          /*
+          "id": id,
+          "name": name,
+          "type": type,
+          "typeFullName": typeFullName,
+          */
           "actions": createNodeActions(rows[0]),
           "detail": detail,
         },
@@ -393,11 +404,11 @@ function computeEdges(rows, queriedEntity, validityStart, validityEnd) {
   validityEndMoment = moment(validityEnd);
   for (var i = 0; i < rows.length; i++) {
     if (rows[i].direction.localeCompare("from")) {
-      const resultEdge = { "from": rows[i].id, "to": queriedEntity.uuid, "validityStart": rows[i].validityStart, "validityEnd": rows[i].validityEnd, "hiddenLabel": rows[i].validityStart + " -- " + rows[i].validityEnd, "validityChanges": false }
+      const resultEdge = { "from": rows[i].id, "to": queriedEntity.uuid, "validityStart": rows[i].validityStart, "validityEnd": rows[i].validityEnd, "title": rows[i].validityStart + " -- " + rows[i].validityEnd, "validityChanges": false }
       if (moment(rows[i].validityStart).isAfter(validityStartMoment) || (rows[i].validityEnd === "unlimited" ? false : moment(rows[i].validityEnd).isBefore(validityEndMoment))) resultEdge.validityChanges = true;
       edges.push(resultEdge);
     } else if (rows[i].direction.localeCompare("to")) {
-      const resultEdge = { "from": queriedEntity.uuid, "to": rows[i].id, "validityStart": rows[i].validityStart, "validityEnd": rows[i].validityEnd, "hiddenLabel": rows[i].validityStart + " -- " + rows[i].validityEnd, "validityChanges": false }
+      const resultEdge = { "from": queriedEntity.uuid, "to": rows[i].id, "validityStart": rows[i].validityStart, "validityEnd": rows[i].validityEnd, "title": rows[i].validityStart + " -- " + rows[i].validityEnd, "validityChanges": false }
       if (moment(rows[i].validityStart).isAfter(validityStartMoment) || (rows[i].validityEnd === "unlimited" ? false : moment(rows[i].validityEnd).isBefore(validityEndMoment))) resultEdge.validityChanges = true;
       edges.push(resultEdge);
 

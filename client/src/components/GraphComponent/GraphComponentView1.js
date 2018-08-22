@@ -24,7 +24,7 @@ class GraphComponentView1 extends Component {
     }
 
     componentDidMount() {
-        this.highlightEdges();
+        //this.highlightEdges();
         this.clusterByGroup();
     }
 
@@ -51,6 +51,7 @@ class GraphComponentView1 extends Component {
             let baseY = 80;
 
             Object.values(this.props.data.config.groups).map(group => {
+                if(group.hasOwnProperty("parent")) return;
                 const coords = this.legendNetwork.DOMtoCanvas({ x: baseX, y: baseY });
 
                 ctx.beginPath();
@@ -101,7 +102,7 @@ class GraphComponentView1 extends Component {
         if (edges.length === 1) {
             const selectedEdge = this.edgeDataset.get(edges[0]);
             if (selectedEdge != null) {
-                this.edgeDataset.update({ id: edges[0], label: selectedEdge.hiddenLabel });
+                //this.edgeDataset.update({ id: edges[0], label: selectedEdge.hiddenLabel });
             }
         }
     }
@@ -111,7 +112,7 @@ class GraphComponentView1 extends Component {
         if (edges.length === 1) {
             const selectedEdge = this.edgeDataset.get(edges[0]);
             if (selectedEdge != null) {
-                this.edgeDataset.update({ id: edges[0], label: "" })
+                //this.edgeDataset.update({ id: edges[0], label: "" })
             }
         }
     }
@@ -122,15 +123,19 @@ class GraphComponentView1 extends Component {
 
         if (this.network.isCluster(clickedNode) === true) {
             const clusterNodeInfo = this.network.clustering.body.nodes[clickedNode];
+            console.log(clusterNodeInfo)
             if (!clusterNodeInfo.options.isCluster === true) {
                 this.network.openCluster(clickedNode);
+                console.log('opened cluster and going to subcl', clusterNodeInfo)
                 this.createSubclusters(clusterNodeInfo.options.group);
             } else {
                 this.network.openCluster(clickedNode);
             }
             return;
         } else {
+            //console.log(this.nodeDataset)
             const selectedNode = this.props.data.graph.nodes.find(node => { return node.id === clickedNode; });
+            //const selectedNode = this.nodeDataset.get(clickedNode);
             if (selectedNode !== undefined) this.props.getSelectedNode(selectedNode);   
         }
     }
@@ -151,6 +156,7 @@ class GraphComponentView1 extends Component {
                     let clusterOptionsByData;
                     clusterOptionsByData = {
                         joinCondition: (nodeOptions) => {
+                            //console.log(this.props.data.config.groups)
                             return nodeOptions.subcluster === c.id;
                         },
                         processProperties: (clusterOptions, childNodes, childEdges) => {
@@ -183,15 +189,17 @@ class GraphComponentView1 extends Component {
                             opacity: 0.6,
                         }
                     };
+                    console.log("clustered group ", c.id)
                     this.network.cluster(clusterOptionsByData)
                 })
             }
         }
-
     }
 
     clusterByGroup = () => {
-        //this.createSubclusters();
+        //this.createSubclusters("g2");
+        //this.createSubclusters("g1");
+
         const groupKeys = Object.keys(this.props.data.config.groups);
         const groupcount = groupKeys.length;
         let clusterOptionsByData;
@@ -249,18 +257,18 @@ class GraphComponentView1 extends Component {
 
         return (
             <div>
-                <div style={{ width: '73%', position: 'absolute' }}>
+                <div style={{ width: '70%', position: 'absolute' }}>
                     <Graph graph={{ nodes: [], edges: [] }}
                         options={{ autoResize: true }}
-                        style={{ height: "99vh" }}
+                        style={{ height: "800px" }}
                         getNetwork={this.initLegendNetworkInstance}
                     />
                 </div>
-                <div style={{ width: '73%', position: 'absolute' }}>
+                <div style={{ width: '70%', position: 'absolute' }}>
                     <Graph graph={{ nodes: this.props.data.graph.nodes, edges: this.props.data.graph.edges }}
                         options={options}
                         events={events}
-                        style={{ height: "99vh" }}
+                        style={{ height: "800px" }}
                         getNetwork={this.initNetworkInstance}
                         getNodes={this.initNodeDatasetInstance}
                         getEdges={this.initEdgeDatasetInstance}

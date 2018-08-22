@@ -28,29 +28,33 @@ class GraphComponentView2 extends Component {
             return this.props.selectedDate.isBetween(moment(edge.validityStart), edge.validityEnd !== "unlimited" ? moment(edge.validityEnd) : moment('2100-01-01'), 'h', '[)');
         });
         const displayedNodes = this.props.data.graph.nodes.filter(node => {
-            const edgeCount = displayedEdges.filter( edge => {
+            const edgeCount = displayedEdges.filter(edge => {
                 return edge.from === node.id || edge.to === node.id;
             });
             return edgeCount.length > 0;
         })
+        this.network.setData({ nodes: displayedNodes, edges: displayedEdges });
+        this.nodeDataset = this.network.body.data.nodes;
+        this.edgeDataset = this.network.body.data.edges;
+        this.clusterByGroup();
 
+       // this.clusterByGroup();
         this.setState({
             nodes: displayedNodes,
             edges: displayedEdges
         }, () => {
-            this.clusterByGroup();
+            //this.clusterByGroup();
         });
     }
 
     componentDidUpdate(prevProps) {
         if (JSON.stringify(this.props.data.graph) === JSON.stringify(prevProps.data.graph)) {
             if (!prevProps.selectedDate.isSame(this.props.selectedDate)) {
-
                 const displayedEdges = this.props.data.graph.edges.filter(edge => {
                     return this.props.selectedDate.isBetween(moment(edge.validityStart), edge.validityEnd !== "unlimited" ? moment(edge.validityEnd) : moment('2100-01-01'), 'h', '[)');
                 });
                 const displayedNodes = this.props.data.graph.nodes.filter(node => {
-                    const edgeCount = displayedEdges.filter( edge => {
+                    const edgeCount = displayedEdges.filter(edge => {
                         return edge.from === node.id || edge.to === node.id;
                     });
                     return edgeCount.length > 0;
@@ -59,17 +63,27 @@ class GraphComponentView2 extends Component {
                 //console.log("displayed nodes", displayedNodes)
                 if (displayedNodes.length === this.state.nodes.length) {
                     if (JSON.stringify(displayedNodes) !== JSON.stringify(this.state.nodes)) {
+                        this.network.setData({ nodes: displayedNodes, edges: displayedEdges });
+                        this.clusterByGroup();
+                        this.nodeDataset = this.network.body.data.nodes;
+                        this.edgeDataset = this.network.body.data.edges;
+                    
                         this.setState({ nodes: displayedNodes, edges: displayedEdges }, () => {
-                            this.network.unselectAll();
-                            this.openAllClusters();
-                            this.clusterByGroup();
+                            // this.network.unselectAll();
+                            // this.openAllClusters();
+                            // this.clusterByGroup();
                         });
                     }
                 } else {
+                    this.network.setData({ nodes: displayedNodes, edges: displayedEdges });
+                    this.clusterByGroup();
+                    this.nodeDataset = this.network.body.data.nodes;
+                    this.edgeDataset = this.network.body.data.edges;
+
                     this.setState({ nodes: displayedNodes, edges: displayedEdges }, () => {
-                        this.network.unselectAll();
-                        this.openAllClusters();
-                        this.clusterByGroup()
+                        // this.network.unselectAll();
+                        // this.openAllClusters();
+                        // this.clusterByGroup()
                     });
                 }
             }
@@ -78,11 +92,15 @@ class GraphComponentView2 extends Component {
                 return this.props.selectedDate.isBetween(moment(edge.validityStart), edge.validityEnd !== "unlimited" ? moment(edge.validityEnd) : moment('2100-01-01'), 'h', '[)');
             });
             const displayedNodes = this.props.data.graph.nodes.filter(node => {
-                const edgeCount = displayedEdges.filter( edge => {
+                const edgeCount = displayedEdges.filter(edge => {
                     return edge.from === node.id || edge.to === node.id;
                 });
                 return edgeCount.length > 0;
             })
+            this.network.setData({ nodes: displayedNodes, edges: displayedEdges });
+            this.clusterByGroup();
+            this.nodeDataset = this.network.body.data.nodes;
+            this.edgeDataset = this.network.body.data.edges;
 
             this.setState({
                 nodes: displayedNodes,
@@ -109,6 +127,7 @@ class GraphComponentView2 extends Component {
             let baseY = 80;
 
             Object.values(this.props.data.config.groups).map(group => {
+                if(group.hasOwnProperty("parent")) return;
                 const coords = this.legendNetwork.DOMtoCanvas({ x: baseX, y: baseY });
 
                 ctx.beginPath();
@@ -150,11 +169,13 @@ class GraphComponentView2 extends Component {
     }
 
     selectEdge = (event) => {
+        console.log(this.edgeDataset)
+        console.log(this.state.edges)
         const { edges } = event;
         if (edges.length === 1) {
             const selectedEdge = this.edgeDataset.get(edges[0]);
             if (selectedEdge != null) {
-                this.edgeDataset.update({ id: edges[0], label: selectedEdge.hiddenLabel });
+                //this.edgeDataset.update({ id: edges[0], label: selectedEdge.hiddenLabel });
             }
         }
     }
@@ -164,7 +185,7 @@ class GraphComponentView2 extends Component {
         if (edges.length === 1) {
             const selectedEdge = this.edgeDataset.get(edges[0]);
             if (selectedEdge != null) {
-                this.edgeDataset.update({ id: edges[0], label: "" })
+                //this.edgeDataset.update({ id: edges[0], label: "" })
             }
         }
     }
@@ -183,7 +204,7 @@ class GraphComponentView2 extends Component {
             return;
         } else {
             const selectedNode = this.props.data.graph.nodes.find(node => { return node.id === clickedNode; });
-            if (selectedNode !== undefined) this.props.getSelectedNode(selectedNode);   
+            if (selectedNode !== undefined) this.props.getSelectedNode(selectedNode);
         }
     }
 
@@ -301,18 +322,18 @@ class GraphComponentView2 extends Component {
 
         return (
             <div>
-                <div style={{ width: '73%', position: 'absolute' }}>
+                <div style={{ width: '70%', position: 'absolute' }}>
                     <Graph graph={{ nodes: [], edges: [] }}
                         options={{ autoResize: true }}
-                        style={{ height: "99vh" }}
+                        style={{ height: "800px" }}
                         getNetwork={this.initLegendNetworkInstance}
                     />
                 </div>
-                <div style={{ width: '73%', position: 'absolute' }}>
-                    <Graph graph={{ nodes: this.state.nodes, edges: this.state.edges }}
+                <div style={{ width: '70%', position: 'absolute' }}>
+                    <Graph graph={{ nodes: [], edges: [] }}
                         options={options}
                         events={events}
-                        style={{ height: "99vh" }}
+                        style={{ height: "800px" }}
                         getNetwork={this.initNetworkInstance}
                         getNodes={this.initNodeDatasetInstance}
                         getEdges={this.initEdgeDatasetInstance}
