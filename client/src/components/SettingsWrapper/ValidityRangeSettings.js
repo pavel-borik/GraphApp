@@ -17,7 +17,6 @@ export default class ValidityRangeSettings extends Component {
         this.props.handleChangeEnd(newEndDate)
     }
 
-
     render() {
         return (
             <div className="datepickers-container">
@@ -25,8 +24,12 @@ export default class ValidityRangeSettings extends Component {
                     <DatePicker
                         className="form-control"
                         selected={this.props.startDate}
-                        selectsStart
-                        dateFormat="MMM DD YYYY"
+                        selectsEnd
+                        timeFormat="HH:mm"
+                        timeIntervals={60}
+                        dateFormat="MMM DD YYYY HH:mm"
+                        showTimeSelect
+                        timeCaption="Time"
                         maxDate={this.props.endDate}
                         startDate={this.props.startDate}
                         endDate={this.props.endDate}
@@ -38,7 +41,11 @@ export default class ValidityRangeSettings extends Component {
                         className="form-control"
                         selected={this.props.endDate}
                         selectsEnd
-                        dateFormat="MMM DD YYYY"
+                        timeFormat="HH:mm"
+                        timeIntervals={60}
+                        dateFormat="MMM DD YYYY HH:mm"
+                        showTimeSelect
+                        timeCaption="Time"
                         minDate={this.props.startDate}
                         startDate={this.props.startDate}
                         endDate={this.props.endDate}

@@ -72,8 +72,8 @@ class EnhancedDatePicker extends React.Component {
 
   render() {
     const { classes } = this.props;
-    const minValidity = moment(this.props.validityStart, "YYYYMMDD");
-    const maxValidity = moment(this.props.validityEnd, "YYYYMMDD");
+    const minValidity = moment(this.props.validityStart);
+    const maxValidity = moment(this.props.validityEnd);
     return (
       <div className={classes.root}>
         <IconButton className={classes.button} aria-label="Previous break" onClick={this.jumpToPreviousBreak} disabled={

@@ -2,14 +2,13 @@
     display: flex;
 }
 .left-gui-elements {
-    width: 26%;
+    width: 29%;
     margin-top: 10px;
     margin-left: 5px;
 }
 
 .graph-container {
     padding: 10px;
-    width: 74%;
 }
 
 .card-container {

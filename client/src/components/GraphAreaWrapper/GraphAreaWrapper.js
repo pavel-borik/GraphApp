@@ -33,7 +33,7 @@ class GraphAreaWrapper extends Component {
                     throw new Error('Something went wrong');
                 }
             })
-            .then(data => this.setState({ graphData: data, selectedDate: moment(data.config.range.validityStart, 'YYYYMMDD'), selectedNode: data.queriedEntity, isLoading: false },
+            .then(data => this.setState({ graphData: data, selectedDate: moment(data.config.range.validityStart), selectedNode: data.queriedEntity, isLoading: false },
                 () => this.computeTimeBreaks()
             ));
     }
@@ -50,29 +50,31 @@ class GraphAreaWrapper extends Component {
                         throw new Error('Something went wrong');
                     }
                 })
-                .then(data => this.setState({ graphData: data, selectedDate: moment(data.config.range.validityStart, 'YYYYMMDD'), selectedNode: data.queriedEntity, isLoading: false },
+                .then(data => this.setState({ graphData: data, selectedDate: moment(data.config.range.validityStart), selectedNode: data.queriedEntity, isLoading: false },
                     () => this.computeTimeBreaks()
                 ));
         }
     }
 
     computeTimeBreaks = () => {
-        let newIntervals = new Set();
+        let newTimeBreaks = new Set();
         const validityRangeStart = moment(this.state.graphData.config.range.validityStart);
         const validityRangeEnd = moment(this.state.graphData.config.range.validityEnd);
-        if (validityRangeStart.isValid) newIntervals.add(this.state.graphData.config.range.validityStart)
+        if (validityRangeStart.isValid) newTimeBreaks.add(this.state.graphData.config.range.validityStart)
 
+        let validityStart;
+        let validityEnd;
         this.state.graphData.graph.edges.forEach(edge => {
-            const validityStart = moment(edge.validityStart);
-            const validityEnd = moment(edge.validityEnd);
-            if (validityStart.isBetween(validityRangeStart, validityRangeEnd)) newIntervals.add(edge.validityStart);
-            if (validityEnd.isBetween(validityRangeStart, validityRangeEnd)) newIntervals.add(edge.validityEnd);
+            validityStart = moment(edge.validityStart);
+            validityEnd = moment(edge.validityEnd);
+            if (validityStart.isBetween(validityRangeStart, validityRangeEnd)) newTimeBreaks.add(edge.validityStart);
+            if (validityEnd.isBetween(validityRangeStart, validityRangeEnd)) newTimeBreaks.add(edge.validityEnd);
         });
-        const intervalsAsMoments = Array.from(newIntervals).map(i => {
+        let newTimeBreaksAsMoments = Array.from(newTimeBreaks).map(i => {
             return moment(i);
-        }).sort((a, b) => b.isBefore(a));
+        }).sort((a, b) => a.diff(b));
 
-        this.setState({ timeBreaks: intervalsAsMoments });
+        this.setState({ timeBreaks: newTimeBreaksAsMoments });
     }
 
     getSelectedNode = (node) => {
@@ -88,11 +90,16 @@ class GraphAreaWrapper extends Component {
     }
 
     processNewDateRange = (newStartDate, newEndDate) => {
-        if (newStartDate.format("YYYYMMDD") !== this.state.graphData.config.range.validityStart || 
-            newEndDate.format("YYYYMMDD") !== this.state.graphData.config.range.validityEnd) {
+        console.log(newStartDate)
+        console.log(newStartDate.format('YYYYMMDDTHHmm'))
+        console.log(newEndDate)
+        console.log(newEndDate.format('YYYYMMDDTHHmm'))
+        console.log(moment(newEndDate.format('YYYYMMDDTHHmm')))
+        if (newStartDate.format("YYYYMMDDTHHmm") !== this.state.graphData.config.range.validityStart || 
+            newEndDate.format("YYYYMMDDTHHmm") !== this.state.graphData.config.range.validityEnd) {
             const search = this.props.location.search;
-            const newUrl = this.props.location.pathname + search.replace(/validityStart=\d+/, `validityStart=${newStartDate.format("YYYYMMDD")}`)
-                .replace(/validityEnd=\d+/, `validityEnd=${newEndDate.format("YYYYMMDD")}`);
+            const newUrl = this.props.location.pathname + search.replace(/validityStart=\w{13}/, `validityStart=${newStartDate.format("YYYYMMDDTHHmm")}`)
+                .replace(/validityEnd=\w{13}/, `validityEnd=${newEndDate.format("YYYYMMDDTHHmm")}`);
             this.props.history.push(newUrl);
         }
     }
