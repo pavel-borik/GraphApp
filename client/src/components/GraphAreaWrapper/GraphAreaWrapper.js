@@ -147,9 +147,9 @@ class GraphAreaWrapper extends Component {
                     </div>
                     <div className="card-container">
                         {cardComponent}
-                        <Link className="link" to="/getdata?id=EIC_10YFI_1________U&type=mba&validityStart=20150101&validityEnd=20180101&view=ro,mga,tso,country">Link 1</Link>
-                        <Link className="link" to="/getdata?id=EIC_10YFI_1________U&type=mba&validityStart=20150101&validityEnd=20180101&view=ro,mga,tso">Link 2</Link>
-                        <Link className="link" to="/getdata?id=EIC_10YNO_3________J&type=mba&validityStart=20150101&validityEnd=20180101&view=ro,mga,tso,country">Link 3</Link>
+                        <Link className="link" to="/getdata?id=EIC_10YFI_1________U&type=mba&validityStart=20150101T0000&validityEnd=20180101T0000&view=ro,mga,tso,country">Link 1</Link>
+                        <Link className="link" to="/getdata?id=EIC_10YFI_1________U&type=mba&validityStart=20150101T0000&validityEnd=20180101T0000&view=ro,mga,tso">Link 2</Link>
+                        <Link className="link" to="/getdata?id=EIC_10YNO_3________J&type=mba&validityStart=20150101T0000&validityEnd=20180101T0000&view=ro,mga,tso,country">Link 3</Link>
                     </div>
                 </div>
                 <div className="graph-container">

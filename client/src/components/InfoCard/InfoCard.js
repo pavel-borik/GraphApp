@@ -53,7 +53,7 @@ class InfoCard extends PureComponent {
               Entity information:
             </Typography>
             <Typography variant="headline" component="h2">
-              {this.props.selectedNode.label ? this.props.selectedNode.label : this.props.selectedNode.name}
+              {this.props.selectedNode.name}
             </Typography>
             <Typography className={classes.pos} color="textSecondary">
               {this.props.selectedNode.typeFullName}
