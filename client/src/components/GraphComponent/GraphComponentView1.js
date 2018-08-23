@@ -1,8 +1,8 @@
-import Graph from 'react-graph-vis';
+import VisNetwork from './VisNetwork';
 import React, { Component } from 'react';
-import CustomButton from '../GuiElements/CustomButton'
-import { options } from './GraphOptions'
-import moment from 'moment';
+import CustomButton from '../GuiElements/CustomButton';
+import { options } from './GraphOptions';
+import uuid from "uuid";
 import './GraphComponent.css';
 
 /**
@@ -24,7 +24,7 @@ class GraphComponentView1 extends Component {
     }
 
     componentDidMount() {
-        //this.highlightEdges();
+        this.highlightEdges();
         this.clusterByGroup();
     }
 
@@ -51,7 +51,7 @@ class GraphComponentView1 extends Component {
             let baseY = 80;
 
             Object.values(this.props.data.config.groups).map(group => {
-                if(group.hasOwnProperty("parent")) return;
+                if (group.hasOwnProperty("parent")) return;
                 const coords = this.legendNetwork.DOMtoCanvas({ x: baseX, y: baseY });
 
                 ctx.beginPath();
@@ -92,17 +92,23 @@ class GraphComponentView1 extends Component {
     }
 
     highlightEdges = () => {
-        this.edgeDataset.map(edge => {
-            if (edge.validityChanges === true) this.edgeDataset.update({ id: edge.id, color: { color: "#ff6363", opacity: 0.5, highlight: "#fb1414" } });
-        })
+        const highlightedEdges = this.props.data.graph.edges.map(edge => {
+            if (edge.validityChanges === true) return Object.assign(edge, { color: { color: "#ff6363", opacity: 0.5, highlight: "#fb1414" } });
+            return edge;
+        });
+        this.network.setData({ nodes: this.props.data.graph.nodes, edges: highlightedEdges })
+        this.edgeDataset = this.network.body.data.edges;
+        // this.edgeDataset.map(edge => {
+        //     if (edge.validityChanges === true) this.edgeDataset.update({ id: edge.id, color: { color: "#ff6363", opacity: 0.5, highlight: "#fb1414" } });
+        // })
     }
-    
+
     selectEdge = (event) => {
         const { edges } = event;
         if (edges.length === 1) {
             const selectedEdge = this.edgeDataset.get(edges[0]);
             if (selectedEdge != null) {
-                //this.edgeDataset.update({ id: edges[0], label: selectedEdge.hiddenLabel });
+                this.edgeDataset.update({ id: edges[0], label: selectedEdge.hiddenLabel });
             }
         }
     }
@@ -112,7 +118,7 @@ class GraphComponentView1 extends Component {
         if (edges.length === 1) {
             const selectedEdge = this.edgeDataset.get(edges[0]);
             if (selectedEdge != null) {
-                //this.edgeDataset.update({ id: edges[0], label: "" })
+                this.edgeDataset.update({ id: edges[0], label: "" })
             }
         }
     }
@@ -120,23 +126,14 @@ class GraphComponentView1 extends Component {
     selectNode = (event) => {
         const { nodes } = event;
         const clickedNode = nodes[0];
-
         if (this.network.isCluster(clickedNode) === true) {
             const clusterNodeInfo = this.network.clustering.body.nodes[clickedNode];
-            console.log(clusterNodeInfo)
-            if (!clusterNodeInfo.options.isCluster === true) {
-                this.network.openCluster(clickedNode);
-                console.log('opened cluster and going to subcl', clusterNodeInfo)
-                this.createSubclusters(clusterNodeInfo.options.group);
-            } else {
-                this.network.openCluster(clickedNode);
-            }
+            this.network.openCluster(clickedNode);
+            this.createSubclusters(clusterNodeInfo.options.group, clusterNodeInfo.options.clusterGroupId);
             return;
         } else {
-            //console.log(this.nodeDataset)
             const selectedNode = this.props.data.graph.nodes.find(node => { return node.id === clickedNode; });
-            //const selectedNode = this.nodeDataset.get(clickedNode);
-            if (selectedNode !== undefined) this.props.getSelectedNode(selectedNode);   
+            if (selectedNode !== undefined) this.props.getSelectedNode(selectedNode);
         }
     }
 
@@ -147,80 +144,82 @@ class GraphComponentView1 extends Component {
         this.network.fit({ animation: { duration: 1000, easingFunction: 'easeOutQuart' } });
     }
 
-    createSubclusters = (groupId) => {
-        const g = this.props.data.config.groups[groupId];
-        const groupKey = groupId;
-        if (g.hasOwnProperty("clustering")) {
-            if (g.clustering.length > 0) {
-                g.clustering.forEach(c => {
-                    let clusterOptionsByData;
-                    clusterOptionsByData = {
-                        joinCondition: (nodeOptions) => {
-                            //console.log(this.props.data.config.groups)
-                            return nodeOptions.subcluster === c.id;
-                        },
-                        processProperties: (clusterOptions, childNodes, childEdges) => {
-                            clusterOptions.label = `${c.name}\n Contains: \n ${childNodes.length} nodes`;
-                            clusterOptions.nOfNodes = childNodes.length;
-                            clusterOptions.isCluster = true;
-                            return clusterOptions;
-                        },
-                        clusterNodeProperties: {
-                            id: groupKey + "_" + c.id,
-                            group: groupKey,
-                            borderWidth: 3,
-                            shape: 'circle',
-                            labelHighlightBold: false,
-                            font: {
-                                face: 'georgia',
-                                color: "black",
-                                size: 12,
-                                align: 'center',
-                                multi: 'html',
-                                bold: {
-                                    size: 18,
-                                    vadjust: 2
-                                }
-                            }
-                        },
-                        clusterEdgeProperties: {
-                            label: '',
-                            color: '#848484',
-                            opacity: 0.6,
-                        }
-                    };
-                    console.log("clustered group ", c.id)
-                    this.network.cluster(clusterOptionsByData)
-                })
+    createSubclusters = (groupId, clusterGroupId) => {
+        const childGroups = Object.values(this.props.data.config.groups).filter(group => {
+            if (group.hasOwnProperty("parent")) {
+                return group.parent == clusterGroupId;
             }
+            return false;
+        });
+        if(!childGroups.length > 0) return;
+        let clusterOptionsByData;
+        for (let i = 0; i < childGroups.length; i++) {
+            const currentGroupId = childGroups[i].id;
+            clusterOptionsByData = {
+                joinCondition: (nodeOptions) => {
+                    if (!nodeOptions.hasOwnProperty("clustering")) return false;
+                    return nodeOptions.clustering.includes(currentGroupId);
+                },
+                processProperties: (clusterOptions, childNodes, childEdges) => {
+                    const countPlaceholder = "{count}";
+                    let label = childGroups[i].name;
+                    if(label.includes(countPlaceholder)) {
+                        label = label.replace(countPlaceholder, childNodes.length);
+                    }
+                    clusterOptions.label = label;
+                    return clusterOptions;
+                },
+                clusterNodeProperties: {
+                    id: uuid.v4(),
+                    group: groupId,
+                    clusterGroupId: currentGroupId,
+                    shape: 'circle',
+                    labelHighlightBold: false,
+                    font: {
+                        face: 'georgia',
+                        color: "black",
+                        size: 12,
+                        align: 'center',
+                        multi: 'html',
+                        bold: {
+                            size: 18,
+                            vadjust: 2
+                        }
+                    }
+                },
+                clusterEdgeProperties: {
+                    label: '',
+                    color: '#848484',
+                    opacity: 0.6,
+                }
+            };
+            this.network.cluster(clusterOptionsByData)
         }
     }
 
     clusterByGroup = () => {
-        //this.createSubclusters("g2");
-        //this.createSubclusters("g1");
+        this.openAllClusters();
+        const filteredGroups = Object.values(this.props.data.config.groups).filter(g => {
+            return !g.hasOwnProperty("parent");
+        });
 
-        const groupKeys = Object.keys(this.props.data.config.groups);
-        const groupcount = groupKeys.length;
         let clusterOptionsByData;
-        for (let i = 0; i < groupcount; i++) {
+        for (let i = 0; i < filteredGroups.length; i++) {
+            const currentGroupId = filteredGroups[i].id
             clusterOptionsByData = {
                 joinCondition: (nodeOptions) => {
-                    return nodeOptions.group == groupKeys[i];
+                    if (!nodeOptions.hasOwnProperty("clustering")) return false;
+                    return nodeOptions.clustering.includes(currentGroupId);
                 },
                 processProperties: (clusterOptions, childNodes, childEdges) => {
                     let sumOfNodes = childNodes.length;
-                    for (let i = 0; i < childNodes.length; i++) {
-                        if (childNodes[i].isCluster === true) {
-                            sumOfNodes += childNodes[i].nOfNodes - 1
-                        }
-                    }
                     clusterOptions.label = `Node count:\n <b> ${sumOfNodes} </b>`;
                     return clusterOptions;
                 },
                 clusterNodeProperties: {
-                    id: groupKeys[i],
-                    group: groupKeys[i],
+                    id: uuid.v4(),
+                    group: currentGroupId,
+                    clusterGroupId: currentGroupId,
                     borderWidth: 3,
                     shape: 'circle',
                     labelHighlightBold: false,
@@ -258,17 +257,17 @@ class GraphComponentView1 extends Component {
         return (
             <div>
                 <div style={{ width: '70%', position: 'absolute' }}>
-                    <Graph graph={{ nodes: [], edges: [] }}
+                    <VisNetwork graph={{ nodes: [], edges: [] }}
                         options={{ autoResize: true }}
-                        style={{ height: "800px" }}
+                        style={{ height: "99vh" }}
                         getNetwork={this.initLegendNetworkInstance}
                     />
                 </div>
                 <div style={{ width: '70%', position: 'absolute' }}>
-                    <Graph graph={{ nodes: this.props.data.graph.nodes, edges: this.props.data.graph.edges }}
+                    <VisNetwork graph={{ nodes: this.props.data.graph.nodes, edges: this.props.data.graph.edges }}
                         options={options}
                         events={events}
-                        style={{ height: "800px" }}
+                        style={{ height: "99vh" }}
                         getNetwork={this.initNetworkInstance}
                         getNodes={this.initNodeDatasetInstance}
                         getEdges={this.initEdgeDatasetInstance}

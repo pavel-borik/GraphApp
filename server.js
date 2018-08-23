@@ -217,7 +217,7 @@ app.get('/api/getdata', (req, res) => {
     const where = viewDictionary[req.query.type].rels[view[i]].where;
     const type = view[i];
     queryString +=
-      `select UUID() as id, x.${identifier} as internalId, y.name as label, "${("g" + (i + 1))}" as "group",
+      `select UUID() as id, x.${identifier} as internalId, y.name as label, y.name as name, "${("g" + (i + 1))}" as "group",
       "${direction}" as direction, "${type}" as "type", x.validity_start as validityStart, x.validity_end as validityEnd
       from ${table} x left join ${joinTable} y on x.${identifier} = y.${joinIdentifier} where x.${where} like ?
       union `;
@@ -258,14 +258,14 @@ app.get('/api/getdata', (req, res) => {
     for (let [key, value] of countPerGroup.entries()) {
       let clusteringDescription = [];
       if (value > 50) {
-        const nOfSubclusters = Math.ceil(value / 40);
+        const nOfSubclusters = Math.ceil(value / 80);
         const maxPerCluster = Math.round(value / nOfSubclusters);
 
         let count = 1;
         let currentSubcluster = 1
         desc = {
           "id": key.toString() + "_" + currentSubcluster,
-          "name": "Subcluster " + currentSubcluster.toString(),
+          "name": "Subcluster\n" + key.toString()+ "_" + currentSubcluster +"\n with {count} items",
           "parent": key
         }
         const id = key.toString() + "_" + currentSubcluster;
@@ -282,16 +282,75 @@ app.get('/api/getdata', (req, res) => {
               currentSubcluster++;
               desc = {
                 "id": key.toString() + "_" + currentSubcluster,
-                "name": "Subcluster " + currentSubcluster.toString(),
+                "name": "Subcluster\n" + key.toString()+ "_" + currentSubcluster +"\n with {count} items",
                 "parent": key
               }
+              const id = key.toString() + "_" + currentSubcluster;
+              groups[id] = desc;
               clusteringDescription.push(desc);
             }
           }
         });
       }
-      groups[key].clustering = clusteringDescription;
+      //groups[key].clustering = clusteringDescription;
     }
+
+    /* Creating 2nd subclustering layer */
+    let countPerParent = new Map();
+
+    for (let i = 0; i < Object.keys(groups).length; i++) {
+      if (Object.values(groups)[i].parent !== undefined) {
+        countPerParent.set(Object.values(groups)[i].parent, 0);
+      }
+    }
+
+    for (let i = 0; i < Object.keys(groups).length; i++) {
+      if (Object.values(groups)[i].parent !== undefined) {
+        countPerParent.set(Object.values(groups)[i].parent, countPerParent.get(Object.values(groups)[i].parent) + 1)
+      }
+    }
+    console.log(countPerParent)
+
+    for (let [key, value] of countPerParent.entries()) {
+      if (value > 4) {
+        let subclusterNames = [];
+        Object.values(groups).forEach(g => {
+          if (g.parent !== undefined) {
+            if (g.parent === key) subclusterNames.push(g.id)
+          }
+        })
+
+        subclusterNames.forEach(sn => {
+          let key1 = sn.toString() + "_" + "1";
+          desc = {
+            "id": key1,
+            "name": "Subcluster\n" + key1.toString() + "\n with {count} items",
+            "parent": sn.toString()
+          }
+          groups[key1] = desc;
+          key2 = sn.toString() + "_" + "2";
+          desc = {
+            "id": key2,
+            "name": "Subcluster\n" + key2.toString() + "\n with {count} items",
+            "parent": sn.toString()
+          }
+          groups[key2] = desc;
+
+          rows.map(r => {
+            if (r.subcluster !== undefined) {
+              if (r.subcluster == sn) {
+                r.subcluster = Math.random() < 0.5 ? key1 : key2;
+              }
+            }
+          })
+        })
+      }
+    }
+
+    rows.map(r => {
+      const arr = searchGroupParents(groups, r);
+      r.clustering = arr;
+    })
     /* end */
 
     let configGraph = {
@@ -332,8 +391,8 @@ app.get('/api/getdata', (req, res) => {
           delete r.validityEnd
         });
         rows.push({
-          "id": queriedEntity.uuid, "internalId": queriedEntity[viewDictionary[req.query.type].identifier], "label": queriedEntity.Name,
-          "type": req.query.type, "typeFullName": viewDictionary[req.query.type].name, "group": "g0", "title": queriedEntity.title
+          "id": queriedEntity.uuid, "internalId": queriedEntity[viewDictionary[req.query.type].identifier], "label": queriedEntity.Name, "name": queriedEntity.Name,
+          "type": req.query.type, "typeFullName": viewDictionary[req.query.type].name, "group": "g0", "title": queriedEntity.title, "clustering": []
         })
         const id = req.query.id;
         const name = queriedEntity.Name;
@@ -398,17 +457,46 @@ app.get('/api/getdetail', (req, res) => {
   })
 });
 
+function searchGroupParents(groups, row) {
+
+  let rowPartOf = [];
+  if(row.hasOwnProperty("subcluster")) rowPartOf.push(row.subcluster);
+  let searchFor = row.subcluster;
+  let searchForHelper = "";
+
+  while(true) {
+    let foundParents = false;
+
+    for(let i = 0; i < Object.keys(groups).length; i++) {
+      if(Object.keys(groups)[i] == searchFor) {
+        if(Object.values(groups)[i].parent !== undefined) {
+          foundParents = true;
+          rowPartOf.push(Object.values(groups)[i].parent);
+          searchForHelper = Object.values(groups)[i].parent;
+        }
+      }
+    }
+    if(foundParents === true) {
+      searchFor = searchForHelper;
+    } else {
+      break;
+    }
+  }
+  if(rowPartOf.length === 0) rowPartOf.push(row.group)
+  return rowPartOf;
+}
+
 function computeEdges(rows, queriedEntity, validityStart, validityEnd) {
   var edges = [];
   validityStartMoment = moment(validityStart);
   validityEndMoment = moment(validityEnd);
   for (var i = 0; i < rows.length; i++) {
     if (rows[i].direction.localeCompare("from")) {
-      const resultEdge = { "from": rows[i].id, "to": queriedEntity.uuid, "validityStart": rows[i].validityStart, "validityEnd": rows[i].validityEnd, "title": rows[i].validityStart + " -- " + rows[i].validityEnd, "validityChanges": false }
+      const resultEdge = { "from": rows[i].id, "to": queriedEntity.uuid, "validityStart": rows[i].validityStart, "validityEnd": rows[i].validityEnd, "hiddenLabel": rows[i].validityStart + " -- " + rows[i].validityEnd, "validityChanges": false }
       if (moment(rows[i].validityStart).isAfter(validityStartMoment) || (rows[i].validityEnd === "unlimited" ? false : moment(rows[i].validityEnd).isBefore(validityEndMoment))) resultEdge.validityChanges = true;
       edges.push(resultEdge);
     } else if (rows[i].direction.localeCompare("to")) {
-      const resultEdge = { "from": queriedEntity.uuid, "to": rows[i].id, "validityStart": rows[i].validityStart, "validityEnd": rows[i].validityEnd, "title": rows[i].validityStart + " -- " + rows[i].validityEnd, "validityChanges": false }
+      const resultEdge = { "from": queriedEntity.uuid, "to": rows[i].id, "validityStart": rows[i].validityStart, "validityEnd": rows[i].validityEnd, "hiddenLabel": rows[i].validityStart + " -- " + rows[i].validityEnd, "validityChanges": false }
       if (moment(rows[i].validityStart).isAfter(validityStartMoment) || (rows[i].validityEnd === "unlimited" ? false : moment(rows[i].validityEnd).isBefore(validityEndMoment))) resultEdge.validityChanges = true;
       edges.push(resultEdge);
 
@@ -423,6 +511,7 @@ function createGroups(view, type) {
   let key = "g" + i;
   let group = {
     [key]: {
+      "id": key,
       "name": viewDictionary[type].name,
       "color": {
         "background": viewDictionary[type].color,
@@ -438,6 +527,7 @@ function createGroups(view, type) {
     let key = "g" + i;
     let group = {
       [key]: {
+        "id": key,
         "name": viewDictionary[v].name,
         "color": {
           "background": viewDictionary[v].color,

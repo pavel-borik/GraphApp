@@ -1,8 +1,9 @@
-import Graph from 'react-graph-vis';
+import VisNetwork from './VisNetwork';
 import React, { Component } from 'react';
 import CustomButton from '../GuiElements/CustomButton'
 import { options } from './GraphOptions'
 import moment from 'moment';
+import uuid from "uuid";
 import './GraphComponent.css';
 
 /**
@@ -25,6 +26,7 @@ class GraphComponentView2 extends Component {
 
     componentDidMount() {
         const displayedEdges = this.props.data.graph.edges.filter(edge => {
+            delete edge['color'];
             return this.props.selectedDate.isBetween(moment(edge.validityStart), edge.validityEnd !== "unlimited" ? moment(edge.validityEnd) : moment('2100-01-01'), 'h', '[)');
         });
         const displayedNodes = this.props.data.graph.nodes.filter(node => {
@@ -38,7 +40,7 @@ class GraphComponentView2 extends Component {
         this.edgeDataset = this.network.body.data.edges;
         this.clusterByGroup();
 
-       // this.clusterByGroup();
+        // this.clusterByGroup();
         this.setState({
             nodes: displayedNodes,
             edges: displayedEdges
@@ -67,7 +69,7 @@ class GraphComponentView2 extends Component {
                         this.clusterByGroup();
                         this.nodeDataset = this.network.body.data.nodes;
                         this.edgeDataset = this.network.body.data.edges;
-                    
+
                         this.setState({ nodes: displayedNodes, edges: displayedEdges }, () => {
                             // this.network.unselectAll();
                             // this.openAllClusters();
@@ -127,7 +129,7 @@ class GraphComponentView2 extends Component {
             let baseY = 80;
 
             Object.values(this.props.data.config.groups).map(group => {
-                if(group.hasOwnProperty("parent")) return;
+                if (group.hasOwnProperty("parent")) return;
                 const coords = this.legendNetwork.DOMtoCanvas({ x: baseX, y: baseY });
 
                 ctx.beginPath();
@@ -175,7 +177,7 @@ class GraphComponentView2 extends Component {
         if (edges.length === 1) {
             const selectedEdge = this.edgeDataset.get(edges[0]);
             if (selectedEdge != null) {
-                //this.edgeDataset.update({ id: edges[0], label: selectedEdge.hiddenLabel });
+                this.edgeDataset.update({ id: edges[0], label: selectedEdge.hiddenLabel });
             }
         }
     }
@@ -185,7 +187,7 @@ class GraphComponentView2 extends Component {
         if (edges.length === 1) {
             const selectedEdge = this.edgeDataset.get(edges[0]);
             if (selectedEdge != null) {
-                //this.edgeDataset.update({ id: edges[0], label: "" })
+                this.edgeDataset.update({ id: edges[0], label: "" })
             }
         }
     }
@@ -195,12 +197,8 @@ class GraphComponentView2 extends Component {
         const clickedNode = nodes[0];
         if (this.network.isCluster(clickedNode) === true) {
             const clusterNodeInfo = this.network.clustering.body.nodes[clickedNode];
-            if (!clusterNodeInfo.options.isCluster === true) {
-                this.network.openCluster(clickedNode);
-                this.createSubclusters(clusterNodeInfo.options.group);
-            } else {
-                this.network.openCluster(clickedNode);
-            }
+            this.network.openCluster(clickedNode);
+            this.createSubclusters(clusterNodeInfo.options.group, clusterNodeInfo.options.clusterGroupId);
             return;
         } else {
             const selectedNode = this.props.data.graph.nodes.find(node => { return node.id === clickedNode; });
@@ -215,77 +213,35 @@ class GraphComponentView2 extends Component {
         this.network.fit({ animation: { duration: 1000, easingFunction: 'easeOutQuart' } });
     }
 
-    createSubclusters = (groupId) => {
-        const g = this.props.data.config.groups[groupId];
-        const groupKey = groupId;
-        if (g.hasOwnProperty("clustering")) {
-            if (g.clustering.length > 0) {
-                g.clustering.forEach(c => {
-                    let clusterOptionsByData;
-                    clusterOptionsByData = {
-                        joinCondition: (nodeOptions) => {
-                            return nodeOptions.subcluster === c.id;
-                        },
-                        processProperties: (clusterOptions, childNodes, childEdges) => {
-                            clusterOptions.label = `${c.name}\n Contains: \n ${childNodes.length} nodes`;
-                            clusterOptions.nOfNodes = childNodes.length;
-                            clusterOptions.isCluster = true;
-                            return clusterOptions;
-                        },
-                        clusterNodeProperties: {
-                            id: groupKey + "_" + c.id,
-                            group: groupKey,
-                            borderWidth: 3,
-                            shape: 'circle',
-                            labelHighlightBold: false,
-                            font: {
-                                face: 'georgia',
-                                color: "black",
-                                size: 12,
-                                align: 'center',
-                                multi: 'html',
-                                bold: {
-                                    size: 18,
-                                    vadjust: 2
-                                }
-                            }
-                        },
-                        clusterEdgeProperties: {
-                            label: '',
-                            color: '#848484',
-                            opacity: 0.6,
-                        }
-                    };
-                    this.network.cluster(clusterOptionsByData)
-                })
+    createSubclusters = (groupId, clusterGroupId) => {
+        const childGroups = Object.values(this.props.data.config.groups).filter(group => {
+            if (group.hasOwnProperty("parent")) {
+                return group.parent == clusterGroupId;
             }
-        }
-    }
-
-    clusterByGroup = () => {
-        //this.createSubclusters();
-        const groupKeys = Object.keys(this.props.data.config.groups);
-        const groupcount = groupKeys.length;
+            return false;
+        });
+        if (!childGroups.length > 0) return;
         let clusterOptionsByData;
-        for (let i = 0; i < groupcount; i++) {
+        for (let i = 0; i < childGroups.length; i++) {
+            const currentGroupId = childGroups[i].id;
             clusterOptionsByData = {
                 joinCondition: (nodeOptions) => {
-                    return nodeOptions.group == groupKeys[i];
+                    if (!nodeOptions.hasOwnProperty("clustering")) return false;
+                    return nodeOptions.clustering.includes(currentGroupId);
                 },
                 processProperties: (clusterOptions, childNodes, childEdges) => {
-                    let sumOfNodes = childNodes.length;
-                    for (let i = 0; i < childNodes.length; i++) {
-                        if (childNodes[i].isCluster === true) {
-                            sumOfNodes += childNodes[i].nOfNodes - 1;
-                        }
+                    const countPlaceholder = "{count}";
+                    let label = childGroups[i].name;
+                    if (label.includes(countPlaceholder)) {
+                        label = label.replace(countPlaceholder, childNodes.length);
                     }
-                    clusterOptions.label = `Node count:\n <b> ${sumOfNodes} </b>`;
+                    clusterOptions.label = label;
                     return clusterOptions;
                 },
                 clusterNodeProperties: {
-                    id: groupKeys[i],
-                    group: groupKeys[i],
-                    borderWidth: 3,
+                    id: uuid.v4(),
+                    group: groupId,
+                    clusterGroupId: currentGroupId,
                     shape: 'circle',
                     labelHighlightBold: false,
                     font: {
@@ -310,7 +266,53 @@ class GraphComponentView2 extends Component {
         }
     }
 
+    clusterByGroup = () => {
+        this.openAllClusters();
+        const filteredGroups = Object.values(this.props.data.config.groups).filter(g => {
+            return !g.hasOwnProperty("parent");
+        });
 
+        let clusterOptionsByData;
+        for (let i = 0; i < filteredGroups.length; i++) {
+            const currentGroupId = filteredGroups[i].id
+            clusterOptionsByData = {
+                joinCondition: (nodeOptions) => {
+                    if (!nodeOptions.hasOwnProperty("clustering")) return false;
+                    return nodeOptions.clustering.includes(currentGroupId);
+                },
+                processProperties: (clusterOptions, childNodes, childEdges) => {
+                    let sumOfNodes = childNodes.length;
+                    clusterOptions.label = `Node count:\n <b> ${sumOfNodes} </b>`;
+                    return clusterOptions;
+                },
+                clusterNodeProperties: {
+                    id: uuid.v4(),
+                    group: currentGroupId,
+                    clusterGroupId: currentGroupId,
+                    borderWidth: 3,
+                    shape: 'circle',
+                    labelHighlightBold: false,
+                    font: {
+                        face: 'georgia',
+                        color: "black",
+                        size: 12,
+                        align: 'center',
+                        multi: 'html',
+                        bold: {
+                            size: 18,
+                            vadjust: 2
+                        }
+                    }
+                },
+                clusterEdgeProperties: {
+                    label: '',
+                    color: '#848484',
+                    opacity: 0.6,
+                }
+            };
+            this.network.cluster(clusterOptionsByData)
+        }
+    }
     render() {
         Object.assign(options.groups, this.props.data.config.groups);
         const events = {
@@ -323,14 +325,14 @@ class GraphComponentView2 extends Component {
         return (
             <div>
                 <div style={{ width: '70%', position: 'absolute' }}>
-                    <Graph graph={{ nodes: [], edges: [] }}
+                    <VisNetwork graph={{ nodes: [], edges: [] }}
                         options={{ autoResize: true }}
                         style={{ height: "800px" }}
                         getNetwork={this.initLegendNetworkInstance}
                     />
                 </div>
                 <div style={{ width: '70%', position: 'absolute' }}>
-                    <Graph graph={{ nodes: [], edges: [] }}
+                    <VisNetwork graph={{ nodes: [], edges: [] }}
                         options={options}
                         events={events}
                         style={{ height: "800px" }}
