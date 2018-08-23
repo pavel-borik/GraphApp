@@ -10,9 +10,11 @@
     "react": "^16.2.0",
     "react-datepicker": "^1.5.0",
     "react-dom": "^16.2.0",
-    "react-graph-vis": "https://github.com/crubier/react-graph-vis/tarball/master",
     "react-router-dom": "^4.3.1",
-    "react-scripts": "^1.1.4"
+    "react-scripts": "^1.1.4",
+    "lodash": "^4.17.4",
+    "uuid": "^2.0.1",
+    "vis": "^4.21.0"
   },
   "scripts": {
     "start": "react-scripts start",
