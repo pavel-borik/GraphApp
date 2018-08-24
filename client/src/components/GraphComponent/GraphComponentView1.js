@@ -21,11 +21,13 @@ class GraphComponentView1 extends Component {
         const legendNetwork = null;
         const nodeDataset = null;
         const edgeDataset = null;
+        const clusterOperations = null;
     }
 
     componentDidMount() {
         this.highlightEdges();
-        this.clusterByGroup();
+        this.createTopLevelClusters();
+        this.clusterOperations = [];
     }
 
     componentDidUpdate(prevProps) {
@@ -33,9 +35,8 @@ class GraphComponentView1 extends Component {
             Object.assign(options.groups, this.props.data.config.groups);
             this.network.setOptions(options);
             this.network.unselectAll();
-            this.openAllClusters();
             this.highlightEdges();
-            this.clusterByGroup();
+            this.createTopLevelClusters();
             this.legendNetwork.redraw();
         }
     }
@@ -128,8 +129,10 @@ class GraphComponentView1 extends Component {
         const clickedNode = nodes[0];
         if (this.network.isCluster(clickedNode) === true) {
             const clusterNodeInfo = this.network.clustering.body.nodes[clickedNode];
+            console.log(clusterNodeInfo);
+            this.logClusterOperation(clusterNodeInfo.options.group, clusterNodeInfo.options.clusterGroupId);
             this.network.openCluster(clickedNode);
-            this.createSubclusters(clusterNodeInfo.options.group, clusterNodeInfo.options.clusterGroupId);
+            this.createSubclustersByGroupId(clusterNodeInfo.options.group, clusterNodeInfo.options.clusterGroupId);
             return;
         } else {
             const selectedNode = this.props.data.graph.nodes.find(node => { return node.id === clickedNode; });
@@ -137,112 +140,109 @@ class GraphComponentView1 extends Component {
         }
     }
 
-    click = (event) => {
-    }
-
-    fitToScreen = () => {
-        this.network.fit({ animation: { duration: 1000, easingFunction: 'easeOutQuart' } });
-    }
-
-    createSubclusters = (groupId, clusterGroupId) => {
+    createSubclustersByGroupId = (groupId, clusterGroupId) => {
         const childGroups = Object.values(this.props.data.config.groups).filter(group => {
             if (group.hasOwnProperty("parent")) {
                 return group.parent == clusterGroupId;
             }
             return false;
         });
-        if(!childGroups.length > 0) return;
-        let clusterOptionsByData;
+
+        if (!childGroups.length > 0) return;
         for (let i = 0; i < childGroups.length; i++) {
-            const currentGroupId = childGroups[i].id;
-            clusterOptionsByData = {
-                joinCondition: (nodeOptions) => {
-                    if (!nodeOptions.hasOwnProperty("clustering")) return false;
-                    return nodeOptions.clustering.includes(currentGroupId);
-                },
-                processProperties: (clusterOptions, childNodes, childEdges) => {
-                    const countPlaceholder = "{count}";
-                    let label = childGroups[i].name;
-                    if(label.includes(countPlaceholder)) {
-                        label = label.replace(countPlaceholder, childNodes.length);
-                    }
-                    clusterOptions.label = label;
-                    return clusterOptions;
-                },
-                clusterNodeProperties: {
-                    id: uuid.v4(),
-                    group: groupId,
-                    clusterGroupId: currentGroupId,
-                    shape: 'circle',
-                    labelHighlightBold: false,
-                    font: {
-                        face: 'georgia',
-                        color: "black",
-                        size: 12,
-                        align: 'center',
-                        multi: 'html',
-                        bold: {
-                            size: 18,
-                            vadjust: 2
-                        }
-                    }
-                },
-                clusterEdgeProperties: {
-                    label: '',
-                    color: '#848484',
-                    opacity: 0.6,
-                }
-            };
-            this.network.cluster(clusterOptionsByData)
+            this.clusterByGroupId(groupId, childGroups[i].id)
         }
     }
 
-    clusterByGroup = () => {
+    createTopLevelClusters = () => {
         this.openAllClusters();
-        const filteredGroups = Object.values(this.props.data.config.groups).filter(g => {
+        const topLevelGroups = Object.values(this.props.data.config.groups).filter(g => {
             return !g.hasOwnProperty("parent");
         });
 
-        let clusterOptionsByData;
-        for (let i = 0; i < filteredGroups.length; i++) {
-            const currentGroupId = filteredGroups[i].id
-            clusterOptionsByData = {
-                joinCondition: (nodeOptions) => {
-                    if (!nodeOptions.hasOwnProperty("clustering")) return false;
-                    return nodeOptions.clustering.includes(currentGroupId);
-                },
-                processProperties: (clusterOptions, childNodes, childEdges) => {
-                    let sumOfNodes = childNodes.length;
-                    clusterOptions.label = `Node count:\n <b> ${sumOfNodes} </b>`;
-                    return clusterOptions;
-                },
-                clusterNodeProperties: {
-                    id: uuid.v4(),
-                    group: currentGroupId,
-                    clusterGroupId: currentGroupId,
-                    borderWidth: 3,
-                    shape: 'circle',
-                    labelHighlightBold: false,
-                    font: {
-                        face: 'georgia',
-                        color: "black",
-                        size: 12,
-                        align: 'center',
-                        multi: 'html',
-                        bold: {
-                            size: 18,
-                            vadjust: 2
-                        }
-                    }
-                },
-                clusterEdgeProperties: {
-                    label: '',
-                    color: '#848484',
-                    opacity: 0.6,
-                }
-            };
-            this.network.cluster(clusterOptionsByData)
+        for (let i = 0; i < topLevelGroups.length; i++) {
+            this.clusterByGroupId(topLevelGroups[i].id, topLevelGroups[i].id)
         }
+    }
+
+    logClusterOperation = (styleGroupId, clusterGroupId) => {
+        this.clusterOperations.push({styleGroupId, clusterGroupId});
+    }
+
+    revertClusterOperation = () => {
+        if(this.clusterOperations.length > 0) {
+            const clusterOperation = this.clusterOperations.pop();
+            const values = Object.values(clusterOperation);
+
+            const childGroups = Object.values(this.props.data.config.groups).filter(group => {
+                if (group.hasOwnProperty("parent")) {
+                    return group.parent == values[1];
+                }
+                return false;
+            });
+
+            const childGroupsIds = childGroups.map(g => {
+                return g.id;
+            })
+
+            //Opening current subclusters to be able to cluster basic nodes back
+            Object.values(this.network.clustering.body.nodes).forEach(node => {
+                if (this.network.isCluster(node.id) === true && childGroupsIds.includes( node.options.clusterGroupId )) {
+                    this.network.openCluster(node.id);
+                }
+            });
+
+            this.clusterByGroupId(values[0], values[1]);
+        }
+    }
+
+    click = (event) => { }
+
+    fitToScreen = () => {
+        this.network.fit({ animation: { duration: 1000, easingFunction: 'easeOutQuart' } });
+    }
+
+    clusterByGroupId = (styleGroupId, clusterGroupId) => {
+        const groupInfo = this.props.data.config.groups[clusterGroupId];
+        const clusterOptionsByData = {
+            joinCondition: (nodeOptions) => {
+                if (!nodeOptions.hasOwnProperty("clustering")) return false;
+                return nodeOptions.clustering.includes(clusterGroupId);
+            },
+            processProperties: (clusterOptions, childNodes, childEdges) => {
+                const countPlaceholder = "{count}";
+                let label = groupInfo.name;
+                if (label.includes(countPlaceholder)) {
+                    label = label.replace(countPlaceholder, childNodes.length);
+                }
+                clusterOptions.label = label;
+                return clusterOptions;
+            },
+            clusterNodeProperties: {
+                id: uuid.v4(),
+                group: styleGroupId,
+                clusterGroupId: clusterGroupId,
+                shape: 'circle',
+                labelHighlightBold: false,
+                font: {
+                    face: 'georgia',
+                    color: "black",
+                    size: 12,
+                    align: 'center',
+                    multi: 'html',
+                    bold: {
+                        size: 18,
+                        vadjust: 2
+                    }
+                }
+            },
+            clusterEdgeProperties: {
+                label: '',
+                color: '#848484',
+                opacity: 0.6,
+            }
+        };
+        this.network.cluster(clusterOptionsByData)
     }
 
     render() {
@@ -274,8 +274,9 @@ class GraphComponentView1 extends Component {
                     />
                 </div>
                 <div style={{ display: 'flex' }}>
-                    <CustomButton onClick={this.clusterByGroup} name={'Cluster'} />
+                    <CustomButton onClick={this.createTopLevelClusters} name={'Cluster'} />
                     <CustomButton onClick={this.fitToScreen} name={'Fit to screen'} />
+                    <CustomButton onClick={this.revertClusterOperation} name={'Revert'} />
                 </div>
             </div>
         )
