@@ -65,9 +65,8 @@ class GraphComponentView2 extends Component {
                 //console.log("displayed nodes", displayedNodes)
                 if (displayedNodes.length === this.state.nodes.length) {
                     if (JSON.stringify(displayedNodes) !== JSON.stringify(this.state.nodes)) {
-                        this.clusterOperations = [];
                         this.network.setData({ nodes: displayedNodes, edges: displayedEdges });
-                        this.createTopLevelClusters();
+                        this.clusterOperations.length > 0 ? this.recreatePreviousClustering() : this.createTopLevelClusters();
                         this.nodeDataset = this.network.body.data.nodes;
                         this.edgeDataset = this.network.body.data.edges;
 
@@ -78,9 +77,9 @@ class GraphComponentView2 extends Component {
                         });
                     }
                 } else {
-                    this.clusterOperations = [];
+
                     this.network.setData({ nodes: displayedNodes, edges: displayedEdges });
-                    this.createTopLevelClusters();
+                    this.clusterOperations.length > 0 ? this.recreatePreviousClustering() : this.createTopLevelClusters();
                     this.nodeDataset = this.network.body.data.nodes;
                     this.edgeDataset = this.network.body.data.edges;
 
@@ -233,6 +232,7 @@ class GraphComponentView2 extends Component {
     }
 
     createTopLevelClusters = () => {
+        //this.clusterOperations = [];
         this.openAllClusters();
         const topLevelGroups = Object.values(this.props.data.config.groups).filter(g => {
             return !g.hasOwnProperty("parent");
@@ -243,13 +243,19 @@ class GraphComponentView2 extends Component {
         }
     }
 
+    createTopLevelClustersAndReset = () => {
+        this.clusterOperations = [];
+        this.createTopLevelClusters();
+    }
+
     logClusterOperation = (styleGroupId, clusterGroupId) => {
-        this.clusterOperations.push({styleGroupId, clusterGroupId});
+        this.clusterOperations.push({ styleGroupId, clusterGroupId });
     }
 
     revertClusterOperation = () => {
-        if(this.clusterOperations.length > 0) {
+        if (this.clusterOperations.length > 0) {
             const clusterOperation = this.clusterOperations.pop();
+            console.log(clusterOperation)
             const values = Object.values(clusterOperation);
 
             const childGroups = Object.values(this.props.data.config.groups).filter(group => {
@@ -265,13 +271,53 @@ class GraphComponentView2 extends Component {
 
             //Opening current subclusters to be able to cluster basic nodes back
             Object.values(this.network.clustering.body.nodes).forEach(node => {
-                if (this.network.isCluster(node.id) === true && childGroupsIds.includes( node.options.clusterGroupId )) {
+                if (this.network.isCluster(node.id) === true && childGroupsIds.includes(node.options.clusterGroupId)) {
                     this.network.openCluster(node.id);
                 }
             });
 
             this.clusterByGroupId(values[0], values[1]);
         }
+    }
+
+    recreatePreviousClustering = () => {
+        console.log("recreating", this.clusterOperations)
+
+        // Create default top level clustering
+        this.createTopLevelClusters();
+
+        if (this.clusterOperations.length > 0) {
+            // Subclusters that need to be opened to recreate previous situation
+            let groupsToOpen = [];
+            this.clusterOperations.forEach(clusterOp => {
+                groupsToOpen.push( Object.values(clusterOp)[1] );
+            })
+
+            //Open them
+            Object.values(this.network.clustering.body.nodes).forEach(node => {
+                if (this.network.isCluster(node.id) === true && groupsToOpen.includes(node.options.clusterGroupId)) {
+                    this.network.openCluster(node.id);
+                }
+            });
+
+            // Recreate previous situation from logged (sub)cluster operations data
+            this.clusterOperations.forEach(clusterOp => {
+                const clusterOpValues = Object.values(clusterOp);
+                Object.values(this.network.clustering.body.nodes).forEach(node => {
+                    if (this.network.isCluster(node.id) === true && clusterOpValues[1] === node.options.clusterGroupId) {
+                        this.network.openCluster(node.id);
+                    }
+                });
+
+                this.createSubclustersByGroupId(clusterOpValues[0], clusterOpValues[1]);
+            })
+        }
+    }
+
+    findParent = (clusterGroupId) => {
+        let parent = this.props.data.config.groups[clusterGroupId].parent;
+        if (parent === undefined) return clusterGroupId;
+        return this.findParent(parent);
     }
 
     clusterByGroupId = (styleGroupId, clusterGroupId) => {
@@ -286,6 +332,8 @@ class GraphComponentView2 extends Component {
                 let label = groupInfo.name;
                 if (label.includes(countPlaceholder)) {
                     label = label.replace(countPlaceholder, childNodes.length);
+                } else {
+                    label = "Contains: " + childNodes.length.toString();
                 }
                 clusterOptions.label = label;
                 return clusterOptions;
@@ -346,7 +394,7 @@ class GraphComponentView2 extends Component {
                     />
                 </div>
                 <div style={{ display: 'flex' }}>
-                    <CustomButton onClick={this.createTopLevelClusters} name={'Cluster'} />
+                    <CustomButton onClick={this.createTopLevelClustersAndReset} name={'Cluster'} />
                     <CustomButton onClick={this.fitToScreen} name={'Fit to screen'} />
                     <CustomButton onClick={this.revertClusterOperation} name={'Revert'} />
                 </div>
