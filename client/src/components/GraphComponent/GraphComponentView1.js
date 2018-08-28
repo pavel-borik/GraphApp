@@ -141,7 +141,7 @@ class GraphComponentView1 extends Component {
     }
 
     createSubclustersByGroupId = (groupId, clusterGroupId) => {
-        const childGroups = Object.values(this.props.data.config.groups).filter(group => {
+        const childGroups = Object.values(this.props.data.config.clustering).filter(group => {
             if (group.hasOwnProperty("parent")) {
                 return group.parent == clusterGroupId;
             }
@@ -156,7 +156,7 @@ class GraphComponentView1 extends Component {
 
     createTopLevelClusters = () => {
         this.openAllClusters();
-        const topLevelGroups = Object.values(this.props.data.config.groups).filter(g => {
+        const topLevelGroups = Object.values(this.props.data.config.clustering).filter(g => {
             return !g.hasOwnProperty("parent");
         });
 
@@ -174,7 +174,7 @@ class GraphComponentView1 extends Component {
             const clusterOperation = this.clusterOperations.pop();
             const values = Object.values(clusterOperation);
 
-            const childGroups = Object.values(this.props.data.config.groups).filter(group => {
+            const childGroups = Object.values(this.props.data.config.clustering).filter(group => {
                 if (group.hasOwnProperty("parent")) {
                     return group.parent == values[1];
                 }
@@ -203,7 +203,7 @@ class GraphComponentView1 extends Component {
     }
 
     clusterByGroupId = (styleGroupId, clusterGroupId) => {
-        const groupInfo = this.props.data.config.groups[clusterGroupId];
+        const groupInfo = this.props.data.config.clustering[clusterGroupId];
         const clusterOptionsByData = {
             joinCondition: (nodeOptions) => {
                 if (!nodeOptions.hasOwnProperty("clustering")) return false;

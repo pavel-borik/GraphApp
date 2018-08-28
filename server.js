@@ -227,7 +227,13 @@ app.get('/api/getdata', (req, res) => {
   let lastIndex = queryString.trim().lastIndexOf(" ");
   queryString = queryString.substring(0, lastIndex);
   const groups = createGroups(view, req.query.type);
-
+  let clustering = {};
+  Object.values(groups).map(g => {
+    clustering[g.id] = {
+      "id":g.id,
+      "name": `Cluster ${g.id}\ncontains: {count}`
+    }
+  })
 
   db.query(queryString, queryParams, function (err, rows, fields) {
     if (err) throw err;
@@ -269,7 +275,7 @@ app.get('/api/getdata', (req, res) => {
           "parent": key
         }
         const id = key.toString() + "_" + currentSubcluster;
-        groups[id] = desc;
+        clustering[id] = desc;
         clusteringDescription.push(desc);
         rows.forEach(r => {
           if (r.group == key) {
@@ -286,7 +292,7 @@ app.get('/api/getdata', (req, res) => {
                 "parent": key
               }
               const id = key.toString() + "_" + currentSubcluster;
-              groups[id] = desc;
+              clustering[id] = desc;
               clusteringDescription.push(desc);
             }
           }
@@ -298,15 +304,15 @@ app.get('/api/getdata', (req, res) => {
     /* Creating 2nd subclustering layer */
     let countPerParent = new Map();
 
-    for (let i = 0; i < Object.keys(groups).length; i++) {
-      if (Object.values(groups)[i].parent !== undefined) {
-        countPerParent.set(Object.values(groups)[i].parent, 0);
+    for (let i = 0; i < Object.keys(clustering).length; i++) {
+      if (Object.values(clustering)[i].parent !== undefined) {
+        countPerParent.set(Object.values(clustering)[i].parent, 0);
       }
     }
 
-    for (let i = 0; i < Object.keys(groups).length; i++) {
-      if (Object.values(groups)[i].parent !== undefined) {
-        countPerParent.set(Object.values(groups)[i].parent, countPerParent.get(Object.values(groups)[i].parent) + 1)
+    for (let i = 0; i < Object.keys(clustering).length; i++) {
+      if (Object.values(clustering)[i].parent !== undefined) {
+        countPerParent.set(Object.values(clustering)[i].parent, countPerParent.get(Object.values(clustering)[i].parent) + 1)
       }
     }
     console.log(countPerParent)
@@ -314,7 +320,7 @@ app.get('/api/getdata', (req, res) => {
     for (let [key, value] of countPerParent.entries()) {
       if (value > 4) {
         let subclusterNames = [];
-        Object.values(groups).forEach(g => {
+        Object.values(clustering).forEach(g => {
           if (g.parent !== undefined) {
             if (g.parent === key) subclusterNames.push(g.id)
           }
@@ -327,14 +333,14 @@ app.get('/api/getdata', (req, res) => {
             "name": "Subcluster\n" + key1.toString() + "\n with {count} items",
             "parent": sn.toString()
           }
-          groups[key1] = desc;
+          clustering[key1] = desc;
           key2 = sn.toString() + "_" + "2";
           desc = {
             "id": key2,
             "name": "Subcluster\n" + key2.toString() + "\n with {count} items",
             "parent": sn.toString()
           }
-          groups[key2] = desc;
+          clustering[key2] = desc;
 
           rows.map(r => {
             if (r.subcluster !== undefined) {
@@ -346,15 +352,17 @@ app.get('/api/getdata', (req, res) => {
         })
       }
     }
+    //console.log(clustering);
 
     rows.map(r => {
-      const arr = searchGroupParents(groups, r);
+      const arr = searchGroupParents(clustering, r);
       r.clustering = arr;
     })
     /* end */
 
     let configGraph = {
       "groups": groups,
+      "clustering": clustering,
       "range": {
         "validityStart": validityStart,
         "validityEnd": validityEnd
@@ -388,7 +396,8 @@ app.get('/api/getdata', (req, res) => {
         rows.map(r => {
           delete r.direction;
           delete r.validityStart;
-          delete r.validityEnd
+          delete r.validityEnd;
+          delete r.subcluster;
         });
         rows.push({
           "id": queriedEntity.uuid, "internalId": queriedEntity[viewDictionary[req.query.type].identifier], "label": queriedEntity.Name, "name": queriedEntity.Name,
@@ -457,7 +466,7 @@ app.get('/api/getdetail', (req, res) => {
   })
 });
 
-function searchGroupParents(groups, row) {
+function searchGroupParents(clustering, row) {
 
   let rowPartOf = [];
   if(row.hasOwnProperty("subcluster")) rowPartOf.push(row.subcluster);
@@ -467,12 +476,12 @@ function searchGroupParents(groups, row) {
   while(true) {
     let foundParents = false;
 
-    for(let i = 0; i < Object.keys(groups).length; i++) {
-      if(Object.keys(groups)[i] == searchFor) {
-        if(Object.values(groups)[i].parent !== undefined) {
+    for(let i = 0; i < Object.keys(clustering).length; i++) {
+      if(Object.keys(clustering)[i] == searchFor) {
+        if(Object.values(clustering)[i].parent !== undefined) {
           foundParents = true;
-          rowPartOf.push(Object.values(groups)[i].parent);
-          searchForHelper = Object.values(groups)[i].parent;
+          rowPartOf.push(Object.values(clustering)[i].parent);
+          searchForHelper = Object.values(clustering)[i].parent;
         }
       }
     }
