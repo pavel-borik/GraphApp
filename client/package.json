@@ -14,7 +14,7 @@
     "react-scripts": "^1.1.4",
     "lodash": "^4.17.4",
     "uuid": "^2.0.1",
-    "vis": "^4.21.0"
+    "vis": "https://github.com/pavel-borik/vis/tarball/master"
   },
   "scripts": {
     "start": "react-scripts start",
