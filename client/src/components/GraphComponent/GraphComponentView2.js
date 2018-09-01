@@ -217,30 +217,19 @@ class GraphComponentView2 extends Component {
         this.network.fit({ animation: { duration: 1000, easingFunction: 'easeOutQuart' } });
     }
 
-    createSubclustersByGroupId = (groupId, clusterGroupId) => {
-        const childGroups = Object.values(this.props.data.config.clustering).filter(group => {
-            if (group.hasOwnProperty("parent")) {
-                return group.parent == clusterGroupId;
+    createSubclustersByGroupId = (styleGroupId, clusterGroupId) => {
+        Object.entries(this.props.data.config.clustering).forEach(clusterDescription => {
+            if (clusterDescription[1].hasOwnProperty("parent")) {
+                if (clusterDescription[1].parent == clusterGroupId) this.clusterByGroupId(styleGroupId, clusterDescription[0])
             }
-            return false;
         });
-
-        if (!childGroups.length > 0) return;
-        for (let i = 0; i < childGroups.length; i++) {
-            this.clusterByGroupId(groupId, childGroups[i].id)
-        }
     }
 
     createTopLevelClusters = () => {
-        //this.clusterOperations = [];
         this.openAllClusters();
-        const topLevelGroups = Object.values(this.props.data.config.clustering).filter(g => {
-            return !g.hasOwnProperty("parent");
+        Object.entries(this.props.data.config.clustering).forEach(clusterDescription => {
+            if (!clusterDescription[1].hasOwnProperty("parent")) this.clusterByGroupId(clusterDescription[0], clusterDescription[0]);
         });
-
-        for (let i = 0; i < topLevelGroups.length; i++) {
-            this.clusterByGroupId(topLevelGroups[i].id, topLevelGroups[i].id)
-        }
     }
 
     createTopLevelClustersAndReset = () => {
@@ -249,67 +238,70 @@ class GraphComponentView2 extends Component {
     }
 
     logClusterOperation = (styleGroupId, clusterGroupId) => {
-        this.clusterOperations.push({ styleGroupId, clusterGroupId });
+        this.clusterOperations.push({ styleGroupId: styleGroupId, clusterGroupId: clusterGroupId });
     }
 
     revertClusterOperation = () => {
         if (this.clusterOperations.length > 0) {
-            const clusterOperation = this.clusterOperations.pop();
-            console.log(clusterOperation)
-            const values = Object.values(clusterOperation);
+            let searching = true;
+            /*  Opened clusters in the past may have been filtered. 
+                Need to loop until a revertable operation with nodes that are being displayed right now is found
+                Without this clicking on REVERT button would cause no action - it would try to revert subclusters, the nodes of which are not being displayed right now.
+            */
+            while(searching) {
 
-            const childGroups = Object.values(this.props.data.config.clustering).filter(group => {
-                if (group.hasOwnProperty("parent")) {
-                    return group.parent == values[1];
+                // Find all possible (distinct) subcluster assignments of current nodes
+                let revertableClusters = new Set();
+                this.state.nodes.forEach(node => {
+                    node.clustering.forEach(c => {
+                        revertableClusters.add(c)
+                    })
+                });
+
+                // If the last logged operation doesn't affect displayed nodes, keep searching
+                const lastClusterOperation = this.clusterOperations.pop();
+                if(revertableClusters.has(lastClusterOperation.clusterGroupId)) {
+                    searching = false;
+                } else {
+                    continue;
                 }
-                return false;
-            });
-
-            const childGroupsIds = childGroups.map(g => {
-                return g.id;
-            })
-
-            //Opening current subclusters to be able to cluster basic nodes back
-            Object.values(this.network.clustering.body.nodes).forEach(node => {
-                if (this.network.isCluster(node.id) === true && childGroupsIds.includes(node.options.clusterGroupId)) {
-                    this.network.openCluster(node.id);
-                }
-            });
-
-            this.clusterByGroupId(values[0], values[1]);
+    
+                let childClustersIds = [];
+                Object.entries(this.props.data.config.clustering).forEach(clusterDescription => {
+                    if (clusterDescription[1].hasOwnProperty("parent")) {
+                        if (clusterDescription[1].parent == lastClusterOperation.clusterGroupId) {
+                            childClustersIds.push(clusterDescription[0]);
+                        }
+                    }
+                });
+    
+                //Opening current subclusters to be able to cluster basic nodes back
+                Object.values(this.network.clustering.body.nodes).forEach(node => {
+                    if (this.network.isCluster(node.id) === true && childClustersIds.includes(node.options.clusterGroupId)) {
+                        this.network.openCluster(node.id);
+                    }
+                });
+    
+                // Create a one-level-above cluster of free nodes
+                this.clusterByGroupId(lastClusterOperation.styleGroupId, lastClusterOperation.clusterGroupId);
+                searching = false;
+            }
         }
     }
 
     recreatePreviousClustering = () => {
-        console.log("recreating", this.clusterOperations)
-
         // Create default top level clustering
         this.createTopLevelClusters();
 
         if (this.clusterOperations.length > 0) {
-            // Subclusters that need to be opened to recreate previous situation
-            let groupsToOpen = [];
-            this.clusterOperations.forEach(clusterOp => {
-                groupsToOpen.push( Object.values(clusterOp)[1] );
-            })
-
-            //Open them
-            Object.values(this.network.clustering.body.nodes).forEach(node => {
-                if (this.network.isCluster(node.id) === true && groupsToOpen.includes(node.options.clusterGroupId)) {
-                    this.network.openCluster(node.id);
-                }
-            });
-
             // Recreate previous situation from logged (sub)cluster operations data
             this.clusterOperations.forEach(clusterOp => {
-                const clusterOpValues = Object.values(clusterOp);
                 Object.values(this.network.clustering.body.nodes).forEach(node => {
-                    if (this.network.isCluster(node.id) === true && clusterOpValues[1] === node.options.clusterGroupId) {
+                    if (this.network.isCluster(node.id) === true && clusterOp.clusterGroupId === node.options.clusterGroupId) {
                         this.network.openCluster(node.id);
                     }
                 });
-
-                this.createSubclustersByGroupId(clusterOpValues[0], clusterOpValues[1]);
+                this.createSubclustersByGroupId(clusterOp.styleGroupId, clusterOp.clusterGroupId);
             })
         }
     }
@@ -394,9 +386,9 @@ class GraphComponentView2 extends Component {
                     />
                 </div>
                 <div style={{ display: 'flex' }}>
-                    <CustomButton onClick={this.createTopLevelClustersAndReset} name={'Cluster'} />
-                    <CustomButton onClick={this.fitToScreen} name={'Fit to screen'} />
                     <CustomButton onClick={this.revertClusterOperation} name={'Revert'} />
+                    <CustomButton onClick={this.createTopLevelClustersAndReset} name={'Reset clustering'} />
+                    <CustomButton onClick={this.fitToScreen} name={'Fit to screen'} />
                 </div>
             </div>
         )
