@@ -359,6 +359,14 @@ app.get('/api/getdata', (req, res) => {
       r.clustering = arr;
     })
     /* end */
+    
+    // Delete unused keys
+    Object.keys(groups).forEach(key => {
+      delete groups[key].id;
+    })
+    Object.keys(clustering).forEach(key => {
+      delete clustering[key].id;
+    })
 
     let configGraph = {
       "groups": groups,
