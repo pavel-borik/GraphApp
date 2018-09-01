@@ -140,59 +140,52 @@ class GraphComponentView1 extends Component {
         }
     }
 
-    createSubclustersByGroupId = (groupId, clusterGroupId) => {
-        const childGroups = Object.values(this.props.data.config.clustering).filter(group => {
-            if (group.hasOwnProperty("parent")) {
-                return group.parent == clusterGroupId;
+    createSubclustersByGroupId = (styleGroupId, clusterGroupId) => {
+        Object.entries(this.props.data.config.clustering).forEach(clusterDescription => {
+            if (clusterDescription[1].hasOwnProperty("parent")) {
+                if (clusterDescription[1].parent == clusterGroupId) this.clusterByGroupId(styleGroupId, clusterDescription[0])
             }
-            return false;
         });
-
-        if (!childGroups.length > 0) return;
-        for (let i = 0; i < childGroups.length; i++) {
-            this.clusterByGroupId(groupId, childGroups[i].id)
-        }
     }
 
     createTopLevelClusters = () => {
         this.openAllClusters();
-        const topLevelGroups = Object.values(this.props.data.config.clustering).filter(g => {
-            return !g.hasOwnProperty("parent");
+        Object.entries(this.props.data.config.clustering).forEach(clusterDescription => {
+            if (!clusterDescription[1].hasOwnProperty("parent")) this.clusterByGroupId(clusterDescription[0], clusterDescription[0]);
         });
+    }
 
-        for (let i = 0; i < topLevelGroups.length; i++) {
-            this.clusterByGroupId(topLevelGroups[i].id, topLevelGroups[i].id)
-        }
+    createTopLevelClustersAndReset = () => {
+        this.clusterOperations = [];
+        this.createTopLevelClusters();
     }
 
     logClusterOperation = (styleGroupId, clusterGroupId) => {
-        this.clusterOperations.push({styleGroupId, clusterGroupId});
+        this.clusterOperations.push({ styleGroupId: styleGroupId, clusterGroupId: clusterGroupId });
     }
 
     revertClusterOperation = () => {
-        if(this.clusterOperations.length > 0) {
-            const clusterOperation = this.clusterOperations.pop();
-            const values = Object.values(clusterOperation);
+        if (this.clusterOperations.length > 0) {
+            const lastClusterOperation = this.clusterOperations.pop();
 
-            const childGroups = Object.values(this.props.data.config.clustering).filter(group => {
-                if (group.hasOwnProperty("parent")) {
-                    return group.parent == values[1];
+            let childGroupsIds = [];
+            Object.entries(this.props.data.config.clustering).forEach(clusterDescription => {
+                if (clusterDescription[1].hasOwnProperty("parent")) {
+                    if (clusterDescription[1].parent == lastClusterOperation.clusterGroupId) {
+                        childGroupsIds.push(clusterDescription[0]);
+                    }
                 }
-                return false;
             });
-
-            const childGroupsIds = childGroups.map(g => {
-                return g.id;
-            })
 
             //Opening current subclusters to be able to cluster basic nodes back
             Object.values(this.network.clustering.body.nodes).forEach(node => {
-                if (this.network.isCluster(node.id) === true && childGroupsIds.includes( node.options.clusterGroupId )) {
+                if (this.network.isCluster(node.id) === true && childGroupsIds.includes(node.options.clusterGroupId)) {
                     this.network.openCluster(node.id);
                 }
             });
 
-            this.clusterByGroupId(values[0], values[1]);
+            // Create a one-level-above cluster of free nodes
+            this.clusterByGroupId(lastClusterOperation.styleGroupId, lastClusterOperation.clusterGroupId);
         }
     }
 
@@ -274,9 +267,9 @@ class GraphComponentView1 extends Component {
                     />
                 </div>
                 <div style={{ display: 'flex' }}>
-                    <CustomButton onClick={this.createTopLevelClusters} name={'Cluster'} />
-                    <CustomButton onClick={this.fitToScreen} name={'Fit to screen'} />
                     <CustomButton onClick={this.revertClusterOperation} name={'Revert'} />
+                    <CustomButton onClick={this.createTopLevelClustersAndReset} name={'Reset clustering'} />
+                    <CustomButton onClick={this.fitToScreen} name={'Fit to screen'} />
                 </div>
             </div>
         )
