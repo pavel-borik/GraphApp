@@ -37,7 +37,8 @@ export const options = {
     groups: {},
     layout: {
         improvedLayout: true,
-        hierarchical: false
+        hierarchical: false,
+        randomSeed: 2,
     },
     interaction: {
         hover: false,
