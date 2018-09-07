@@ -5,6 +5,7 @@ import { options } from './GraphOptions';
 import uuid from "uuid";
 import './GraphComponent.css';
 
+
 /**
  * View 1
  * Viewing relationships during a certain time period
@@ -13,10 +14,7 @@ import './GraphComponent.css';
 class GraphComponentView1 extends Component {
     constructor(props) {
         super(props);
-        this.state = {
-            nodes: [],
-            edges: [],
-        }
+        this.state = {}
         const network = null;
         const legendNetwork = null;
         const nodeDataset = null;
@@ -170,6 +168,7 @@ class GraphComponentView1 extends Component {
 
             let childGroupsIds = [];
             Object.entries(this.props.data.config.clustering).forEach(clusterDescription => {
+                // Iterating over entries - clusterDescription[0] - key, clusterDescription[1] - value
                 if (clusterDescription[1].hasOwnProperty("parent")) {
                     if (clusterDescription[1].parent == lastClusterOperation.clusterGroupId) {
                         childGroupsIds.push(clusterDescription[0]);
@@ -177,7 +176,7 @@ class GraphComponentView1 extends Component {
                 }
             });
 
-            //Opening current subclusters to be able to cluster basic nodes back
+            // Opening current subclusters to be able to cluster basic nodes back
             Object.values(this.network.clustering.body.nodes).forEach(node => {
                 if (this.network.isCluster(node.id) === true && childGroupsIds.includes(node.options.clusterGroupId)) {
                     this.network.openCluster(node.id);
@@ -267,9 +266,9 @@ class GraphComponentView1 extends Component {
                     />
                 </div>
                 <div style={{ display: 'flex' }}>
-                    <CustomButton onClick={this.revertClusterOperation} name={'Revert'} />
-                    <CustomButton onClick={this.createTopLevelClustersAndReset} name={'Reset clustering'} />
-                    <CustomButton onClick={this.fitToScreen} name={'Fit to screen'} />
+                    <CustomButton onClick={this.revertClusterOperation} name={'Revert'} tooltipTitle={"Reverts last declustering operation"}/>
+                    <CustomButton onClick={this.createTopLevelClustersAndReset} name={'Reset clustering'} tooltipTitle={"Resets the clustering to default level"}/>
+                    <CustomButton onClick={this.fitToScreen} name={'Fit to screen'} tooltipTitle={"Moves and centers the graph so that all nodes fit on the screen"}/>
                 </div>
             </div>
         )

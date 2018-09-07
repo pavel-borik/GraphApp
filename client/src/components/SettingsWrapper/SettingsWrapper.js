@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import IconButton from '@material-ui/core/IconButton';
 import CheckCircle from '@material-ui/icons/CheckCircle';
+import HelpOutline from '@material-ui/icons/HelpOutline';
 import FormControl from '@material-ui/core/FormControl';
 import FormLabel from '@material-ui/core/FormLabel';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
@@ -9,8 +10,16 @@ import Radio from '@material-ui/core/Radio';
 import './SettingsWrapper.css'
 import ValidityRangeSettings from './ValidityRangeSettings';
 import moment from 'moment';
+import Tooltip from '@material-ui/core/Tooltip';
 
-export default class SettingsWrapper extends Component {
+
+const tooltipText = <div>Time frame view shows all the entities in a relationship during the specified validity range.<br />
+    If the relationship between two entities changes within this validity range, the link is colored red. <br /><br />
+    Moment view shows the relationships valid in a specified moment.<br />
+</div>;
+
+class SettingsWrapper extends Component {
+
     constructor(props) {
         super(props)
         this.state = {
@@ -21,8 +30,8 @@ export default class SettingsWrapper extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        if(prevProps.validityStart !== this.props.validityStart || prevProps.validityEnd !== this.props.validityEnd) {
-            this.setState({startDate: moment(this.props.validityStart), endDate: moment(this.props.validityEnd)});
+        if (prevProps.validityStart !== this.props.validityStart || prevProps.validityEnd !== this.props.validityEnd) {
+            this.setState({ startDate: moment(this.props.validityStart), endDate: moment(this.props.validityEnd) });
         }
     }
 
@@ -34,7 +43,7 @@ export default class SettingsWrapper extends Component {
         this.props.getSelectedView(event);
         this.setState({ selectedView: event.target.value });
     }
-    
+
     handleChangeStart = (newStartDate) => {
         this.setState({ startDate: newStartDate })
     }
@@ -56,12 +65,12 @@ export default class SettingsWrapper extends Component {
                         <div className="range-form-container">
                             <ValidityRangeSettings startDate={this.state.startDate}
                                 endDate={this.state.endDate} handleChangeStart={this.handleChangeStart} handleChangeEnd={this.handleChangeEnd} />
-                            <IconButton disabled={ moment(this.props.validityStart).isSame(this.state.startDate) && 
-                                moment(this.props.validityEnd).isSame(this.state.endDate)} 
-                                onClick={this.confirmNewDateRange} 
-                                color="inherit" aria-label="Menu" 
-                                style={{width:40, height:40}}>
-                                <CheckCircle/>
+                            <IconButton disabled={moment(this.props.validityStart).isSame(this.state.startDate) &&
+                                moment(this.props.validityEnd).isSame(this.state.endDate)}
+                                onClick={this.confirmNewDateRange}
+                                color="inherit" aria-label="Menu"
+                                style={{ width: 40, height: 40 }}>
+                                <CheckCircle />
                             </IconButton>
                         </div>
                     </FormControl>
@@ -69,7 +78,7 @@ export default class SettingsWrapper extends Component {
 
                 <div className="container">
                     <FormControl>
-                        <FormLabel component="legend">Choose view</FormLabel>
+                        <FormLabel component="legend">Choose view </FormLabel>
                         <RadioGroup
                             row
                             aria-label="view"
@@ -77,8 +86,11 @@ export default class SettingsWrapper extends Component {
                             value={this.state.selectedView}
                             onChange={this.handleRadioChange}>
 
-                            <FormControlLabel value="1" control={<Radio />} label="Duration" />
+                            <FormControlLabel value="1" control={<Radio />} label="Time Frame" />
                             <FormControlLabel value="2" control={<Radio />} label="Moment" />
+                            <Tooltip title={tooltipText}>
+                                <HelpOutline style={{ width: 20, height: 20 }} />
+                            </Tooltip>
                         </RadioGroup>
                     </FormControl>
                 </div>
@@ -86,3 +98,5 @@ export default class SettingsWrapper extends Component {
         )
     }
 }
+
+export default SettingsWrapper;

@@ -8,7 +8,7 @@ import ArrowUp from '@material-ui/icons/KeyboardArrowUp';
 import ArrowDown from '@material-ui/icons/KeyboardArrowDown';
 import { withStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
-
+import Tooltip from '@material-ui/core/Tooltip';
 import 'react-datepicker/dist/react-datepicker.min.css';
 
 // CSS Modules, react-datepicker-cssmodules.css
@@ -76,10 +76,13 @@ class EnhancedDatePicker extends React.Component {
     const maxValidity = moment(this.props.validityEnd);
     return (
       <div className={classes.root}>
-        <IconButton className={classes.button} aria-label="Previous break" onClick={this.jumpToPreviousBreak} disabled={
-          this.props.selectedDate.isSameOrBefore(this.props.timeBreaks[0]) ? true : false}>
-          <ArrowLeft />
-        </IconButton>
+        <Tooltip title={"Jump to the previous relationship change"}>
+          <IconButton className={classes.button} aria-label="Previous break" onClick={this.jumpToPreviousBreak} disabled={
+            this.props.selectedDate.isSameOrBefore(this.props.timeBreaks[0]) ? true : false}>
+            <ArrowLeft />
+          </IconButton>
+        </Tooltip>
+
         <IconButton className={classes.button} aria-label="Decrease date" disabled={this.props.selectedDate.clone().subtract(1, 'd').isBefore(minValidity, 'd') ? true : false} onClick={this.decreaseDate}>
           <ArrowDown />
         </IconButton>
@@ -99,10 +102,13 @@ class EnhancedDatePicker extends React.Component {
         <IconButton className={classes.button} aria-label="Increase date" disabled={this.props.selectedDate.clone().add(1, 'd').isAfter(maxValidity, 'd') ? true : false} onClick={this.increaseDate}>
           <ArrowUp />
         </IconButton>
-        <IconButton className={classes.button} aria-label="Next break" onClick={this.jumpToNextBreak} disabled={
-          this.props.selectedDate.isSameOrAfter(this.props.timeBreaks[this.props.timeBreaks.length - 1]) ? true : false}>
-          <ArrowRight />
-        </IconButton>
+        <Tooltip title={"Jump to the next relationship change"}>
+          <IconButton className={classes.button} aria-label="Next break" onClick={this.jumpToNextBreak} disabled={
+            this.props.selectedDate.isSameOrAfter(this.props.timeBreaks[this.props.timeBreaks.length - 1]) ? true : false}>
+            <ArrowRight />
+          </IconButton>
+        </Tooltip>
+
       </div>
     )
   }

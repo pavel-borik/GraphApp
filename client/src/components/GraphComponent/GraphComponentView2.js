@@ -62,13 +62,12 @@ class GraphComponentView2 extends Component {
                     return edgeCount.length > 0;
                 })
 
-                //console.log("displayed nodes", displayedNodes)
                 if (displayedNodes.length === this.state.nodes.length) {
                     if (JSON.stringify(displayedNodes) !== JSON.stringify(this.state.nodes)) {
                         this.network.setData({ nodes: displayedNodes, edges: displayedEdges });
-                        this.clusterOperations.length > 0 ? this.recreatePreviousClustering() : this.createTopLevelClusters();
                         this.nodeDataset = this.network.body.data.nodes;
                         this.edgeDataset = this.network.body.data.edges;
+                        this.clusterOperations.length > 0 ? this.recreatePreviousClustering() : this.createTopLevelClusters();
 
                         this.setState({ nodes: displayedNodes, edges: displayedEdges }, () => {
                             // this.network.unselectAll();
@@ -79,9 +78,9 @@ class GraphComponentView2 extends Component {
                 } else {
 
                     this.network.setData({ nodes: displayedNodes, edges: displayedEdges });
-                    this.clusterOperations.length > 0 ? this.recreatePreviousClustering() : this.createTopLevelClusters();
                     this.nodeDataset = this.network.body.data.nodes;
                     this.edgeDataset = this.network.body.data.edges;
+                    this.clusterOperations.length > 0 ? this.recreatePreviousClustering() : this.createTopLevelClusters();
 
                     this.setState({ nodes: displayedNodes, edges: displayedEdges }, () => {
                         // this.network.unselectAll();
@@ -104,9 +103,9 @@ class GraphComponentView2 extends Component {
             Object.assign(options.groups, this.props.data.config.groups);
             this.network.setOptions(options)
             this.network.setData({ nodes: displayedNodes, edges: displayedEdges });
-            this.createTopLevelClusters();
             this.nodeDataset = this.network.body.data.nodes;
             this.edgeDataset = this.network.body.data.edges;
+            this.createTopLevelClusters();
             this.legendNetwork.redraw();
 
             this.setState({
@@ -249,6 +248,7 @@ class GraphComponentView2 extends Component {
                 Without this clicking on REVERT button would cause no action - it would try to revert subclusters, the nodes of which are not being displayed right now.
             */
             while(searching) {
+                if(this.clusterOperations.length === 0) break;
 
                 // Find all possible (distinct) subcluster assignments of current nodes
                 let revertableClusters = new Set();
@@ -315,6 +315,7 @@ class GraphComponentView2 extends Component {
     clusterByGroupId = (styleGroupId, clusterGroupId) => {
         const groupInfo = this.props.data.config.clustering[clusterGroupId];
         const clusterOptionsByData = {
+            // Clustering function
             joinCondition: (nodeOptions) => {
                 if (!nodeOptions.hasOwnProperty("clustering")) return false;
                 return nodeOptions.clustering.includes(clusterGroupId);
@@ -330,6 +331,7 @@ class GraphComponentView2 extends Component {
                 clusterOptions.label = label;
                 return clusterOptions;
             },
+            // Cluster node settings
             clusterNodeProperties: {
                 id: uuid.v4(),
                 group: styleGroupId,
@@ -348,6 +350,7 @@ class GraphComponentView2 extends Component {
                     }
                 }
             },
+            // Cluster edges settings
             clusterEdgeProperties: {
                 label: '',
                 color: '#848484',
@@ -359,6 +362,7 @@ class GraphComponentView2 extends Component {
 
     render() {
         Object.assign(options.groups, this.props.data.config.groups);
+        // Register events for the Vis component
         const events = {
             selectNode: this.selectNode,
             selectEdge: this.selectEdge,
@@ -371,7 +375,7 @@ class GraphComponentView2 extends Component {
                 <div style={{ width: '70%', position: 'absolute' }}>
                     <VisNetwork graph={{ nodes: [], edges: [] }}
                         options={{ autoResize: true }}
-                        style={{ height: "800px" }}
+                        style={{ height: "99vh" }}
                         getNetwork={this.initLegendNetworkInstance}
                     />
                 </div>
@@ -379,16 +383,16 @@ class GraphComponentView2 extends Component {
                     <VisNetwork graph={{ nodes: [], edges: [] }}
                         options={options}
                         events={events}
-                        style={{ height: "800px" }}
+                        style={{ height: "99vh" }}
                         getNetwork={this.initNetworkInstance}
                         getNodes={this.initNodeDatasetInstance}
                         getEdges={this.initEdgeDatasetInstance}
                     />
                 </div>
                 <div style={{ display: 'flex' }}>
-                    <CustomButton onClick={this.revertClusterOperation} name={'Revert'} />
-                    <CustomButton onClick={this.createTopLevelClustersAndReset} name={'Reset clustering'} />
-                    <CustomButton onClick={this.fitToScreen} name={'Fit to screen'} />
+                    <CustomButton onClick={this.revertClusterOperation} name={'Revert'} tooltipTitle={"Reverts last declustering operation"}/>
+                    <CustomButton onClick={this.createTopLevelClustersAndReset} name={'Reset clustering'} tooltipTitle={"Resets the clustering to default level"}/>
+                    <CustomButton onClick={this.fitToScreen} name={'Fit to screen'} tooltipTitle={"Moves and centers the graph so that all nodes fit on the screen"}/>
                 </div>
             </div>
         )
