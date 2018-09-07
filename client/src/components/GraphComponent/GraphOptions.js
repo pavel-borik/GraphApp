@@ -36,8 +36,7 @@ export const options = {
     },
     groups: {},
     layout: {
-        improvedLayout: true,
-        hierarchical: false,
+        improvedLayout: false,
         randomSeed: 2,
     },
     interaction: {
@@ -52,7 +51,7 @@ export const options = {
             gravitationalConstant: -200,
             centralGravity: 0.03,
             springConstant: 0.006,
-            springLength: 50,
+            springLength: 150,
             damping: 0.9,
             avoidOverlap: 0
         },
