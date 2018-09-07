@@ -1,5 +1,17 @@
 import React, { Component } from 'react'
 import DatePicker from 'react-datepicker'
+import './SettingsWrapper.css'
+import { Portal } from 'react-portal'
+
+const CalendarContainer = ({children}) => {
+  const el = document.getElementById('calendar-portal')
+
+  return (
+    <Portal container={el}>
+      {children}
+    </Portal>
+  )
+}
 
 export default class ValidityRangeSettings extends Component {
     constructor(props) {
@@ -23,6 +35,7 @@ export default class ValidityRangeSettings extends Component {
                 <div className="datepicker">
                     <DatePicker
                         className="form-control"
+                        popperContainer={CalendarContainer}
                         selected={this.props.startDate}
                         selectsEnd
                         timeFormat="HH:mm"
@@ -39,6 +52,7 @@ export default class ValidityRangeSettings extends Component {
                 <div className="datepicker">
                     <DatePicker
                         className="form-control"
+                        popperContainer={CalendarContainer}
                         selected={this.props.endDate}
                         selectsEnd
                         timeFormat="HH:mm"

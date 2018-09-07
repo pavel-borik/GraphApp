@@ -15,6 +15,16 @@
     margin-top: 10px;
 }
 
+.datepicker-container {
+    padding-bottom: 10px;
+}
+
+.settingsHeader {
+    padding: 10px;
+    display:flex;
+    justify-content: space-between;
+}
+
 .progress-container {
     position: absolute;
     top: 50%;
