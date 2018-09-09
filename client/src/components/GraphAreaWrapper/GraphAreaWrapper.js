@@ -53,9 +53,8 @@ class GraphAreaWrapper extends Component {
     }
 
     componentDidMount() {
-        const url = 'api' + this.props.location.pathname + this.props.location.search;
         this.setState({ isLoading: true });
-        fetch(url)
+        fetch(`${process.env.REACT_APP_API}${this.props.location.pathname}${this.props.location.search}`)
             .then((res) => {
                 if (res.ok) {
                     return res.json();
@@ -72,7 +71,7 @@ class GraphAreaWrapper extends Component {
         if (this.props.location.search !== prevProps.location.search) {
             this.setState({ isLoading: true });
             const url = 'api' + this.props.location.pathname + this.props.location.search;
-            fetch(url)
+            fetch(`${process.env.REACT_APP_API}${this.props.location.pathname}${this.props.location.search}`)
                 .then((res) => {
                     if (res.ok) {
                         return res.json();

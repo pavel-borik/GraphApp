@@ -21,8 +21,7 @@ class InfoCardDetail extends Component {
 
     componentDidMount() {
         this.setState({ isLoading: true });
-        const url = 'api/getdetail?' + 'id=' + this.props.internalId + '&type=' + this.props.type;
-        fetch(url)
+        fetch(`${process.env.REACT_APP_API}/getdetail?id=${this.props.internalId}&type=${this.props.type}`)
             .then((res) => {
                 if (res.ok) {
                     return res.json();
@@ -36,8 +35,7 @@ class InfoCardDetail extends Component {
     componentDidUpdate(prevProps) {
         if (prevProps.internalId !== this.props.internalId) {
             this.setState({ isLoading: true });
-            const url = 'api/getdetail?' + 'id=' + this.props.internalId + '&type=' + this.props.type;
-            fetch(url)
+            fetch(`${process.env.REACT_APP_API}/getdetail?id=${this.props.internalId}&type=${this.props.type}`)
                 .then((res) => {
                     if (res.ok) {
                         return res.json();

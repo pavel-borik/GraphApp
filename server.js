@@ -17,6 +17,12 @@ db.connect((err) => {
   console.log('Mysql connected')
 });
 
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+}); 
+
 let viewDictionary = {
   "mba": {
     "name": "Market Balance Area",
