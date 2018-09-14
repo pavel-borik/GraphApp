@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import './App.css';
-import NavBar from './components/NavBar/NavBar';
 import GraphAreaWrapper from './components/GraphAreaWrapper/GraphAreaWrapper';
 import { BrowserRouter as Router, Route } from 'react-router-dom';
 
@@ -15,9 +14,6 @@ class App extends Component {
     return (
       <Router>
         <div className="App">
-          <div>
-            {/* <NavBar /> */}
-          </div>
           <div className="Graphdiv">
             <Route path="/getdata" render={GraphAreaWrapperWithProps} />
           </div>
