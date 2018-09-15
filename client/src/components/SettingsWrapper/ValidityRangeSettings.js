@@ -3,28 +3,26 @@ import DatePicker from 'react-datepicker'
 import './SettingsWrapper.css'
 import { Portal } from 'react-portal'
 
-const CalendarContainer = ({children}) => {
-  const el = document.getElementById('calendar-portal')
-
-  return (
-    <Portal container={el}>
-      {children}
-    </Portal>
-  )
+/**
+ * Handles correct visualization of the react-datepicker popper in front of all other components.
+ */
+const CalendarContainer = ({ children }) => {
+    return (
+        <Portal container={document.getElementById('calendar-portal')}> {children}</Portal>
+    )
 }
 
-export default class ValidityRangeSettings extends Component {
-    constructor(props) {
-        super(props)
-        this.state = {
-           
-        }
-    }
-
+class ValidityRangeSettings extends Component {
+    /**
+     * Handles the change in the validity range start date picker
+     */
     handleChangeStart = (newStartDate) => {
         this.props.handleChangeStart(newStartDate)
     }
 
+    /**
+     * Handles the change in the validity range end date picker
+     */
     handleChangeEnd = (newEndDate) => {
         this.props.handleChangeEnd(newEndDate)
     }
@@ -37,7 +35,7 @@ export default class ValidityRangeSettings extends Component {
                         className="form-control"
                         popperContainer={CalendarContainer}
                         selected={this.props.startDate}
-                        selectsEnd
+                        selectsStart
                         timeFormat="HH:mm"
                         timeIntervals={60}
                         dateFormat="MMM DD YYYY HH:mm"
@@ -70,3 +68,5 @@ export default class ValidityRangeSettings extends Component {
         )
     }
 }
+
+export default ValidityRangeSettings;

@@ -1,3 +1,7 @@
+/**
+ * Options object which is used by Vis.js library.
+ * All the options are available at http://visjs.org/docs/network/#options.
+ */
 export const options = {
     autoResize: true,
     nodes: {

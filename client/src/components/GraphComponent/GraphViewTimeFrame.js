@@ -7,11 +7,11 @@ import './GraphComponent.css';
 
 
 /**
- * View 1
+ * Time frame view
  * Viewing relationships during a certain time period
  * Relationships which begin AFTER the start moment or end BEFORE the end moment have the edges highlighted
  */
-class GraphComponentView1 extends Component {
+class GraphViewTimeFrame extends Component {
     constructor(props) {
         super(props);
         this.state = {}
@@ -188,8 +188,6 @@ class GraphComponentView1 extends Component {
         }
     }
 
-    click = (event) => { }
-
     fitToScreen = () => {
         this.network.fit({ animation: { duration: 1000, easingFunction: 'easeOutQuart' } });
     }
@@ -243,7 +241,6 @@ class GraphComponentView1 extends Component {
             selectNode: this.selectNode,
             selectEdge: this.selectEdge,
             deselectEdge: this.deselectEdge,
-            click: this.click,
         };
 
         return (
@@ -275,4 +272,4 @@ class GraphComponentView1 extends Component {
     }
 }
 
-export default GraphComponentView1;
+export default GraphViewTimeFrame;

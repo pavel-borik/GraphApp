@@ -1,7 +1,6 @@
-.container {
+.view-choice-form {
     display: flex;   
     padding: 10px 0 0 20px;
-    justify-content: space-between;
 }
 
 .validity-range-settings-container {
@@ -19,4 +18,10 @@
 .datepicker {
     margin-right: 20px;
     max-width: 300px;
+}
+
+.view-choice-label {
+    display: flex;
+    margin-top: 5px;
+    margin-bottom: -10px;
 }

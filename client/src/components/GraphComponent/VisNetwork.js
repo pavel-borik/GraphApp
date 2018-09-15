@@ -6,6 +6,10 @@ import vis from "vis";
 import uuid from "uuid";
 import PropTypes from "prop-types";
 
+/**
+ * React wrapper for Vis.js library.
+ * Available at https://github.com/crubier/react-graph-vis.
+ */
 class VisNetwork extends Component {
   constructor(props) {
     super(props);

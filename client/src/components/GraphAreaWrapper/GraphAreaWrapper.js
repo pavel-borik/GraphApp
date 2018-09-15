@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import GraphComponentView1 from '../GraphComponent/GraphComponentView1';
-import GraphComponentView2 from '../GraphComponent/GraphComponentView2';
+import GraphViewTimeFrame from '../GraphComponent/GraphViewTimeFrame';
+import GraphViewMoment from '../GraphComponent/GraphViewMoment';
 import CustomProgress from '../GuiElements/CustomProgress';
 import moment from 'moment';
 import InfoCard from '../InfoCard/InfoCard'
@@ -24,7 +24,7 @@ const styles = theme => ({
         },
     },
     title: {
-        marginLeft: 5,
+        marginLeft: 10,
         marginTop: 5
     },
     expand: {
@@ -46,7 +46,7 @@ class GraphAreaWrapper extends Component {
             selectedNode: {},
             selectedDate: {},
             timeBreaks: [],
-            view: "1",
+            view: "timeFrameView",
             isLoading: false,
             expanded: true,
         };
@@ -70,7 +70,6 @@ class GraphAreaWrapper extends Component {
     componentDidUpdate(prevProps) {
         if (this.props.location.search !== prevProps.location.search) {
             this.setState({ isLoading: true });
-            const url = 'api' + this.props.location.pathname + this.props.location.search;
             fetch(`${process.env.REACT_APP_API}${this.props.location.pathname}${this.props.location.search}`)
                 .then((res) => {
                     if (res.ok) {
@@ -85,6 +84,10 @@ class GraphAreaWrapper extends Component {
         }
     }
 
+    /**
+     * Function looks for validity changes of all entities during the basic queried validity range of relationships.
+     * Time breaks are stored in an array of momemnt objects sorted by date.
+     */
     computeTimeBreaks = () => {
         let newTimeBreaks = new Set();
         const validityRangeStart = moment(this.state.graphData.config.range.validityStart);
@@ -95,9 +98,14 @@ class GraphAreaWrapper extends Component {
         let validityEnd;
         this.state.graphData.graph.edges.forEach(edge => {
             validityStart = moment(edge.validityStart);
-            validityEnd = moment(edge.validityEnd);
-            if (validityStart.isBetween(validityRangeStart, validityRangeEnd)) newTimeBreaks.add(edge.validityStart);
-            if (validityEnd.isBetween(validityRangeStart, validityRangeEnd)) newTimeBreaks.add(edge.validityEnd);
+            validityEnd = edge.validityEnd === "unlimited" ? null : moment(edge.validityEnd);
+            if (validityStart !== undefined && validityStart !== null) {
+                if (validityStart.isBetween(validityRangeStart, validityRangeEnd)) newTimeBreaks.add(edge.validityStart);    
+            }
+            
+            if (validityEnd !== undefined && validityEnd !== null) {
+                if (validityEnd.isBetween(validityRangeStart, validityRangeEnd)) newTimeBreaks.add(edge.validityEnd);
+            }
         });
         let newTimeBreaksAsMoments = Array.from(newTimeBreaks).map(i => {
             return moment(i);
@@ -106,18 +114,31 @@ class GraphAreaWrapper extends Component {
         this.setState({ timeBreaks: newTimeBreaksAsMoments });
     }
 
+    /**
+     * Retrieves the node object when user clicks on it in any of the graph view component.
+     */
     getSelectedNode = (node) => {
         this.setState({ selectedNode: node })
     }
 
+    /**
+     * Retrieves the selected date when using the Moment graph view.
+     */
     getSelectedDate = (date) => {
         this.setState({ selectedDate: date })
     }
 
-    getSelectedView = (event) => {
-        this.setState({ view: event.target.value });
+    /**
+     * Retrieves the selected graph view - Moment or Time frame.
+     */
+    getSelectedView = (selectedView) => {
+        this.setState({ view: selectedView });
     }
 
+    /**
+     * Creates new URL and redirects when user queries new relationships' validity range.
+     * Uses the History object from React router
+     */
     processNewDateRange = (newStartDate, newEndDate) => {
         if (newStartDate.format("YYYYMMDDTHHmm") !== this.state.graphData.config.range.validityStart ||
             newEndDate.format("YYYYMMDDTHHmm") !== this.state.graphData.config.range.validityEnd) {
@@ -128,13 +149,14 @@ class GraphAreaWrapper extends Component {
         }
     }
 
+    /**
+     * Controls whether the Settings panel is collapsed or not.
+     */
     handleExpandClick = () => {
         this.setState(state => ({ expanded: !state.expanded }));
     };
 
     render() {
-        console.log('graphwrapper state', this.state);
-        //console.log(this.props.location.pathname+this.props.location.search);
         const { classes } = this.props;
         let graphComponent = null;
         let cardComponent = null;
@@ -147,10 +169,10 @@ class GraphAreaWrapper extends Component {
         } else {
             if (this.state.isLoading === true) progressComponent = (<div className="progress-container"><CustomProgress className={"progress"} /></div>)
 
-            if (this.state.view === "1") {
-                graphComponent = <GraphComponentView1 data={this.state.graphData} selectedDate={this.state.selectedDate} getSelectedNode={this.getSelectedNode} />
+            if (this.state.view === "timeFrameView") {
+                graphComponent = <GraphViewTimeFrame data={this.state.graphData} selectedDate={this.state.selectedDate} getSelectedNode={this.getSelectedNode} />
             } else {
-                graphComponent = <GraphComponentView2 data={this.state.graphData} selectedDate={this.state.selectedDate} getSelectedNode={this.getSelectedNode} />
+                graphComponent = <GraphViewMoment data={this.state.graphData} selectedDate={this.state.selectedDate} getSelectedNode={this.getSelectedNode} />
 
                 datePickerComponent =
                     <EnhancedDatePicker getSelectedDate={this.getSelectedDate}
@@ -181,10 +203,13 @@ class GraphAreaWrapper extends Component {
                     </div>
 
                     <Collapse in={this.state.expanded} timeout="auto" >
-                        <SettingsWrapper processNewDateRange={this.processNewDateRange} getSelectedView={this.getSelectedView} validityStart={this.state.graphData.config.range.validityStart}
+                        <SettingsWrapper 
+                            processNewDateRange={this.processNewDateRange} 
+                            getSelectedView={this.getSelectedView} 
+                            validityStart={this.state.graphData.config.range.validityStart}
                             validityEnd={this.state.graphData.config.range.validityEnd} />
 
-                        <Fade in={this.state.view === "2"}>
+                        <Fade in={this.state.view === "momentView"}>
                             <div className="datepicker-container">
                                 {datePickerComponent}
                             </div>
@@ -202,9 +227,6 @@ class GraphAreaWrapper extends Component {
                     {settingsComponent}
                     <div className="card-container">
                         {cardComponent}
-                        <Link className="link" to="/getdata?id=EIC_10YFI_1________U&type=mba&validityStart=20150101T0000&validityEnd=20180101T0000&view=ro,mga,tso,country">Link 1</Link>
-                        <Link className="link" to="/getdata?id=EIC_10YFI_1________U&type=mba&validityStart=20150101T0000&validityEnd=20180101T0000&view=ro,mga,tso">Link 2</Link>
-                        <Link className="link" to="/getdata?id=EIC_10YNO_3________J&type=mba&validityStart=20150101T0000&validityEnd=20180101T0000&view=ro,mga,tso,country">Link 3</Link>
                     </div>
                 </div>
                 <div className="graph-container">

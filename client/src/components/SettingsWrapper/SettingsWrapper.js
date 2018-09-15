@@ -19,11 +19,10 @@ const tooltipText = <div>Time frame view shows all the entities in a relationshi
 </div>;
 
 class SettingsWrapper extends Component {
-
     constructor(props) {
         super(props)
         this.state = {
-            selectedView: "1",
+            selectedView: "timeFrameView",
             startDate: moment(this.props.validityStart),
             endDate: moment(this.props.validityEnd)
         }
@@ -35,13 +34,13 @@ class SettingsWrapper extends Component {
         }
     }
 
-    getSelectedView = (view) => {
-        this.props.getSelectedView(view);
-    }
-
+    /**
+     * Handles the change of graph view in the radio group.
+     */
     handleRadioChange = (event) => {
-        this.props.getSelectedView(event);
-        this.setState({ selectedView: event.target.value });
+        const selectedViewName = event.target.value;
+        this.props.getSelectedView(selectedViewName);
+        this.setState({ selectedView: selectedViewName });
     }
 
     handleChangeStart = (newStartDate) => {
@@ -52,6 +51,10 @@ class SettingsWrapper extends Component {
         this.setState({ endDate: newEndDate })
     }
 
+    /**
+     * Sends the newly selected relationships' validity range to the parent component
+     * where the URL change and redirect are executed.
+     */
     confirmNewDateRange = () => {
         this.props.processNewDateRange(this.state.startDate, this.state.endDate);
     }
@@ -63,10 +66,15 @@ class SettingsWrapper extends Component {
                     <FormControl>
                         <FormLabel component="legend">Select validity range of relationships</FormLabel>
                         <div className="range-form-container">
-                            <ValidityRangeSettings startDate={this.state.startDate}
-                                endDate={this.state.endDate} handleChangeStart={this.handleChangeStart} handleChangeEnd={this.handleChangeEnd} />
-                            <IconButton disabled={moment(this.props.validityStart).isSame(this.state.startDate) &&
-                                moment(this.props.validityEnd).isSame(this.state.endDate)}
+                            <ValidityRangeSettings
+                                startDate={this.state.startDate}
+                                endDate={this.state.endDate}
+                                handleChangeStart={this.handleChangeStart}
+                                handleChangeEnd={this.handleChangeEnd} />
+
+                            <IconButton
+                                disabled={moment(this.props.validityStart).isSame(this.state.startDate) &&
+                                    moment(this.props.validityEnd).isSame(this.state.endDate)}
                                 onClick={this.confirmNewDateRange}
                                 color="inherit" aria-label="Menu"
                                 style={{ width: 40, height: 40 }}>
@@ -76,9 +84,15 @@ class SettingsWrapper extends Component {
                     </FormControl>
                 </div>
 
-                <div className="container">
+                <div className="view-choice-form">
                     <FormControl>
-                        <FormLabel component="legend">Choose view </FormLabel>
+                        <div className="view-choice-label">
+                            <FormLabel component="legend" focused={false}>Choose view </FormLabel>
+                            <Tooltip title={tooltipText}>
+                                <HelpOutline style={{ width: 20, height: 20 }} />
+                            </Tooltip>
+                        </div>
+
                         <RadioGroup
                             row
                             aria-label="view"
@@ -86,13 +100,18 @@ class SettingsWrapper extends Component {
                             value={this.state.selectedView}
                             onChange={this.handleRadioChange}>
 
-                            <FormControlLabel value="1" control={<Radio />} label="Time Frame" />
-                            <FormControlLabel value="2" control={<Radio />} label="Moment" />
-                            <Tooltip title={tooltipText}>
-                                <HelpOutline style={{ width: 20, height: 20 }} />
-                            </Tooltip>
+                            <FormControlLabel
+                                value="timeFrameView"
+                                control={<Radio />}
+                                label="Time Frame" />
+                            <FormControlLabel
+                                value="momentView"
+                                control={<Radio />}
+                                label="Moment" />
+
                         </RadioGroup>
                     </FormControl>
+
                 </div>
             </div>
         )

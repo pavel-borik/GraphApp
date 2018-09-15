@@ -7,10 +7,10 @@ import uuid from "uuid";
 import './GraphComponent.css';
 
 /**
- * View 2
+ * Moment view
  * Viewing relationships in a certain date/time moment
  */
-class GraphComponentView2 extends Component {
+class GraphViewMoment extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -400,4 +400,4 @@ class GraphComponentView2 extends Component {
     }
 }
 
-export default GraphComponentView2;
+export default GraphViewMoment;
