@@ -6,7 +6,6 @@ import moment from 'moment';
 import InfoCard from '../InfoCard/InfoCard'
 import './GraphAreaWrapper.css';
 import EnhancedDatePicker from '../DatePicker/EnhancedDatePicker';
-import { Link } from 'react-router-dom';
 import SettingsWrapper from '../SettingsWrapper/SettingsWrapper';
 import Fade from '@material-ui/core/Fade';
 import Paper from '@material-ui/core/Paper';

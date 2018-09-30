@@ -121,10 +121,17 @@ class GraphViewMoment extends Component {
         }
     }
 
+    /**
+     * Gets the reference of the Network object from Vis.js library.
+     */
     initNetworkInstance = (networkInstance) => {
         this.network = networkInstance;
     }
 
+    /**
+     * Gets the reference of the Network object from Vis.js library.
+     * Defines the beforeDrawing event where the legend is created.
+     */
     initLegendNetworkInstance = (networkInstance) => {
         networkInstance.on("beforeDrawing", (ctx) => {
             ctx.save();
@@ -157,14 +164,23 @@ class GraphViewMoment extends Component {
         this.legendNetwork = networkInstance;
     }
 
+    /**
+     * Gets the reference of the Dataset object from Vis.js library.
+     */
     initNodeDatasetInstance = (nodeDatasetInstance) => {
         this.nodeDataset = nodeDatasetInstance;
     }
 
+    /**
+     * Gets the reference of the Dataset object from Vis.js library.
+     */
     initEdgeDatasetInstance = (edgeDatasetInstance) => {
         this.edgeDataset = edgeDatasetInstance;
     }
 
+    /**
+     * Iterates over all clusters and opens them.
+     */
     openAllClusters = () => {
         Object.keys(this.network.clustering.body.nodes).forEach(node => {
             if (this.network.isCluster(node) === true) {
@@ -173,6 +189,9 @@ class GraphViewMoment extends Component {
         });
     }
 
+    /**
+    * Shows the edge label when the edge is selected.
+    */
     selectEdge = (event) => {
         const { edges } = event;
         if (edges.length === 1) {
@@ -183,6 +202,9 @@ class GraphViewMoment extends Component {
         }
     }
 
+    /**
+    * Hides the edge label when the edge is deselected.
+    */
     deselectEdge = (event) => {
         const { edges } = event.previousSelection;
         if (edges.length === 1) {
@@ -193,6 +215,11 @@ class GraphViewMoment extends Component {
         }
     }
 
+    /**
+     * Defines an action upon clicking on the node.
+     * If a cluster node is selected, the cluster is opened.
+     * If a normal node is selected, the info card gets updated.
+     */
     selectNode = (event) => {
         const { nodes } = event;
         const clickedNode = nodes[0];
@@ -212,10 +239,21 @@ class GraphViewMoment extends Component {
     click = (event) => {
     }
 
+    /**
+     * Resizes and repositions the graph to fit the screen.
+     */
     fitToScreen = () => {
         this.network.fit({ animation: { duration: 1000, easingFunction: 'easeOutQuart' } });
     }
 
+    /**
+     * Creates subclusters according to the definition in the API response.
+     * Iterates over all cluster definitions and looks for children of the selected cluster node.
+     * @param styleGroupId - String - reference to the key in Groups definition in the API response, used for node styling (colors).
+     * Obtained from the selected cluster node.
+     * @param clusterGroupId - String - reference to the key in clustering definition in the API response, used for searching for children.
+     * Obtained from the selected cluster node.
+     */
     createSubclustersByGroupId = (styleGroupId, clusterGroupId) => {
         Object.entries(this.props.data.config.clustering).forEach(clusterDescription => {
             if (clusterDescription[1].hasOwnProperty("parent")) {
@@ -224,6 +262,10 @@ class GraphViewMoment extends Component {
         });
     }
 
+    /**
+     * Recreates top level clustering according to the definition in the API response.
+     * Note: top level cluster definitions have no "parent" key.
+     */
     createTopLevelClusters = () => {
         this.openAllClusters();
         Object.entries(this.props.data.config.clustering).forEach(clusterDescription => {
@@ -231,15 +273,26 @@ class GraphViewMoment extends Component {
         });
     }
 
+    /**
+     * Recreates top level clustering according to the definition in the API response.
+     * Resets the stack which tracks clustering operations.
+     */
     createTopLevelClustersAndReset = () => {
         this.clusterOperations = [];
         this.createTopLevelClusters();
     }
 
+    /**
+     * Pushes the information about the opened cluster onto the stack.
+     * This information is used for reverting of subcluster creation.
+     */
     logClusterOperation = (styleGroupId, clusterGroupId) => {
         this.clusterOperations.push({ styleGroupId: styleGroupId, clusterGroupId: clusterGroupId });
     }
 
+    /**
+     * Undoes last operation of subclusters' creation.
+     */
     revertClusterOperation = () => {
         if (this.clusterOperations.length > 0) {
             let searching = true;
@@ -247,8 +300,8 @@ class GraphViewMoment extends Component {
                 Need to loop until a revertable operation with nodes that are being displayed right now is found
                 Without this clicking on REVERT button would cause no action - it would try to revert subclusters, the nodes of which are not being displayed right now.
             */
-            while(searching) {
-                if(this.clusterOperations.length === 0) break;
+            while (searching) {
+                if (this.clusterOperations.length === 0) break;
 
                 // Find all possible (distinct) subcluster assignments of current nodes
                 let revertableClusters = new Set();
@@ -260,12 +313,12 @@ class GraphViewMoment extends Component {
 
                 // If the last logged operation doesn't affect displayed nodes, keep searching
                 const lastClusterOperation = this.clusterOperations.pop();
-                if(revertableClusters.has(lastClusterOperation.clusterGroupId)) {
+                if (revertableClusters.has(lastClusterOperation.clusterGroupId)) {
                     searching = false;
                 } else {
                     continue;
                 }
-    
+
                 let childClustersIds = [];
                 Object.entries(this.props.data.config.clustering).forEach(clusterDescription => {
                     if (clusterDescription[1].hasOwnProperty("parent")) {
@@ -274,14 +327,14 @@ class GraphViewMoment extends Component {
                         }
                     }
                 });
-    
+
                 //Opening current subclusters to be able to cluster basic nodes back
                 Object.values(this.network.clustering.body.nodes).forEach(node => {
                     if (this.network.isCluster(node.id) === true && childClustersIds.includes(node.options.clusterGroupId)) {
                         this.network.openCluster(node.id);
                     }
                 });
-    
+
                 // Create a one-level-above cluster of free nodes
                 this.clusterByGroupId(lastClusterOperation.styleGroupId, lastClusterOperation.clusterGroupId);
                 searching = false;
@@ -289,6 +342,9 @@ class GraphViewMoment extends Component {
         }
     }
 
+    /**
+     * Used for keeping the previously opened clusters in this opened state when the new date/time is selected and there is a change in the displayed dataset.
+     */
     recreatePreviousClustering = () => {
         // Create default top level clustering
         this.createTopLevelClusters();
@@ -312,6 +368,12 @@ class GraphViewMoment extends Component {
         return this.findParent(parent);
     }
 
+    /**
+     * Creates a cluster of all the nodes which belong to the cluster group passed in the parameter.
+     * Takes care of the label and styling settings of the created cluster node.
+     * @param styleGroupId - String - reference to the key in Groups definition in the API response, used for node styling (colors).
+     * @param clusterGroupId - String - reference to the key in clustering definition in the API response, used for searching for children.
+     */
     clusterByGroupId = (styleGroupId, clusterGroupId) => {
         const groupInfo = this.props.data.config.clustering[clusterGroupId];
         const clusterOptionsByData = {
@@ -390,9 +452,9 @@ class GraphViewMoment extends Component {
                     />
                 </div>
                 <div style={{ display: 'flex' }}>
-                    <CustomButton onClick={this.revertClusterOperation} name={'Revert'} tooltipTitle={"Reverts last declustering operation"}/>
-                    <CustomButton onClick={this.createTopLevelClustersAndReset} name={'Reset clustering'} tooltipTitle={"Resets the clustering to default level"}/>
-                    <CustomButton onClick={this.fitToScreen} name={'Fit to screen'} tooltipTitle={"Moves and centers the graph so that all nodes fit on the screen"}/>
+                    <CustomButton onClick={this.revertClusterOperation} name={'Revert'} tooltipTitle={"Reverts last declustering operation"} />
+                    <CustomButton onClick={this.createTopLevelClustersAndReset} name={'Reset clustering'} tooltipTitle={"Resets the clustering to default level"} />
+                    <CustomButton onClick={this.fitToScreen} name={'Fit to screen'} tooltipTitle={"Moves and centers the graph so that all nodes fit on the screen"} />
                 </div>
             </div>
         )
