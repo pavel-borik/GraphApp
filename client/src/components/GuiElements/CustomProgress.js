@@ -1,12 +1,12 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 function CircularIndeterminate() {
-    return (
-        <div>
-            <CircularProgress />
-        </div>
-    );
+  return (
+    <Fragment>
+      <CircularProgress />
+    </Fragment>
+  );
 }
 
 export default CircularIndeterminate;

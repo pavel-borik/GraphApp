@@ -1,10 +1,10 @@
-import React, { Component } from "react";
-import defaultsDeep from "lodash/fp/defaultsDeep";
-import isEqual from "lodash/isEqual";
-import differenceWith from "lodash/differenceWith";
-import vis from "vis";
-import uuid from "uuid";
-import PropTypes from "prop-types";
+import React, { Component } from 'react';
+import defaultsDeep from 'lodash/fp/defaultsDeep';
+import isEqual from 'lodash/isEqual';
+import differenceWith from 'lodash/differenceWith';
+import vis from 'vis';
+import uuid from 'uuid';
+import PropTypes from 'prop-types';
 
 /**
  * React wrapper for Vis.js library.
@@ -29,10 +29,10 @@ class VisNetwork extends Component {
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    let nodesChange = !isEqual(this.props.graph.nodes, nextProps.graph.nodes);
-    let edgesChange = !isEqual(this.props.graph.edges, nextProps.graph.edges);
-    let optionsChange = !isEqual(this.props.options, nextProps.options);
-    let eventsChange = !isEqual(this.props.events, nextProps.events);
+    const nodesChange = !isEqual(this.props.graph.nodes, nextProps.graph.nodes);
+    const edgesChange = !isEqual(this.props.graph.edges, nextProps.graph.edges);
+    const optionsChange = !isEqual(this.props.options, nextProps.options);
+    const eventsChange = !isEqual(this.props.events, nextProps.events);
 
     if (nodesChange) {
       const idIsEqual = (n1, n2) => n1.id === n2.id;
@@ -52,7 +52,7 @@ class VisNetwork extends Component {
         differenceWith(nextProps.graph.edges, this.props.graph.edges, isEqual),
         edgesAdded
       );
-      this.patchEdges({ edgesRemoved, edgesAdded , edgesChanged });
+      this.patchEdges({ edgesRemoved, edgesAdded, edgesChanged });
     }
 
     if (optionsChange) {
@@ -61,10 +61,10 @@ class VisNetwork extends Component {
 
     if (eventsChange) {
       let events = this.props.events || {};
-      for (let eventName of Object.keys(events)) this.Network.off(eventName, events[eventName]);
+      for (const eventName of Object.keys(events)) this.Network.off(eventName, events[eventName]);
 
       events = nextProps.events || {};
-      for (let eventName of Object.keys(events)) this.Network.on(eventName, events[eventName]);
+      for (const eventName of Object.keys(events)) this.Network.on(eventName, events[eventName]);
     }
 
     return false;
@@ -87,15 +87,15 @@ class VisNetwork extends Component {
   }
 
   updateGraph() {
-    let container = document.getElementById(this.state.identifier);
-    let defaultOptions = {
+    const container = document.getElementById(this.state.identifier);
+    const defaultOptions = {
       physics: {
         stabilization: false
       },
       autoResize: false,
       edges: {
         smooth: false,
-        color: "#000000",
+        color: '#000000',
         width: 0.5,
         arrows: {
           to: {
@@ -107,7 +107,7 @@ class VisNetwork extends Component {
     };
 
     // merge user provied options with our default ones
-    let options = defaultsDeep(defaultOptions, this.props.options);
+    const options = defaultsDeep(defaultOptions, this.props.options);
 
     this.Network = new vis.Network(
       container,
@@ -129,10 +129,10 @@ class VisNetwork extends Component {
     if (this.props.getEdges) {
       this.props.getEdges(this.edges);
     }
-      
+
     // Add user provied events to network
-    let events = this.props.events || {};
-    for (let eventName of Object.keys(events)) {
+    const events = this.props.events || {};
+    for (const eventName of Object.keys(events)) {
       this.Network.on(eventName, events[eventName]);
     }
   }
@@ -141,7 +141,7 @@ class VisNetwork extends Component {
     const { identifier } = this.state;
     const { style } = this.props;
     return React.createElement(
-      "div",
+      'div',
       {
         id: identifier,
         style
@@ -153,14 +153,14 @@ class VisNetwork extends Component {
 
 VisNetwork.defaultProps = {
   graph: {},
-  style: { width: "100%", height: "100%" }
+  style: { width: '100%', height: '100%' }
 };
 VisNetwork.propTypes = {
   graph: PropTypes.object,
   style: PropTypes.object,
   getNetwork: PropTypes.func,
   getNodes: PropTypes.func,
-  getEdges: PropTypes.func,  
+  getEdges: PropTypes.func
 };
 
 export default VisNetwork;

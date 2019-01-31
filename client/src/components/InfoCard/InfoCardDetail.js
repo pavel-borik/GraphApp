@@ -1,74 +1,89 @@
-import React, { Component } from 'react'
-import CustomProgress from '../GuiElements/CustomProgress'
+import React, { Component, Fragment } from 'react';
 import Button from '@material-ui/core/Button';
+import CustomProgress from '../GuiElements/CustomProgress';
 import { withStyles } from '../../../node_modules/@material-ui/core';
 
-const styles = {
-    button: {
-        marginRight: 5
-    },
-};
-
 class InfoCardDetail extends Component {
-    constructor(props) {
-        super(props)
+  constructor(props) {
+    super(props);
 
-        this.state = {
-            queriedEntity: {},
-            isLoading: false
+    this.state = {
+      queriedEntity: {},
+      isLoading: false
+    };
+  }
+
+  componentDidMount() {
+    const { internalId, type } = this.props;
+    this.setState({ isLoading: true });
+    fetch(`${process.env.REACT_APP_API}/getdetail?id=${internalId}&type=${type}`)
+      .then(res => {
+        if (res.ok) {
+          return res.json();
         }
+        throw new Error('Something went wrong');
+      })
+      .then(nodeDetailData =>
+        this.setState({ queriedEntity: nodeDetailData.queriedEntity, isLoading: false })
+      );
+  }
+
+  componentDidUpdate(prevProps) {
+    const { internalId, type } = this.props;
+    if (prevProps.internalId !== internalId) {
+      this.setState({ isLoading: true });
+      fetch(`${process.env.REACT_APP_API}/getdetail?id=${internalId}&type=${type}`)
+        .then(res => {
+          if (res.ok) {
+            return res.json();
+          }
+          throw new Error('Something went wrong');
+        })
+        .then(nodeDetailData =>
+          this.setState({ queriedEntity: nodeDetailData.queriedEntity, isLoading: false })
+        );
     }
+  }
 
-    componentDidMount() {
-        this.setState({ isLoading: true });
-        fetch(`${process.env.REACT_APP_API}/getdetail?id=${this.props.internalId}&type=${this.props.type}`)
-            .then((res) => {
-                if (res.ok) {
-                    return res.json();
-                } else {
-                    throw new Error('Something went wrong');
-                }
-            })
-            .then(nodeDetailData => this.setState({ queriedEntity: nodeDetailData.queriedEntity, isLoading: false }));
-    }
-
-    componentDidUpdate(prevProps) {
-        if (prevProps.internalId !== this.props.internalId) {
-            this.setState({ isLoading: true });
-            fetch(`${process.env.REACT_APP_API}/getdetail?id=${this.props.internalId}&type=${this.props.type}`)
-                .then((res) => {
-                    if (res.ok) {
-                        return res.json();
-                    } else {
-                        throw new Error('Something went wrong');
-                    }
-                })
-                .then(nodeDetailData => this.setState({ queriedEntity: nodeDetailData.queriedEntity, isLoading: false }));
-        }
-    }
-
-    render() {
-        const { classes } = this.props;
-        let actionsComponent = null;
-        if (this.state.queriedEntity.hasOwnProperty("actions")) {
-            actionsComponent = this.state.queriedEntity.actions.map(a => {
-                return <Button className={classes.button} variant="outlined" size="small" color="primary" href={a.url}>{a.name}</Button>
-            })
-        }
-
+  render() {
+    const { classes } = this.props;
+    const { queriedEntity, isLoading } = this.state;
+    let actionsComponent = null;
+    if (Object.prototype.hasOwnProperty.call(queriedEntity, 'actions')) {
+      actionsComponent = queriedEntity.actions.map(a => {
         return (
-            <div>
-                {this.state.isLoading === true ? <CustomProgress className={"progress"} /> : (
-                    <div>
-                        <div className="detail" dangerouslySetInnerHTML={{ __html: this.state.queriedEntity.detail }}></div>
-                        <div className="actions-container">
-                            {actionsComponent}
-                        </div>
-                    </div>
-                )}
-            </div>
-        )
+          <Button
+            className={classes.button}
+            variant="outlined"
+            size="small"
+            color="primary"
+            href={a.url}
+          >
+            {a.name}
+          </Button>
+        );
+      });
     }
+
+    return (
+      <Fragment>
+        {isLoading === true ? (
+          <CustomProgress className="progress" />
+        ) : (
+          <Fragment>
+            <div className="detail" dangerouslySetInnerHTML={{ __html: queriedEntity.detail }} />
+            <div className="actions-container">{actionsComponent}</div>
+          </Fragment>
+        )}
+      </Fragment>
+    );
+  }
 }
+
+const styles = {
+  button: {
+    marginRight: 5
+  }
+};
 
 export default withStyles(styles)(InfoCardDetail);

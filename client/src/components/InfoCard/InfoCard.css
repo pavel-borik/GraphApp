@@ -1,9 +1,9 @@
 .detail ul {
-    list-style-type: none;
-    padding:0;
-    margin:0;
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
 }
 
 .actions-container {
-    margin-top: 1em;
+  margin-top: 1em;
 }

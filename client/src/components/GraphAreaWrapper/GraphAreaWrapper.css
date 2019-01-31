@@ -1,37 +1,37 @@
 .base-container {
-    display: flex;
+  display: flex;
 }
 .left-gui-elements {
-    width: 29%;
-    margin-top: 10px;
-    margin-left: 5px;
+  width: 29%;
+  margin-top: 10px;
+  margin-left: 5px;
 }
 
 .graph-container {
-    padding: 10px;
+  padding: 10px;
 }
 
 .card-container {
-    margin-top: 10px;
+  margin-top: 10px;
 }
 
 .datepicker-container {
-    padding-bottom: 10px;
+  padding-bottom: 10px;
 }
 
 .settingsHeader {
-    padding: 10px;
-    display:flex;
-    justify-content: space-between;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
 }
 
 .progress-container {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translateX(-50%) translateY(-50%);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-50%);
 }
 
 ul.react-datepicker__time-list {
-    padding: 0;
+  padding: 0;
 }
