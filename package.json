@@ -13,12 +13,12 @@
   "author": "Pavel Bořík",
   "license": "MIT",
   "devDependencies": {
-    "nodemon": "^1.14.6"
+    "nodemon": "^1.18.9"
   },
   "dependencies": {
-    "concurrently": "^3.5.1",
-    "express": "^4.16.2",
-    "moment": "^2.22.2",
-    "mysql": "^2.15.0"
+    "concurrently": "^3.6.1",
+    "express": "^4.16.4",
+    "moment": "^2.24.0",
+    "mysql": "^2.16.0"
   }
 }
