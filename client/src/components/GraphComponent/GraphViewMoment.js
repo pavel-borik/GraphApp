@@ -14,10 +14,6 @@ import './GraphComponent.css';
 class GraphViewMoment extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      nodes: [],
-      edges: []
-    };
     const nodes = [];
     const network = null;
     const legendNetwork = null;
@@ -43,13 +39,11 @@ class GraphViewMoment extends Component {
       });
       return edgeCount.length > 0;
     });
+    this.nodes = displayedNodes;
     this.network.setData({ nodes: displayedNodes, edges: displayedEdges });
     this.nodeDataset = this.network.body.data.nodes;
     this.edgeDataset = this.network.body.data.edges;
     this.createTopLevelClusters();
-
-    //this.setState({ nodes: displayedNodes, edges: displayedEdges }, () => {});
-    this.nodes = displayedNodes;
   }
 
   componentDidUpdate(prevProps) {
@@ -73,33 +67,21 @@ class GraphViewMoment extends Component {
         if (displayedNodes.length === this.nodes.length) {
           if (isEqual(displayedNodes, this.nodes)) {
             this.network.setData({ nodes: displayedNodes, edges: displayedEdges });
+            this.nodes = displayedNodes;
             this.nodeDataset = this.network.body.data.nodes;
             this.edgeDataset = this.network.body.data.edges;
             this.clusterOperations.length > 0
               ? this.recreatePreviousClustering()
               : this.createTopLevelClusters();
-
-            //this.setState({ nodes: displayedNodes, edges: displayedEdges }, () => {
-            // this.network.unselectAll();
-            // this.openAllClusters();
-            // this.clusterByGroup();
-            //});
-            this.nodes = displayedNodes;
           }
         } else {
+          this.nodes = displayedNodes;
           this.network.setData({ nodes: displayedNodes, edges: displayedEdges });
           this.nodeDataset = this.network.body.data.nodes;
           this.edgeDataset = this.network.body.data.edges;
           this.clusterOperations.length > 0
             ? this.recreatePreviousClustering()
             : this.createTopLevelClusters();
-
-          // this.setState({ nodes: displayedNodes, edges: displayedEdges }, () => {
-          // this.network.unselectAll();
-          // this.openAllClusters();
-          // this.clusterByGroup()
-          // });
-          this.nodes = displayedNodes;
         }
       }
     } else {
@@ -119,21 +101,13 @@ class GraphViewMoment extends Component {
       });
       this.clusterOperations = [];
       Object.assign(options.groups, this.props.data.config.groups);
-      this.network.setOptions(options);
+      this.nodes = displayedNodes;
       this.network.setData({ nodes: displayedNodes, edges: displayedEdges });
       this.nodeDataset = this.network.body.data.nodes;
       this.edgeDataset = this.network.body.data.edges;
+      this.network.setOptions(options);
       this.createTopLevelClusters();
       this.legendNetwork.redraw();
-
-      // this.setState({ nodes: displayedNodes, edges: displayedEdges }, () => {
-      // Object.assign(options.groups, this.props.data.config.groups);
-      // this.network.setOptions(options);
-      // this.network.unselectAll();
-      // this.createTopLevelClusters();
-      // this.legendNetwork.redraw();
-      // });
-      this.nodes = displayedNodes;
     }
   }
 

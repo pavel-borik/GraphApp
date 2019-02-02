@@ -14,7 +14,6 @@ import './GraphComponent.css';
 class GraphViewTimeFrame extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
     const network = null;
     const legendNetwork = null;
     const nodeDataset = null;
