@@ -1,5 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import uuid from 'uuid';
+import isEqual from 'underscore';
 import VisNetwork from './VisNetwork';
 import CustomButton from '../GuiElements/CustomButton';
 import options from './GraphOptions';
@@ -28,7 +29,7 @@ class GraphViewTimeFrame extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (JSON.stringify(this.props.data.graph) !== JSON.stringify(prevProps.data.graph)) {
+    if (isEqual(this.props.data.graph, prevProps.data.graph)) {
       Object.assign(options.groups, this.props.data.config.groups);
       this.network.setOptions(options);
       this.network.unselectAll();

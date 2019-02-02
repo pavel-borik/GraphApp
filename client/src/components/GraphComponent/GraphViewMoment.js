@@ -1,5 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import moment from 'moment';
+import isEqual from 'underscore';
 import uuid from 'uuid';
 import VisNetwork from './VisNetwork';
 import CustomButton from '../GuiElements/CustomButton';
@@ -17,6 +18,7 @@ class GraphViewMoment extends Component {
       nodes: [],
       edges: []
     };
+    const nodes = [];
     const network = null;
     const legendNetwork = null;
     const nodeDataset = null;
@@ -46,17 +48,12 @@ class GraphViewMoment extends Component {
     this.edgeDataset = this.network.body.data.edges;
     this.createTopLevelClusters();
 
-    this.setState(
-      {
-        nodes: displayedNodes,
-        edges: displayedEdges
-      },
-      () => {}
-    );
+    //this.setState({ nodes: displayedNodes, edges: displayedEdges }, () => {});
+    this.nodes = displayedNodes;
   }
 
   componentDidUpdate(prevProps) {
-    if (JSON.stringify(this.props.data.graph) === JSON.stringify(prevProps.data.graph)) {
+    if (isEqual(this.props.data.graph, prevProps.data.graph)) {
       if (!prevProps.selectedDate.isSame(this.props.selectedDate)) {
         const displayedEdges = this.props.data.graph.edges.filter(edge => {
           return this.props.selectedDate.isBetween(
@@ -73,8 +70,8 @@ class GraphViewMoment extends Component {
           return edgeCount.length > 0;
         });
 
-        if (displayedNodes.length === this.state.nodes.length) {
-          if (JSON.stringify(displayedNodes) !== JSON.stringify(this.state.nodes)) {
+        if (displayedNodes.length === this.nodes.length) {
+          if (isEqual(displayedNodes, this.nodes)) {
             this.network.setData({ nodes: displayedNodes, edges: displayedEdges });
             this.nodeDataset = this.network.body.data.nodes;
             this.edgeDataset = this.network.body.data.edges;
@@ -82,11 +79,12 @@ class GraphViewMoment extends Component {
               ? this.recreatePreviousClustering()
               : this.createTopLevelClusters();
 
-            this.setState({ nodes: displayedNodes, edges: displayedEdges }, () => {
-              // this.network.unselectAll();
-              // this.openAllClusters();
-              // this.clusterByGroup();
-            });
+            //this.setState({ nodes: displayedNodes, edges: displayedEdges }, () => {
+            // this.network.unselectAll();
+            // this.openAllClusters();
+            // this.clusterByGroup();
+            //});
+            this.nodes = displayedNodes;
           }
         } else {
           this.network.setData({ nodes: displayedNodes, edges: displayedEdges });
@@ -96,11 +94,12 @@ class GraphViewMoment extends Component {
             ? this.recreatePreviousClustering()
             : this.createTopLevelClusters();
 
-          this.setState({ nodes: displayedNodes, edges: displayedEdges }, () => {
-            // this.network.unselectAll();
-            // this.openAllClusters();
-            // this.clusterByGroup()
-          });
+          // this.setState({ nodes: displayedNodes, edges: displayedEdges }, () => {
+          // this.network.unselectAll();
+          // this.openAllClusters();
+          // this.clusterByGroup()
+          // });
+          this.nodes = displayedNodes;
         }
       }
     } else {
@@ -127,19 +126,14 @@ class GraphViewMoment extends Component {
       this.createTopLevelClusters();
       this.legendNetwork.redraw();
 
-      this.setState(
-        {
-          nodes: displayedNodes,
-          edges: displayedEdges
-        },
-        () => {
-          // Object.assign(options.groups, this.props.data.config.groups);
-          // this.network.setOptions(options);
-          // this.network.unselectAll();
-          // this.createTopLevelClusters();
-          // this.legendNetwork.redraw();
-        }
-      );
+      // this.setState({ nodes: displayedNodes, edges: displayedEdges }, () => {
+      // Object.assign(options.groups, this.props.data.config.groups);
+      // this.network.setOptions(options);
+      // this.network.unselectAll();
+      // this.createTopLevelClusters();
+      // this.legendNetwork.redraw();
+      // });
+      this.nodes = displayedNodes;
     }
   }
 
@@ -335,7 +329,7 @@ class GraphViewMoment extends Component {
 
         // Find all possible (distinct) subcluster assignments of current nodes
         const revertableClusters = new Set();
-        this.state.nodes.forEach(node => {
+        this.nodes.forEach(node => {
           node.clustering.forEach(c => {
             revertableClusters.add(c);
           });
