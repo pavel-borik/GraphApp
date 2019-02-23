@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import uuid from 'uuid';
-import isEqual from 'underscore';
+import _ from 'underscore';
 import VisNetwork from './VisNetwork';
 import CustomButton from '../GuiElements/CustomButton';
 import options from './GraphOptions';
@@ -28,7 +28,7 @@ class GraphViewTimeFrame extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (isEqual(this.props.data.graph, prevProps.data.graph)) {
+    if (!_.isEqual(this.props.data.graph, prevProps.data.graph)) {
       Object.assign(options.groups, this.props.data.config.groups);
       this.network.setOptions(options);
       this.network.unselectAll();
@@ -182,9 +182,9 @@ class GraphViewTimeFrame extends Component {
   /**
    * Creates subclusters according to the definition in the API response.
    * Iterates over all cluster definitions and looks for children of the selected cluster node.
-   * @param styleGroupId - String - reference to the key in Groups definition in the API response, used for node styling (colors).
+   * @param {string} styleGroupId - reference to the key in Groups definition in the API response, used for node styling (colors).
    * Obtained from the selected cluster node.
-   * @param clusterGroupId - String - reference to the key in clustering definition in the API response, used for searching for children.
+   * @param {string} clusterGroupId - reference to the key in clustering definition in the API response, used for searching for children.
    * Obtained from the selected cluster node.
    */
   createSubclustersByGroupId = (styleGroupId, clusterGroupId) => {
@@ -267,8 +267,8 @@ class GraphViewTimeFrame extends Component {
   /**
    * Creates a cluster of all the nodes which belong to the cluster group passed in the parameter.
    * Takes care of the label and styling settings of the created cluster node.
-   * @param styleGroupId - String - reference to the key in Groups definition in the API response, used for node styling (colors).
-   * @param clusterGroupId - String - reference to the key in clustering definition in the API response, used for searching for children.
+   * @param {string} styleGroupId - reference to the key in Groups definition in the API response, used for node styling (colors).
+   * @param {string} clusterGroupId - reference to the key in clustering definition in the API response, used for searching for children.
    */
   clusterByGroupId = (styleGroupId, clusterGroupId) => {
     const groupInfo = this.props.data.config.clustering[clusterGroupId];

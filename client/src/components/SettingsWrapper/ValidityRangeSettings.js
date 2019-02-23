@@ -7,7 +7,8 @@ import { Portal } from 'react-portal';
  * Handles correct visualization of the react-datepicker popper in front of all other components.
  */
 const CalendarContainer = ({ children }) => {
-  return <Portal container={document.getElementById('calendar-portal')}>{children}</Portal>;
+  if (children === undefined) return null;
+  return <Portal>{children}</Portal>;
 };
 
 class ValidityRangeSettings extends Component {

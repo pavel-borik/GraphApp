@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import moment from 'moment';
-import isEqual from 'underscore';
+import _ from 'underscore';
 import uuid from 'uuid';
 import VisNetwork from './VisNetwork';
 import CustomButton from '../GuiElements/CustomButton';
@@ -24,89 +24,28 @@ class GraphViewMoment extends Component {
 
   componentDidMount() {
     this.clusterOperations = [];
-    const displayedEdges = this.props.data.graph.edges.filter(edge => {
-      delete edge.color;
-      return this.props.selectedDate.isBetween(
-        moment(edge.validityStart),
-        edge.validityEnd !== 'unlimited' ? moment(edge.validityEnd) : moment('2100-01-01'),
-        'h',
-        '[)'
-      );
-    });
-    const displayedNodes = this.props.data.graph.nodes.filter(node => {
-      const edgeCount = displayedEdges.filter(edge => {
-        return edge.from === node.id || edge.to === node.id;
-      });
-      return edgeCount.length > 0;
-    });
-    this.nodes = displayedNodes;
-    this.network.setData({ nodes: displayedNodes, edges: displayedEdges });
-    this.nodeDataset = this.network.body.data.nodes;
-    this.edgeDataset = this.network.body.data.edges;
-    this.createTopLevelClusters();
+    const { displayedNodes, displayedEdges } = this.getDisplayedNodesAndEdges(true);
+    this.setupDatasets(displayedNodes, displayedEdges);
   }
 
   componentDidUpdate(prevProps) {
-    if (isEqual(this.props.data.graph, prevProps.data.graph)) {
+    if (_.isEqual(this.props.data.graph, prevProps.data.graph)) {
       if (!prevProps.selectedDate.isSame(this.props.selectedDate)) {
-        const displayedEdges = this.props.data.graph.edges.filter(edge => {
-          return this.props.selectedDate.isBetween(
-            moment(edge.validityStart),
-            edge.validityEnd !== 'unlimited' ? moment(edge.validityEnd) : moment('2100-01-01'),
-            'h',
-            '[)'
-          );
-        });
-        const displayedNodes = this.props.data.graph.nodes.filter(node => {
-          const edgeCount = displayedEdges.filter(edge => {
-            return edge.from === node.id || edge.to === node.id;
-          });
-          return edgeCount.length > 0;
-        });
-
+        const { displayedNodes, displayedEdges } = this.getDisplayedNodesAndEdges(false);
         if (displayedNodes.length === this.nodes.length) {
-          if (isEqual(displayedNodes, this.nodes)) {
-            this.network.setData({ nodes: displayedNodes, edges: displayedEdges });
-            this.nodes = displayedNodes;
-            this.nodeDataset = this.network.body.data.nodes;
-            this.edgeDataset = this.network.body.data.edges;
-            this.clusterOperations.length > 0
-              ? this.recreatePreviousClustering()
-              : this.createTopLevelClusters();
+          if (!_.isEqual(displayedNodes, this.nodes)) {
+            this.setupDatasets(displayedNodes, displayedEdges);
           }
         } else {
-          this.nodes = displayedNodes;
-          this.network.setData({ nodes: displayedNodes, edges: displayedEdges });
-          this.nodeDataset = this.network.body.data.nodes;
-          this.edgeDataset = this.network.body.data.edges;
-          this.clusterOperations.length > 0
-            ? this.recreatePreviousClustering()
-            : this.createTopLevelClusters();
+          this.setupDatasets(displayedNodes, displayedEdges);
         }
       }
     } else {
-      const displayedEdges = this.props.data.graph.edges.filter(edge => {
-        return this.props.selectedDate.isBetween(
-          moment(edge.validityStart),
-          edge.validityEnd !== 'unlimited' ? moment(edge.validityEnd) : moment('2100-01-01'),
-          'h',
-          '[)'
-        );
-      });
-      const displayedNodes = this.props.data.graph.nodes.filter(node => {
-        const edgeCount = displayedEdges.filter(edge => {
-          return edge.from === node.id || edge.to === node.id;
-        });
-        return edgeCount.length > 0;
-      });
-      this.clusterOperations = [];
+      const { displayedNodes, displayedEdges } = this.getDisplayedNodesAndEdges(false);
+      this.clusterOperations =   [];
       Object.assign(options.groups, this.props.data.config.groups);
-      this.nodes = displayedNodes;
-      this.network.setData({ nodes: displayedNodes, edges: displayedEdges });
-      this.nodeDataset = this.network.body.data.nodes;
-      this.edgeDataset = this.network.body.data.edges;
       this.network.setOptions(options);
-      this.createTopLevelClusters();
+      this.setupDatasets(displayedNodes, displayedEdges);
       this.legendNetwork.redraw();
     }
   }
@@ -245,9 +184,9 @@ class GraphViewMoment extends Component {
   /**
    * Creates subclusters according to the definition in the API response.
    * Iterates over all cluster definitions and looks for children of the selected cluster node.
-   * @param styleGroupId - String - reference to the key in Groups definition in the API response, used for node styling (colors).
+   * @param {string} styleGroupId - reference to the key in Groups definition in the API response, used for node styling (colors).
    * Obtained from the selected cluster node.
-   * @param clusterGroupId - String - reference to the key in clustering definition in the API response, used for searching for children.
+   * @param {string} clusterGroupId - reference to the key in clustering definition in the API response, used for searching for children.
    * Obtained from the selected cluster node.
    */
   createSubclustersByGroupId = (styleGroupId, clusterGroupId) => {
@@ -378,8 +317,8 @@ class GraphViewMoment extends Component {
   /**
    * Creates a cluster of all the nodes which belong to the cluster group passed in the parameter.
    * Takes care of the label and styling settings of the created cluster node.
-   * @param styleGroupId - String - reference to the key in Groups definition in the API response, used for node styling (colors).
-   * @param clusterGroupId - String - reference to the key in clustering definition in the API response, used for searching for children.
+   * @param {string} styleGroupId - reference to the key in Groups definition in the API response, used for node styling (colors).
+   * @param {string} clusterGroupId - reference to the key in clustering definition in the API response, used for searching for children.
    */
   clusterByGroupId = (styleGroupId, clusterGroupId) => {
     const groupInfo = this.props.data.config.clustering[clusterGroupId];
@@ -428,6 +367,47 @@ class GraphViewMoment extends Component {
     };
     this.network.cluster(clusterOptionsByData);
   };
+
+  /**
+   *
+   * @param {Array} displayedNodes
+   * @param {Array} displayedEdges
+   */
+  setupDatasets(displayedNodes, displayedEdges) {
+    this.network.setData({ nodes: displayedNodes, edges: displayedEdges });
+    this.nodes = displayedNodes;
+    this.nodeDataset = this.network.body.data.nodes;
+    this.edgeDataset = this.network.body.data.edges;
+    this.clusterOperations.length > 0
+      ? this.recreatePreviousClustering()
+      : this.createTopLevelClusters();
+  }
+
+  /**
+   * Filter provided dataset according to the selected date in the moment view.
+   * @param {Boolean} removeEdgeColors - Provide true to delete the color from the edges, which
+   * can still remain there from the TimeFrame view highlighting.
+   */
+  getDisplayedNodesAndEdges(removeEdgeColors) {
+    const displayedEdges = this.props.data.graph.edges.filter(edge => {
+      if (removeEdgeColors) {
+        delete edge.color;
+      }
+      return this.props.selectedDate.isBetween(
+        moment(edge.validityStart),
+        edge.validityEnd !== 'unlimited' ? moment(edge.validityEnd) : moment('2100-01-01'),
+        'h',
+        '[)'
+      );
+    });
+    const displayedNodes = this.props.data.graph.nodes.filter(node => {
+      const edgeCount = displayedEdges.filter(edge => {
+        return edge.from === node.id || edge.to === node.id;
+      });
+      return edgeCount.length > 0;
+    });
+    return { displayedNodes, displayedEdges };
+  }
 
   render() {
     Object.assign(options.groups, this.props.data.config.groups);
