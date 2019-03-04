@@ -1,20 +1,22 @@
 import React, { Component } from 'react';
 import moment from 'moment';
-import './GraphAreaWrapper.css';
-import Fade from '@material-ui/core/Fade';
-import Paper from '@material-ui/core/Paper';
-import Collapse from '@material-ui/core/Collapse';
-import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { withStyles } from '@material-ui/core/styles';
 import classnames from 'classnames';
-import SettingsWrapper from '../SettingsWrapper/SettingsWrapper';
-import EnhancedDatePicker from '../DatePicker/EnhancedDatePicker';
-import InfoCard from '../InfoCard/InfoCard';
-import CustomProgress from '../GuiElements/CustomProgress';
 import GraphViewMoment from '../GraphComponent/GraphViewMoment';
 import GraphViewTimeFrame from '../GraphComponent/GraphViewTimeFrame';
+import InfoCard from '../InfoCard/InfoCard';
+import SettingsWrapper from '../SettingsWrapper/SettingsWrapper';
+import EnhancedDatePicker from '../DatePicker/EnhancedDatePicker';
+import {
+  Fade,
+  Paper,
+  Collapse,
+  Typography,
+  IconButton,
+  withStyles,
+  CircularProgress
+} from '@material-ui/core';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import './GraphAreaWrapper.css';
 
 class GraphAreaWrapper extends Component {
   constructor(props) {
@@ -184,14 +186,14 @@ class GraphAreaWrapper extends Component {
     if (Object.keys(graphData).length === 0 && graphData.constructor === Object) {
       progressComponent = (
         <div className="progress-container">
-          <CustomProgress className="progress" />
+          <CircularProgress />
         </div>
       );
     } else {
       if (isLoading === true)
         progressComponent = (
           <div className="progress-container">
-            <CustomProgress className="progress" />
+            <CircularProgress />
           </div>
         );
 

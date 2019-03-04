@@ -1,12 +1,8 @@
 import React, { PureComponent, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import Card from '@material-ui/core/Card';
-import CardContent from '@material-ui/core/CardContent';
-import Typography from '@material-ui/core/Typography';
-import './InfoCard.css';
-import Button from '@material-ui/core/Button';
 import InfoCardDetail from './InfoCardDetail';
+import './InfoCard.css';
+import { withStyles, Card, CardContent, Typography, Button } from '@material-ui/core';
 
 class InfoCard extends PureComponent {
   render() {

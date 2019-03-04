@@ -1,16 +1,17 @@
 import React, { Component, Fragment } from 'react';
-import IconButton from '@material-ui/core/IconButton';
-import CheckCircle from '@material-ui/icons/CheckCircle';
-import HelpOutline from '@material-ui/icons/HelpOutline';
-import FormControl from '@material-ui/core/FormControl';
-import FormLabel from '@material-ui/core/FormLabel';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import RadioGroup from '@material-ui/core/RadioGroup';
-import Radio from '@material-ui/core/Radio';
-import './SettingsWrapper.css';
 import moment from 'moment';
-import Tooltip from '@material-ui/core/Tooltip';
 import ValidityRangeSettings from './ValidityRangeSettings';
+import {
+  IconButton,
+  FormControl,
+  FormLabel,
+  FormControlLabel,
+  Radio,
+  RadioGroup,
+  Tooltip
+} from '@material-ui/core';
+import { CheckCircle, HelpOutline } from '@material-ui/icons';
+import './SettingsWrapper.css';
 
 class SettingsWrapper extends Component {
   constructor(props) {

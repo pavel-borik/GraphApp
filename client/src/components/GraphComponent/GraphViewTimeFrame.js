@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import uuid from 'uuid';
 import _ from 'underscore';
-import VisNetwork from './VisNetwork';
+import VisWrapper from './VisWrapper';
 import CustomButton from '../GuiElements/CustomButton';
 import options from './GraphOptions';
 import './GraphComponent.css';
@@ -324,7 +324,7 @@ class GraphViewTimeFrame extends Component {
     return (
       <Fragment>
         <div style={{ width: '70%', position: 'absolute' }}>
-          <VisNetwork
+          <VisWrapper
             graph={{ nodes: [], edges: [] }}
             options={{ autoResize: true }}
             style={{ height: '99vh' }}
@@ -332,7 +332,7 @@ class GraphViewTimeFrame extends Component {
           />
         </div>
         <div style={{ width: '70%', position: 'absolute' }}>
-          <VisNetwork
+          <VisWrapper
             graph={{ nodes: this.props.data.graph.nodes, edges: this.props.data.graph.edges }}
             options={options}
             events={events}

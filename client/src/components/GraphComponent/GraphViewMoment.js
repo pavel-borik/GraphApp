@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import moment from 'moment';
 import _ from 'underscore';
 import uuid from 'uuid';
-import VisNetwork from './VisNetwork';
+import VisWrapper from './VisWrapper';
 import CustomButton from '../GuiElements/CustomButton';
 import options from './GraphOptions';
 import './GraphComponent.css';
@@ -42,7 +42,7 @@ class GraphViewMoment extends Component {
       }
     } else {
       const { displayedNodes, displayedEdges } = this.getDisplayedNodesAndEdges(false);
-      this.clusterOperations =   [];
+      this.clusterOperations = [];
       Object.assign(options.groups, this.props.data.config.groups);
       this.network.setOptions(options);
       this.setupDatasets(displayedNodes, displayedEdges);
@@ -422,7 +422,7 @@ class GraphViewMoment extends Component {
     return (
       <Fragment>
         <div style={{ width: '70%', position: 'absolute' }}>
-          <VisNetwork
+          <VisWrapper
             graph={{ nodes: [], edges: [] }}
             options={{ autoResize: true }}
             style={{ height: '99vh' }}
@@ -430,7 +430,7 @@ class GraphViewMoment extends Component {
           />
         </div>
         <div style={{ width: '70%', position: 'absolute' }}>
-          <VisNetwork
+          <VisWrapper
             graph={{ nodes: [], edges: [] }}
             options={options}
             events={events}

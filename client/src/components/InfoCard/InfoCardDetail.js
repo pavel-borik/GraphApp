@@ -1,12 +1,9 @@
 import React, { Component, Fragment } from 'react';
-import Button from '@material-ui/core/Button';
-import CustomProgress from '../GuiElements/CustomProgress';
-import { withStyles } from '../../../node_modules/@material-ui/core';
+import { withStyles, CircularProgress, Button } from '@material-ui/core';
 
 class InfoCardDetail extends Component {
   constructor(props) {
     super(props);
-
     this.state = {
       queriedEntity: {},
       isLoading: false
@@ -68,7 +65,9 @@ class InfoCardDetail extends Component {
     return (
       <Fragment>
         {isLoading === true ? (
-          <CustomProgress className="progress" />
+          <Fragment>
+            <CircularProgress />
+          </Fragment>
         ) : (
           <Fragment>
             <div className="detail" dangerouslySetInnerHTML={{ __html: queriedEntity.detail }} />

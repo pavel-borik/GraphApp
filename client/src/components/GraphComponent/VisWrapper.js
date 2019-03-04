@@ -10,7 +10,7 @@ import PropTypes from 'prop-types';
  * React wrapper for Vis.js library.
  * Available at https://github.com/crubier/react-graph-vis.
  */
-class VisNetwork extends Component {
+class VisWrapper extends Component {
   constructor(props) {
     super(props);
     const { identifier } = props;
@@ -151,11 +151,11 @@ class VisNetwork extends Component {
   }
 }
 
-VisNetwork.defaultProps = {
+VisWrapper.defaultProps = {
   graph: {},
   style: { width: '100%', height: '100%' }
 };
-VisNetwork.propTypes = {
+VisWrapper.propTypes = {
   graph: PropTypes.object,
   style: PropTypes.object,
   getNetwork: PropTypes.func,
@@ -163,4 +163,4 @@ VisNetwork.propTypes = {
   getEdges: PropTypes.func
 };
 
-export default VisNetwork;
+export default VisWrapper;

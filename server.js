@@ -177,7 +177,7 @@ let viewDictionary = {
   pu: {
     name: 'Production Unit',
     table: 'pu',
-    identifier: 'internal_id',
+    identifier: 'Internal_ID',
     color: '#f032e6',
     rels: {
       mga: {

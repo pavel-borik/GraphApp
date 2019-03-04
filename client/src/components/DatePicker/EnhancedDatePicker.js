@@ -1,14 +1,12 @@
 import React from 'react';
-import DatePicker from 'react-datepicker';
+import PropTypes from 'prop-types';
 import moment from 'moment';
-import IconButton from '@material-ui/core/IconButton';
+import DatePicker from 'react-datepicker';
+import { withStyles, Tooltip, IconButton } from '@material-ui/core';
 import ArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
 import ArrowRight from '@material-ui/icons/KeyboardArrowRight';
 import ArrowUp from '@material-ui/icons/KeyboardArrowUp';
 import ArrowDown from '@material-ui/icons/KeyboardArrowDown';
-import { withStyles } from '@material-ui/core/styles';
-import PropTypes from 'prop-types';
-import Tooltip from '@material-ui/core/Tooltip';
 import 'react-datepicker/dist/react-datepicker.min.css';
 
 class EnhancedDatePicker extends React.Component {
