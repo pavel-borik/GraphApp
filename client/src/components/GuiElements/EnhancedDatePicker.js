@@ -11,14 +11,14 @@ import 'react-datepicker/dist/react-datepicker.min.css';
 
 class EnhancedDatePicker extends React.Component {
   /**
-   * Sends the user-selected date to the GraphAreaWrapper component.
+   * Sends the user-selected date to the Dashboard component.
    */
   handleChange = date => {
     this.props.getSelectedDate(date);
   };
 
   /**
-   * Sends the user-decreased date to the GraphAreaWrapper component.
+   * Sends the user-decreased date to the Dashboard component.
    */
   decreaseDate = () => {
     const newDate = this.props.selectedDate.clone().subtract(1, 'd');
@@ -26,7 +26,7 @@ class EnhancedDatePicker extends React.Component {
   };
 
   /**
-   * Sends the user-increased date to the GraphAreaWrapper component.
+   * Sends the user-increased date to the Dashboard component.
    */
   increaseDate = () => {
     const newDate = this.props.selectedDate.clone().add(1, 'd');
@@ -35,7 +35,7 @@ class EnhancedDatePicker extends React.Component {
 
   /**
    * Handles the jump to previous time break after button click.
-   * Uses timeBreaks array computed in the GraphAreaWrapper component
+   * Uses timeBreaks array computed in the Dashboard component
    */
   jumpToPreviousBreak = () => {
     const { timeBreaks, selectedDate } = this.props;
@@ -55,7 +55,7 @@ class EnhancedDatePicker extends React.Component {
 
   /**
    * Handles the jump to next time break after button click.
-   * Uses timeBreaks array computed in the GraphAreaWrapper component
+   * Uses timeBreaks array computed in the Dashboard component
    */
   jumpToNextBreak = () => {
     const { timeBreaks, selectedDate } = this.props;

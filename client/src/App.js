@@ -1,19 +1,19 @@
 import React, { Component } from 'react';
 import './App.css';
 import { BrowserRouter as Router, Route } from 'react-router-dom';
-import GraphAreaWrapper from './components/GraphAreaWrapper/GraphAreaWrapper';
+import Dashboard from './components/Dashboard/Dashboard';
 
 class App extends Component {
   render() {
-    const GraphAreaWrapperWithProps = props => {
-      return <GraphAreaWrapper {...props} />;
+    const DashboardWithProps = props => {
+      return <Dashboard {...props} />;
     };
 
     return (
       <Router>
         <div className="App">
           <div className="Graphdiv">
-            <Route path="/getdata" render={GraphAreaWrapperWithProps} />
+            <Route path="/getdata" render={DashboardWithProps} />
           </div>
         </div>
       </Router>

@@ -5,9 +5,9 @@ import GraphViewTimeFrame from '../GraphComponent/GraphViewTimeFrame';
 import InfoCard from '../InfoCard/InfoCard';
 import SettingsCard from '../SettingsArea/SettingsCard';
 import { CircularProgress } from '@material-ui/core';
-import './GraphAreaWrapper.css';
+import './Dashboard.css';
 
-class GraphAreaWrapper extends Component {
+class Dashboard extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -212,4 +212,4 @@ class GraphAreaWrapper extends Component {
   }
 }
 
-export default GraphAreaWrapper;
+export default Dashboard;

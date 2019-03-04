@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import moment from 'moment';
 import ValidityRangeSettings from './ValidityRangeSettings';
-import EnhancedDatePicker from '../DatePicker/EnhancedDatePicker';
+import EnhancedDatePicker from '../GuiElements/EnhancedDatePicker';
 import {
   IconButton,
   FormControl,
