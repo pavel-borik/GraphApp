@@ -1,21 +1,10 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import moment from 'moment';
-import classnames from 'classnames';
 import GraphViewMoment from '../GraphComponent/GraphViewMoment';
 import GraphViewTimeFrame from '../GraphComponent/GraphViewTimeFrame';
 import InfoCard from '../InfoCard/InfoCard';
-import SettingsWrapper from '../SettingsWrapper/SettingsWrapper';
-import EnhancedDatePicker from '../DatePicker/EnhancedDatePicker';
-import {
-  Fade,
-  Paper,
-  Collapse,
-  Typography,
-  IconButton,
-  withStyles,
-  CircularProgress
-} from '@material-ui/core';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import SettingsCard from '../SettingsArea/SettingsCard';
+import { CircularProgress } from '@material-ui/core';
 import './GraphAreaWrapper.css';
 
 class GraphAreaWrapper extends Component {
@@ -26,9 +15,8 @@ class GraphAreaWrapper extends Component {
       selectedNode: {},
       selectedDate: {},
       timeBreaks: [],
-      view: 'timeFrameView',
-      isLoading: false,
-      expanded: true
+      selectedView: 'timeFrameView',
+      isLoading: false
     };
   }
 
@@ -135,7 +123,7 @@ class GraphAreaWrapper extends Component {
    * Retrieves the selected graph view - Moment or Time frame.
    */
   getSelectedView = selectedView => {
-    this.setState({ view: selectedView });
+    this.setState({ selectedView });
   };
 
   /**
@@ -159,45 +147,21 @@ class GraphAreaWrapper extends Component {
     }
   };
 
-  /**
-   * Controls whether the Settings panel is collapsed or not.
-   */
-  handleExpandClick = () => {
-    this.setState(state => ({ expanded: !state.expanded }));
-  };
-
   render() {
-    const { classes } = this.props;
-    const {
-      graphData,
-      isLoading,
-      view,
-      selectedDate,
-      timeBreaks,
-      expanded,
-      selectedNode
-    } = this.state;
+    const { graphData, isLoading, selectedView, selectedDate, selectedNode } = this.state;
     let graphComponent = null;
     let cardComponent = null;
-    let datePickerComponent = null;
-    let progressComponent = null;
     let settingsComponent = null;
+    let progressComponent = null;
 
-    if (Object.keys(graphData).length === 0 && graphData.constructor === Object) {
-      progressComponent = (
-        <div className="progress-container">
-          <CircularProgress />
-        </div>
-      );
-    } else {
-      if (isLoading === true)
-        progressComponent = (
-          <div className="progress-container">
-            <CircularProgress />
-          </div>
-        );
+    progressComponent = (
+      <div className="progress-container">
+        <CircularProgress />
+      </div>
+    );
 
-      if (view === 'timeFrameView') {
+    switch (selectedView) {
+      case 'timeFrameView':
         graphComponent = (
           <GraphViewTimeFrame
             data={graphData}
@@ -205,7 +169,8 @@ class GraphAreaWrapper extends Component {
             getSelectedNode={this.getSelectedNode}
           />
         );
-      } else {
+        break;
+      case 'momentView':
         graphComponent = (
           <GraphViewMoment
             data={graphData}
@@ -213,92 +178,38 @@ class GraphAreaWrapper extends Component {
             getSelectedNode={this.getSelectedNode}
           />
         );
-
-        datePickerComponent = (
-          <EnhancedDatePicker
-            getSelectedDate={this.getSelectedDate}
-            jumpToPreviousBreak={this.jumpToPreviousBreak}
-            jumpToNextBreak={this.jumpToNextBreak}
-            selectedDate={selectedDate}
-            validityStart={graphData.config.range.validityStart}
-            validityEnd={graphData.config.range.validityEnd}
-            timeBreaks={timeBreaks}
-          />
-        );
-      }
-      settingsComponent = (
-        <Paper elevation={1}>
-          <div className="settingsHeader">
-            <Typography variant="title" component="h3" className={classes.title}>
-              {'Settings'}
-            </Typography>
-            <IconButton
-              className={classnames(
-                classes.expand,
-                {
-                  [classes.expandOpen]: expanded
-                },
-                classes.iconButton
-              )}
-              onClick={this.handleExpandClick}
-              aria-expanded={expanded}
-              aria-label="Show more"
-              style={{ width: 40, height: 40 }}
-            >
-              <ExpandMoreIcon />
-            </IconButton>
-          </div>
-
-          <Collapse in={expanded} timeout="auto">
-            <SettingsWrapper
-              processNewDateRange={this.processNewDateRange}
-              getSelectedView={this.getSelectedView}
-              validityStart={graphData.config.range.validityStart}
-              validityEnd={graphData.config.range.validityEnd}
-            />
-
-            <Fade in={view === 'momentView'}>
-              <div className="datepicker-container">{datePickerComponent}</div>
-            </Fade>
-          </Collapse>
-        </Paper>
-      );
-
-      cardComponent = <InfoCard selectedNode={selectedNode} />;
+        break;
+      default:
     }
+
+    if (Object.keys(graphData).length > 0) {
+      settingsComponent = (
+        <SettingsCard
+          processNewDateRange={this.processNewDateRange}
+          getSelectedView={this.getSelectedView}
+          getSelectedDate={this.getSelectedDate}
+          {...this.state}
+        />
+      );
+    }
+
+    cardComponent = <InfoCard selectedNode={selectedNode} />;
 
     return (
       <div className="base-container">
-        {progressComponent}
-        <div className="left-gui-elements">
-          {settingsComponent}
-          <div className="card-container">{cardComponent}</div>
-        </div>
-        <div className="graph-container">{graphComponent}</div>
+        {isLoading && progressComponent}
+        {Object.keys(graphData).length > 0 && (
+          <Fragment>
+            <div className="left-gui-elements">
+              {settingsComponent}
+              <div className="card-container">{cardComponent}</div>
+            </div>
+            <div className="graph-container">{graphComponent}</div>
+          </Fragment>
+        )}
       </div>
     );
   }
 }
 
-const styles = theme => ({
-  iconButton: {
-    '&:hover': {
-      backgroundColor: 'transparent'
-    }
-  },
-  title: {
-    marginLeft: 10,
-    marginTop: 5
-  },
-  expand: {
-    transform: 'rotate(0deg)',
-    transition: theme.transitions.create('transform', {
-      duration: theme.transitions.duration.shortest
-    })
-  },
-  expandOpen: {
-    transform: 'rotate(180deg)'
-  }
-});
-
-export default withStyles(styles)(GraphAreaWrapper);
+export default GraphAreaWrapper;

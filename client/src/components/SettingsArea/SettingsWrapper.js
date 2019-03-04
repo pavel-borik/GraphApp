@@ -1,6 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import moment from 'moment';
 import ValidityRangeSettings from './ValidityRangeSettings';
+import EnhancedDatePicker from '../DatePicker/EnhancedDatePicker';
 import {
   IconButton,
   FormControl,
@@ -8,7 +9,8 @@ import {
   FormControlLabel,
   Radio,
   RadioGroup,
-  Tooltip
+  Tooltip,
+  Fade
 } from '@material-ui/core';
 import { CheckCircle, HelpOutline } from '@material-ui/icons';
 import './SettingsWrapper.css';
@@ -17,7 +19,6 @@ class SettingsWrapper extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      selectedView: 'timeFrameView',
       startDate: moment(this.props.validityStart),
       endDate: moment(this.props.validityEnd)
     };
@@ -39,7 +40,6 @@ class SettingsWrapper extends Component {
   handleRadioChange = event => {
     const selectedViewName = event.target.value;
     this.props.getSelectedView(selectedViewName);
-    this.setState({ selectedView: selectedViewName });
   };
 
   handleChangeStart = newStartDate => {
@@ -59,9 +59,27 @@ class SettingsWrapper extends Component {
   };
 
   render() {
-    const { startDate, endDate, selectedView } = this.state;
-    const { validityStart, validityEnd } = this.props;
+    const { startDate, endDate } = this.state;
+    const {
+      validityStart,
+      validityEnd,
+      selectedView,
+      selectedDate,
+      timeBreaks,
+      getSelectedDate
+    } = this.props;
 
+    const isMomentViewSelected = selectedView === 'momentView';
+
+    const datePickerComponent = (
+      <EnhancedDatePicker
+        getSelectedDate={getSelectedDate}
+        selectedDate={selectedDate}
+        validityStart={validityStart}
+        validityEnd={validityEnd}
+        timeBreaks={timeBreaks}
+      />
+    );
     return (
       <Fragment>
         <div className="validity-range-settings-container">
@@ -113,6 +131,11 @@ class SettingsWrapper extends Component {
             </RadioGroup>
           </FormControl>
         </div>
+        {isMomentViewSelected && (
+          <Fade in={isMomentViewSelected}>
+            <div className="datepicker-container">{datePickerComponent}</div>
+          </Fade>
+        )}
       </Fragment>
     );
   }
