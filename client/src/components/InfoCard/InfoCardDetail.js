@@ -11,34 +11,29 @@ class InfoCardDetail extends Component {
   }
 
   componentDidMount() {
-    const { internalId, type } = this.props;
-    this.setState({ isLoading: true });
-    fetch(`${process.env.REACT_APP_API}/getdetail?id=${internalId}&type=${type}`)
-      .then(res => {
-        if (res.ok) {
-          return res.json();
-        }
-        throw new Error('Something went wrong');
-      })
-      .then(nodeDetailData =>
-        this.setState({ queriedEntity: nodeDetailData.queriedEntity, isLoading: false })
-      );
+    const { selectedNode, isInfoIncluded } = this.props;
+    if (isInfoIncluded) {
+      this.setState({ queriedEntity: selectedNode });
+    }
   }
 
   componentDidUpdate(prevProps) {
-    const { internalId, type } = this.props;
-    if (prevProps.internalId !== internalId) {
-      this.setState({ isLoading: true });
-      fetch(`${process.env.REACT_APP_API}/getdetail?id=${internalId}&type=${type}`)
-        .then(res => {
-          if (res.ok) {
-            return res.json();
-          }
-          throw new Error('Something went wrong');
-        })
-        .then(nodeDetailData =>
-          this.setState({ queriedEntity: nodeDetailData.queriedEntity, isLoading: false })
-        );
+    const { selectedNode, isInfoIncluded } = this.props;
+    const { internalId, type } = selectedNode;
+    if (prevProps.selectedNode.internalId !== internalId) {
+      if (!isInfoIncluded) {
+        this.setState({ isLoading: true });
+        fetch(`${process.env.REACT_APP_API}/getdetail?id=${internalId}&type=${type}`)
+          .then(res => {
+            if (res.ok) {
+              return res.json();
+            }
+            throw new Error('Something went wrong');
+          })
+          .then(res => this.setState({ queriedEntity: res.queriedEntity, isLoading: false }));
+      } else {
+        this.setState({ queriedEntity: selectedNode });
+      }
     }
   }
 
@@ -47,19 +42,18 @@ class InfoCardDetail extends Component {
     const { queriedEntity, isLoading } = this.state;
     let actionsComponent = null;
     if (Object.prototype.hasOwnProperty.call(queriedEntity, 'actions')) {
-      actionsComponent = queriedEntity.actions.map(a => {
-        return (
-          <Button
-            className={classes.button}
-            variant="outlined"
-            size="small"
-            color="primary"
-            href={a.url}
-          >
-            {a.name}
-          </Button>
-        );
-      });
+      actionsComponent = queriedEntity.actions.map(action => (
+        <Button
+          className={classes.button}
+          key={`${action.name}_${action.url}`}
+          variant="outlined"
+          size="small"
+          color="primary"
+          href={action.url}
+        >
+          {action.name}
+        </Button>
+      ));
     }
 
     return (
