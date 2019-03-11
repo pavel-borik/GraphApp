@@ -1,15 +1,6 @@
 import React, { Component } from 'react';
 import DatePicker from 'react-datepicker';
-import './SettingsWrapper.css';
-import { Portal } from 'react-portal';
-
-/**
- * Handles correct visualization of the react-datepicker popper in front of all other components.
- */
-const CalendarContainer = ({ children }) => {
-  if (children === undefined) return null;
-  return <Portal>{children}</Portal>;
-};
+import './ValiditySettingsArea.css';
 
 class ValidityRangeSettings extends Component {
   /**
@@ -33,7 +24,6 @@ class ValidityRangeSettings extends Component {
         <div className="datepicker">
           <DatePicker
             className="form-control"
-            popperContainer={CalendarContainer}
             selected={startDate}
             selectsStart
             timeFormat="HH:mm"
@@ -50,7 +40,6 @@ class ValidityRangeSettings extends Component {
         <div className="datepicker">
           <DatePicker
             className="form-control"
-            popperContainer={CalendarContainer}
             selected={endDate}
             selectsEnd
             timeFormat="HH:mm"

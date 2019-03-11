@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import classnames from 'classnames';
-import SettingsWrapper from './SettingsWrapper';
+import ValiditySettingsArea from './ValiditySettingsArea';
 import { Paper, Collapse, Typography, IconButton, withStyles } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
@@ -39,7 +39,7 @@ class SettingsCard extends Component {
         </div>
 
         <Collapse in={this.state.expanded} timeout="auto">
-          <SettingsWrapper
+          <ValiditySettingsArea
             selectedView={selectedView}
             selectedDate={selectedDate}
             timeBreaks={timeBreaks}

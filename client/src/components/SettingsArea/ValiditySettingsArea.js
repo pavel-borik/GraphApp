@@ -13,9 +13,9 @@ import {
   Fade
 } from '@material-ui/core';
 import { CheckCircle, HelpOutline } from '@material-ui/icons';
-import './SettingsWrapper.css';
+import './ValiditySettingsArea.css';
 
-class SettingsWrapper extends Component {
+class ValiditySettingsArea extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -157,4 +157,4 @@ const tooltipText = (
   </div>
 );
 
-export default SettingsWrapper;
+export default ValiditySettingsArea;
