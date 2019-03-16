@@ -7,6 +7,9 @@ import SettingsCard from '../SettingsArea/SettingsCard';
 import { CircularProgress } from '@material-ui/core';
 import './Dashboard.css';
 
+export const VIEW_TIME_FRAME = 'VIEW_TIME_FRAME';
+export const VIEW_MOMENT = 'VIEW_MOMENT';
+
 class Dashboard extends Component {
   constructor(props) {
     super(props);
@@ -15,7 +18,7 @@ class Dashboard extends Component {
       selectedNode: {},
       selectedDate: {},
       timeBreaks: [],
-      selectedView: 'timeFrameView',
+      selectedView: VIEW_TIME_FRAME,
       isLoading: false
     };
   }
@@ -161,7 +164,7 @@ class Dashboard extends Component {
     );
 
     switch (selectedView) {
-      case 'timeFrameView':
+      case VIEW_TIME_FRAME:
         graphComponent = (
           <GraphViewTimeFrame
             data={graphData}
@@ -170,7 +173,7 @@ class Dashboard extends Component {
           />
         );
         break;
-      case 'momentView':
+      case VIEW_MOMENT:
         graphComponent = (
           <GraphViewMoment
             data={graphData}

@@ -389,7 +389,8 @@ class GraphViewMoment extends Component {
    * can still remain there from the TimeFrame view highlighting.
    */
   getDisplayedNodesAndEdges(removeEdgeColors) {
-    const displayedEdges = this.props.data.graph.edges.filter(edge => {
+    const { nodes, edges } = this.props.data.graph;
+    const displayedEdges = edges.filter(edge => {
       if (removeEdgeColors) {
         delete edge.color;
       }
@@ -400,7 +401,7 @@ class GraphViewMoment extends Component {
         '[)'
       );
     });
-    const displayedNodes = this.props.data.graph.nodes.filter(node => {
+    const displayedNodes = nodes.filter(node => {
       const edgeCount = displayedEdges.filter(edge => {
         return edge.from === node.id || edge.to === node.id;
       });

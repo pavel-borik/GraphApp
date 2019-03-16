@@ -111,18 +111,16 @@ class GraphViewTimeFrame extends Component {
    * This is defined in the API responsed ("validityChanges" key in edge objects)/
    */
   highlightEdges = () => {
-    const highlightedEdges = this.props.data.graph.edges.map(edge => {
+    const { nodes, edges } = this.props.data.graph;
+    const highlightedEdges = edges.map(edge => {
       if (edge.validityChanges === true)
         return Object.assign(edge, {
           color: { color: '#ff6363', opacity: 0.5, highlight: '#fb1414' }
         });
       return edge;
     });
-    this.network.setData({ nodes: this.props.data.graph.nodes, edges: highlightedEdges });
+    this.network.setData({ nodes: nodes, edges: highlightedEdges });
     this.edgeDataset = this.network.body.data.edges;
-    // this.edgeDataset.map(edge => {
-    //     if (edge.validityChanges === true) this.edgeDataset.update({ id: edge.id, color: { color: "#ff6363", opacity: 0.5, highlight: "#fb1414" } });
-    // })
   };
 
   /**

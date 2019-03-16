@@ -13,6 +13,7 @@ import {
   Fade
 } from '@material-ui/core';
 import { CheckCircle, HelpOutline } from '@material-ui/icons';
+import { VIEW_MOMENT, VIEW_TIME_FRAME } from '../Dashboard/Dashboard';
 import './ValiditySettingsArea.css';
 
 class ValiditySettingsArea extends Component {
@@ -126,8 +127,8 @@ class ValiditySettingsArea extends Component {
               value={selectedView}
               onChange={this.handleRadioChange}
             >
-              <FormControlLabel value="timeFrameView" control={<Radio />} label="Time Frame" />
-              <FormControlLabel value="momentView" control={<Radio />} label="Moment" />
+              <FormControlLabel value={VIEW_TIME_FRAME} control={<Radio />} label="Time Frame" />
+              <FormControlLabel value={VIEW_MOMENT} control={<Radio />} label="Moment" />
             </RadioGroup>
           </FormControl>
         </div>
