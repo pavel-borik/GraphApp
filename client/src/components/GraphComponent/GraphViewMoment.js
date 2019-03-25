@@ -154,7 +154,6 @@ class GraphViewMoment extends Component {
     const clickedNode = nodes[0];
     if (this.network.isCluster(clickedNode) === true) {
       const clusterNodeInfo = this.network.clustering.body.nodes[clickedNode];
-      console.log(clusterNodeInfo);
       this.logClusterOperation(
         clusterNodeInfo.options.group,
         clusterNodeInfo.options.clusterGroupId
