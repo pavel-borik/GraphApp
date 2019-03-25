@@ -1,13 +1,14 @@
+require('dotenv').config();
 const express = require('express');
 const mysql = require('mysql');
 const moment = require('moment');
 const app = express();
 
 const db = mysql.createConnection({
-  host: '127.0.0.1',
-  user: 'root',
-  password: 'root',
-  database: 'esett'
+  host: `${process.env.DB_HOST}`,
+  user: `${process.env.DB_USER}`,
+  password: `${process.env.DB_PASS}`,
+  database: `${process.env.DB_SCHEMA}`
 });
 
 db.connect(err => {
@@ -330,7 +331,7 @@ app.get('/api/getdata', (req, res) => {
         );
       }
     }
-    console.log(countPerParent);
+    //console.log(countPerParent);
 
     for (let [key, value] of countPerParent.entries()) {
       if (value > 4) {
