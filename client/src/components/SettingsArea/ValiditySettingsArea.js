@@ -70,7 +70,7 @@ class ValiditySettingsArea extends Component {
       getSelectedDate
     } = this.props;
 
-    const isMomentViewSelected = selectedView === 'momentView';
+    const isMomentViewSelected = selectedView === VIEW_MOMENT;
 
     const datePickerComponent = (
       <EnhancedDatePicker
