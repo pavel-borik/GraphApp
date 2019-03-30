@@ -19,7 +19,7 @@ db.connect(err => {
   console.log('Mysql connected');
 });
 
-app.use(function(req, res, next) {
+app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   next();
@@ -244,20 +244,19 @@ app.get('/api/getdata', (req, res) => {
 
   db.query(queryString, queryParams, (err, rows, fields) => {
     if (err) throw err;
-    rows.map(node => {
+    rows = rows.map(node => {
       node.title = createNodeTooltipHtml(node);
       node.typeFullName = viewDictionary[node.type].name;
+      return node;
     });
 
-    rows = rows.filter(node => {
-      return !moment(node.validityStart).isAfter(moment(validityEnd));
-    });
+    rows = rows.filter(node => moment(node.validityStart).isBefore(moment(validityEnd)));
 
-    rows = rows.filter(node => {
-      return !(node.validityEnd === 'unlimited'
-        ? false
-        : moment(node.validityEnd).isBefore(moment(validityStart)));
-    });
+    rows = rows.filter(node =>
+      node.validityEnd === 'unlimited'
+        ? true
+        : moment(node.validityEnd).isAfter(moment(validityStart))
+    );
 
     /**
      * Calculating subclustering
@@ -266,9 +265,7 @@ app.get('/api/getdata', (req, res) => {
     for (let i = 0; i < Object.keys(groups).length; i++) {
       countPerGroup.set(Object.keys(groups)[i], 0);
     }
-    rows.forEach(r => {
-      countPerGroup.set(r.group, countPerGroup.get(r.group) + 1);
-    });
+    rows.forEach(r => countPerGroup.set(r.group, countPerGroup.get(r.group) + 1));
 
     for (let [key, value] of countPerGroup.entries()) {
       let clusteringDescription = [];
@@ -450,8 +447,8 @@ app.get('/api/getdata', (req, res) => {
             config: configGraph,
             queriedEntity: {
               //"id": id,
-              name: name,
               //"type": type,
+              name: name,
               typeFullName: typeFullName,
               actions: actions,
               detail: detail
@@ -508,7 +505,7 @@ app.get('/api/getdetail', (req, res) => {
   );
 });
 
-function searchGroupParents(clustering, row) {
+searchGroupParents = (clustering, row) => {
   let rowPartOf = [];
   if (row.hasOwnProperty('subcluster')) rowPartOf.push(row.subcluster);
   let searchFor = row.subcluster;
@@ -534,9 +531,9 @@ function searchGroupParents(clustering, row) {
   }
   if (rowPartOf.length === 0) rowPartOf.push(row.group);
   return rowPartOf;
-}
+};
 
-function computeEdges(rows, queriedEntity, validityStart, validityEnd) {
+computeEdges = (rows, queriedEntity, validityStart, validityEnd) => {
   var edges = [];
   validityStartMoment = moment(validityStart);
   validityEndMoment = moment(validityEnd);
@@ -578,9 +575,9 @@ function computeEdges(rows, queriedEntity, validityStart, validityEnd) {
     }
   }
   return edges;
-}
+};
 
-function createGroups(view, type) {
+createGroups = (view, type) => {
   let groups = {};
   let i = 0;
   let key = 'g' + i;
@@ -616,13 +613,13 @@ function createGroups(view, type) {
     i++;
   });
   return groups;
-}
+};
 
-function createNodeTooltipHtml(node) {
+createNodeTooltipHtml = node => {
   return `<h3> ${node.label} </h3><ul class="tooltip-list"><li>Type: ${node.type}</li></ul>`;
-}
+};
 
-function createNodeActions(node) {
+createNodeActions = node => {
   let actions = [
     {
       name: 'Edit',
@@ -634,7 +631,7 @@ function createNodeActions(node) {
     }
   ];
   return actions;
-}
+};
 
 const port = 5000;
 
